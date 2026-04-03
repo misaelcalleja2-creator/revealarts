@@ -4,941 +4,608 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create — Reveal Arts</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --ink: #0a0a0f;
-  --white: #fafaf8;
-  --lime: #c8f135;
-  --coral: #ff5c3a;
-  --sky: #4fc3f7;
-  --violet: #9b5de5;
-  --gold: #ffd60a;
-  --teal: #00f5d4;
-  --panel: #0f0f18;
-  --border: rgba(255,255,255,0.08);
-}
+:root{--ink:#0a0a0f;--white:#fafaf8;--lime:#c8f135;--coral:#ff5c3a;--sky:#4fc3f7;--violet:#9b5de5;--gold:#ffd60a;--teal:#00f5d4;--border:rgba(255,255,255,0.08);--panel:#0f0f18;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{background:var(--ink);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;}
-
-/* NAV */
-nav{
-  position:sticky;top:0;z-index:100;
-  padding:14px 32px;
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(10,10,15,0.95);
-  border-bottom:1px solid var(--border);
-  backdrop-filter:blur(20px);
-}
-.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:8px;}
-.nav-logo-dot{width:7px;height:7px;background:var(--lime);border-radius:50%;display:inline-block;}
-.nav-back{font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s;}
+body{background:var(--ink);color:var(--white);font-family:"DM Sans",sans-serif;min-height:100vh;}
+nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);}
+.nav-logo{font-family:"Syne",sans-serif;font-weight:800;font-size:18px;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:8px;}
+.nav-logo-dot{width:7px;height:7px;background:var(--lime);border-radius:50%;}
+.nav-back{font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;}
 .nav-back:hover{color:var(--white);}
-
-/* LAYOUT */
 .page{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 57px);}
-
-/* LEFT PANEL - FORM */
-.form-panel{
-  padding:32px;
-  border-right:1px solid var(--border);
-  overflow-y:auto;
-  max-height:calc(100vh - 57px);
-}
-.form-panel::-webkit-scrollbar{width:4px;}
-.form-panel::-webkit-scrollbar-track{background:transparent;}
+.form-panel{padding:28px;border-right:1px solid var(--border);overflow-y:auto;max-height:calc(100vh - 57px);}
+.form-panel::-webkit-scrollbar{width:3px;}
 .form-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px;}
-
-/* RIGHT PANEL - PREVIEW */
-.preview-panel{
-  padding:32px;
-  display:flex;
-  flex-direction:column;
-  gap:20px;
-  overflow-y:auto;
-  max-height:calc(100vh - 57px);
-  background:#08080f;
-}
-
-/* SECTION HEADERS */
-.section-header{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:16px;
-}
-.section-num{
-  width:24px;height:24px;
-  background:var(--lime);
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;
-  font-weight:800;font-size:11px;
-  color:var(--ink);
-  flex-shrink:0;
-}
-.section-title{
-  font-family:'Syne',sans-serif;
-  font-weight:700;font-size:15px;
-  color:var(--white);
-}
-
-/* DIVIDER */
-.divider{height:1px;background:var(--border);margin:24px 0;}
-
-/* IMAGE PICKER */
-.search-row{display:flex;gap:8px;margin-bottom:12px;}
-.search-input{
-  flex:1;
-  background:rgba(255,255,255,0.06);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:10px 14px;
-  font-size:13px;
-  font-family:'DM Sans',sans-serif;
-  color:var(--white);
-  outline:none;
-  transition:border-color .2s;
-}
-.search-input:focus{border-color:rgba(200,241,53,0.4);}
-.search-input::placeholder{color:rgba(255,255,255,0.25);}
-.search-btn{
-  background:var(--lime);
-  color:var(--ink);
-  border:none;
-  border-radius:10px;
-  padding:10px 16px;
-  font-family:'Syne',sans-serif;
-  font-weight:700;font-size:13px;
-  cursor:pointer;
-  transition:transform .15s,box-shadow .15s;
-  white-space:nowrap;
-}
-.search-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,241,53,0.3);}
+.preview-panel{padding:28px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;max-height:calc(100vh - 57px);background:#08080f;}
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.sn{width:22px;height:22px;background:var(--lime);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:10px;color:var(--ink);flex-shrink:0;}
+.st{font-family:"Syne",sans-serif;font-weight:700;font-size:14px;color:var(--white);}
+.divider{height:1px;background:var(--border);margin:20px 0;}
+/* inputs */
+.inp{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;font-family:"DM Sans",sans-serif;color:var(--white);outline:none;transition:border-color .2s;}
+.inp:focus{border-color:rgba(200,241,53,0.4);}
+.inp::placeholder{color:rgba(255,255,255,0.25);}
+/* search */
+.search-row{display:flex;gap:8px;margin-bottom:10px;}
+.search-btn{background:var(--lime);color:var(--ink);border:none;border-radius:10px;padding:9px 14px;font-family:"Syne",sans-serif;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;transition:transform .15s;}
+.search-btn:hover{transform:translateY(-1px);}
 .search-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-
-.photo-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:6px;
-  margin-bottom:8px;
-}
-.photo-thumb{
-  aspect-ratio:1;
-  border-radius:8px;
-  overflow:hidden;
-  cursor:pointer;
-  border:2px solid transparent;
-  transition:border-color .2s,transform .15s;
-  position:relative;
-}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px;}
+.photo-thumb{aspect-ratio:1;border-radius:7px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .2s,transform .15s;position:relative;}
 .photo-thumb:hover{transform:scale(1.03);}
 .photo-thumb.selected{border-color:var(--lime);}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-.photo-thumb .check{
-  position:absolute;top:4px;right:4px;
-  width:20px;height:20px;
-  background:var(--lime);
-  border-radius:50%;
-  display:none;
-  align-items:center;justify-content:center;
-  font-size:11px;font-weight:900;color:var(--ink);
-}
-.photo-thumb.selected .check{display:flex;}
-
-.photo-empty{
-  grid-column:1/-1;
-  text-align:center;
-  padding:32px;
-  color:rgba(255,255,255,0.25);
-  font-size:13px;
-}
-
-/* OR DIVIDER */
-.or-row{
-  display:flex;align-items:center;gap:12px;
-  margin:12px 0;
-  color:rgba(255,255,255,0.25);
-  font-size:12px;
-}
+.photo-thumb .chk{position:absolute;top:3px;right:3px;width:18px;height:18px;background:var(--lime);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:var(--ink);}
+.photo-thumb.selected .chk{display:flex;}
+.photo-empty{grid-column:1/-1;text-align:center;padding:24px;color:rgba(255,255,255,0.2);font-size:12px;}
+.or-row{display:flex;align-items:center;gap:10px;margin:10px 0;color:rgba(255,255,255,0.2);font-size:11px;}
 .or-line{flex:1;height:1px;background:var(--border);}
-
-/* UPLOAD */
-.upload-zone{
-  border:1.5px dashed rgba(255,255,255,0.15);
-  border-radius:12px;
-  padding:20px;
-  text-align:center;
-  cursor:pointer;
-  transition:border-color .2s,background .2s;
-}
-.upload-zone:hover{border-color:rgba(200,241,53,0.4);background:rgba(200,241,53,0.03);}
+.upload-zone{border:1.5px dashed rgba(255,255,255,0.12);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;}
+.upload-zone:hover{border-color:rgba(200,241,53,0.35);}
 .upload-zone input{display:none;}
-.upload-icon{font-size:24px;margin-bottom:6px;}
-.upload-text{font-size:12px;color:rgba(255,255,255,0.35);}
-.upload-preview{
-  width:100%;aspect-ratio:16/9;
-  object-fit:cover;
-  border-radius:8px;
-  margin-top:8px;
-  display:none;
-}
-
-/* SELECTED IMAGE DISPLAY */
-.selected-img-wrap{
-  position:relative;
-  border-radius:10px;
-  overflow:hidden;
-  margin-bottom:8px;
-  display:none;
-}
-.selected-img-wrap img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
-.selected-img-label{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:8px 12px;
-  background:linear-gradient(transparent,rgba(0,0,0,0.7));
-  font-size:11px;color:rgba(255,255,255,0.7);
-}
-.change-img-btn{
-  position:absolute;top:8px;right:8px;
-  background:rgba(0,0,0,0.6);
-  border:1px solid rgba(255,255,255,0.2);
-  color:var(--white);
-  border-radius:6px;
-  padding:4px 10px;
-  font-size:11px;font-weight:600;
-  cursor:pointer;
-  transition:background .2s;
-}
-.change-img-btn:hover{background:rgba(0,0,0,0.85);}
-
-/* PROBLEM BANK */
-.operation-tabs{
-  display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;
-}
-.op-tab{
-  padding:7px 14px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  background:transparent;
-  color:rgba(255,255,255,0.45);
-  font-family:'DM Sans',sans-serif;
-  font-size:12px;font-weight:600;
-  cursor:pointer;
-  transition:all .2s;
-}
-.op-tab:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
-.op-tab.active{background:var(--lime);border-color:var(--lime);color:var(--ink);}
-
-.level-tabs{
-  display:flex;gap:6px;margin-bottom:14px;
-}
-.level-tab{
-  flex:1;padding:8px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  background:transparent;
-  color:rgba(255,255,255,0.45);
-  font-family:'DM Sans',sans-serif;
-  font-size:12px;font-weight:600;
-  cursor:pointer;
-  transition:all .2s;
-  text-align:center;
-}
-.level-tab:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
-.level-tab.active{background:rgba(159,93,229,0.2);border-color:var(--violet);color:var(--white);}
-
-/* SELECTION MODE */
-.selection-mode-row{
-  display:flex;gap:8px;margin-bottom:14px;
-}
-.mode-btn{
-  flex:1;padding:9px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  background:transparent;
-  color:rgba(255,255,255,0.45);
-  font-family:'DM Sans',sans-serif;
-  font-size:12px;font-weight:600;
-  cursor:pointer;
-  transition:all .2s;
-  text-align:center;
-}
+.upload-text{font-size:11px;color:rgba(255,255,255,0.3);}
+/* image editor */
+.img-editor{display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.img-editor.active{display:block;}
+.editor-preview-wrap{position:relative;border-radius:8px;overflow:hidden;background:#000;margin-bottom:12px;cursor:grab;}
+.editor-preview-wrap:active{cursor:grabbing;}
+#editor-canvas{display:block;width:100%;}
+.editor-controls{display:flex;flex-direction:column;gap:10px;}
+.ctrl-row{display:flex;align-items:center;gap:10px;}
+.ctrl-label{font-size:11px;color:rgba(255,255,255,0.4);min-width:50px;}
+.ctrl-row input[type=range]{flex:1;}
+.aspect-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.aspect-btn{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:1px;}
+.aspect-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.aspect-btn.active{background:rgba(200,241,53,0.12);border-color:var(--lime);color:var(--lime);}
+.aspect-btn .rec-badge{font-size:8px;color:var(--lime);opacity:0.7;}
+.fit-btn{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s;}
+.fit-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.crop-btn{background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:8px 18px;font-family:"Syne",sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:transform .15s;}
+.crop-btn:hover{transform:translateY(-1px);}
+.change-img-btn{font-size:11px;color:rgba(255,255,255,0.4);background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;font-family:"DM Sans",sans-serif;}
+.change-img-btn:hover{color:var(--white);}
+/* tabs */
+.tabs{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap;}
+.tab{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;}
+.tab:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.tab.active{background:var(--lime);border-color:var(--lime);color:var(--ink);}
+.tab.neg{border-color:rgba(255,92,58,0.3);color:rgba(255,92,58,0.5);}
+.tab.neg.active{background:rgba(255,92,58,0.15);border-color:var(--coral);color:var(--coral);}
+.neg-note{font-size:10px;color:var(--coral);margin-bottom:10px;display:none;}
+/* mode btns */
+.mode-row{display:flex;gap:6px;margin-bottom:12px;}
+.mode-btn{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;}
 .mode-btn.active{background:rgba(79,195,247,0.15);border-color:var(--sky);color:var(--white);}
 .mode-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
-
-/* PROBLEM LIST */
-.problem-pool{
-  display:flex;flex-direction:column;gap:4px;
-  max-height:280px;
-  overflow-y:auto;
-  padding-right:4px;
-}
+/* problem pool */
+.problem-pool{display:flex;flex-direction:column;gap:3px;max-height:240px;overflow-y:auto;padding-right:3px;}
 .problem-pool::-webkit-scrollbar{width:3px;}
 .problem-pool::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px;}
-
-.problem-row{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 10px;
-  border-radius:8px;
-  border:1px solid transparent;
-  cursor:pointer;
-  transition:background .15s,border-color .15s;
-  user-select:none;
-}
-.problem-row:hover{background:rgba(255,255,255,0.04);}
-.problem-row.selected{background:rgba(200,241,53,0.06);border-color:rgba(200,241,53,0.2);}
-.prob-check{
-  width:16px;height:16px;
-  border:1.5px solid rgba(255,255,255,0.2);
-  border-radius:4px;
-  flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;
-  transition:all .15s;
-}
-.problem-row.selected .prob-check{background:var(--lime);border-color:var(--lime);color:var(--ink);font-weight:900;}
-.prob-eq{font-size:13px;color:rgba(255,255,255,0.8);font-weight:500;}
-.prob-ans{font-size:11px;color:rgba(255,255,255,0.25);margin-left:auto;}
-
-.selection-status{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-top:10px;
-  font-size:12px;
-}
-.sel-count{color:rgba(255,255,255,0.4);}
-.sel-count span{color:var(--lime);font-weight:700;}
-.randomize-btn{
-  background:transparent;
-  border:1px solid var(--border);
-  color:rgba(255,255,255,0.5);
-  border-radius:6px;
-  padding:4px 10px;
-  font-size:11px;font-weight:600;
-  cursor:pointer;
-  font-family:'DM Sans',sans-serif;
-  transition:all .2s;
-}
-.randomize-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--white);}
-
-/* ACTIVITY TITLE */
-.title-input{
-  width:100%;
-  background:rgba(255,255,255,0.06);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:10px 14px;
-  font-size:13px;
-  font-family:'DM Sans',sans-serif;
-  color:var(--white);
-  outline:none;
-  transition:border-color .2s;
-  margin-bottom:8px;
-}
-.title-input:focus{border-color:rgba(200,241,53,0.4);}
-.title-input::placeholder{color:rgba(255,255,255,0.25);}
-
-/* GENERATE BUTTON */
-.generate-btn{
-  width:100%;
-  background:var(--lime);
-  color:var(--ink);
-  border:none;
-  border-radius:12px;
-  padding:16px;
-  font-family:'Syne',sans-serif;
-  font-weight:800;font-size:15px;
-  cursor:pointer;
-  transition:transform .2s,box-shadow .2s,opacity .2s;
-  margin-top:8px;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.generate-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.35);}
-.generate-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
-
-/* VALIDATION MSG */
-.validation-msg{
-  font-size:12px;
-  color:var(--coral);
-  margin-top:8px;
-  display:none;
-}
-
-/* PREVIEW PANEL */
-.preview-header{
-  font-family:'Syne',sans-serif;
-  font-weight:700;font-size:14px;
-  color:rgba(255,255,255,0.4);
-  letter-spacing:1px;
-  text-transform:uppercase;
-  margin-bottom:4px;
-}
-.preview-empty{
-  flex:1;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:12px;
-  color:rgba(255,255,255,0.2);
-  text-align:center;
-  padding:40px;
-}
-.preview-empty-icon{font-size:48px;opacity:0.4;}
-.preview-empty-text{font-size:14px;line-height:1.6;}
-
-.preview-frame{
-  background:#111;
-  border-radius:12px;
-  overflow:hidden;
-  border:1px solid var(--border);
-  flex-shrink:0;
-}
-.preview-frame iframe{
-  width:100%;
-  height:500px;
-  border:none;
-  display:block;
-}
-
-.download-btn{
-  width:100%;
-  background:var(--lime);
-  color:var(--ink);
-  border:none;
-  border-radius:12px;
-  padding:14px;
-  font-family:'Syne',sans-serif;
-  font-weight:800;font-size:14px;
-  cursor:pointer;
-  transition:transform .2s,box-shadow .2s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.download-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.35);}
-.download-note{font-size:11px;color:rgba(255,255,255,0.25);text-align:center;}
-
-/* LOADING SPINNER */
-.spinner{
-  width:18px;height:18px;
-  border:2px solid rgba(10,10,15,0.3);
-  border-top-color:var(--ink);
-  border-radius:50%;
-  animation:spin .6s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-/* LOADING OVERLAY */
-.loading-overlay{
-  display:none;
-  position:fixed;inset:0;
-  background:rgba(10,10,15,0.85);
-  z-index:200;
-  align-items:center;justify-content:center;
-  flex-direction:column;
-  gap:16px;
-}
+.prob-row{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:7px;border:1px solid transparent;cursor:pointer;transition:background .15s;user-select:none;}
+.prob-row:hover{background:rgba(255,255,255,0.04);}
+.prob-row.selected{background:rgba(200,241,53,0.06);border-color:rgba(200,241,53,0.2);}
+.prob-chk{width:14px;height:14px;border:1.5px solid rgba(255,255,255,0.2);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .15s;}
+.prob-row.selected .prob-chk{background:var(--lime);border-color:var(--lime);color:var(--ink);font-weight:900;}
+.prob-eq{font-size:12px;color:rgba(255,255,255,0.8);font-weight:500;}
+.prob-ans{font-size:10px;color:rgba(255,255,255,0.2);margin-left:auto;}
+.sel-status{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:11px;}
+.sel-ct{color:rgba(255,255,255,0.35);}
+.sel-ct span{color:var(--lime);font-weight:700;}
+.rand-btn{background:transparent;border:1px solid var(--border);color:rgba(255,255,255,0.4);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s;}
+.rand-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--white);}
+/* hints */
+.hint-count-row{display:flex;gap:6px;margin-bottom:10px;}
+.hc-btn{flex:1;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;}
+.hc-btn.active{background:rgba(255,214,10,0.12);border-color:var(--gold);color:var(--gold);}
+.hc-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.hint-inputs{display:flex;flex-direction:column;gap:8px;}
+/* timer */
+.timer-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.timer-toggle-label{font-size:13px;color:rgba(255,255,255,0.6);}
+.toggle-switch{position:relative;width:40px;height:22px;cursor:pointer;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:rgba(255,255,255,0.1);border-radius:99px;transition:background .2s;}
+.toggle-switch input:checked+.toggle-track{background:var(--lime);}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--white);border-radius:50%;transition:transform .2s;}
+.toggle-switch input:checked~.toggle-thumb{transform:translateX(18px);}
+.timer-settings{display:none;flex-direction:column;gap:10px;}
+.timer-settings.active{display:flex;}
+.timer-presets{display:flex;gap:6px;flex-wrap:wrap;}
+.timer-preset{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.timer-preset.active{background:rgba(79,195,247,0.15);border-color:var(--sky);color:var(--white);}
+.timer-preset:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+/* diff mode */
+.diff-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.diff-note{font-size:11px;color:rgba(255,255,255,0.3);line-height:1.5;margin-top:4px;}
+/* generate */
+.gen-btn{width:100%;background:var(--lime);color:var(--ink);border:none;border-radius:12px;padding:15px;font-family:"Syne",sans-serif;font-weight:800;font-size:14px;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.gen-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.35);}
+.val-msg{font-size:11px;color:var(--coral);margin-top:6px;display:none;}
+/* preview */
+.prev-header{font-family:"Syne",sans-serif;font-weight:700;font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;}
+.prev-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,0.18);text-align:center;padding:40px;}
+.prev-empty-icon{font-size:44px;opacity:0.35;}
+.prev-empty-text{font-size:13px;line-height:1.6;}
+.prev-frame{background:#111;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.prev-frame iframe{width:100%;height:500px;border:none;display:block;}
+.dl-btns{display:flex;flex-direction:column;gap:8px;}
+.dl-btn{width:100%;background:var(--lime);color:var(--ink);border:none;border-radius:10px;padding:13px;font-family:"Syne",sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.dl-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.3);}
+.dl-btn-diff{background:rgba(159,93,229,0.2);color:var(--violet);border:1px solid rgba(159,93,229,0.4);}
+.dl-btn-diff:hover{background:rgba(159,93,229,0.3);box-shadow:0 12px 32px rgba(159,93,229,0.2);}
+.dl-note{font-size:10px;color:rgba(255,255,255,0.2);text-align:center;}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.88);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
 .loading-overlay.active{display:flex;}
-.loading-spinner-big{
-  width:48px;height:48px;
-  border:3px solid rgba(200,241,53,0.2);
-  border-top-color:var(--lime);
-  border-radius:50%;
-  animation:spin .8s linear infinite;
-}
-.loading-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--white);}
-.loading-sub{font-size:13px;color:rgba(255,255,255,0.4);}
-
-@media(max-width:800px){
-  .page{grid-template-columns:1fr;}
-  .form-panel{max-height:none;border-right:none;border-bottom:1px solid var(--border);}
-  .preview-panel{max-height:none;}
-}
+.spin{width:44px;height:44px;border:3px solid rgba(200,241,53,0.2);border-top-color:var(--lime);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.load-txt{font-family:"Syne",sans-serif;font-size:15px;font-weight:700;}
+.load-sub{font-size:12px;color:rgba(255,255,255,0.35);}
+@media(max-width:800px){.page{grid-template-columns:1fr;}.form-panel,.preview-panel{max-height:none;}}
 </style>
 </head>
 <body>
+<div class="loading-overlay" id="lo"><div class="spin"></div><div class="load-txt" id="lo-txt">Building your Reveal Art...</div><div class="load-sub">This takes about 3 seconds</div></div>
+<nav>
+  <a href="index.html" class="nav-back">← Back</a>
+  <a href="index.html" class="nav-logo"><span class="nav-logo-dot"></span>Reveal Arts</a>
+  <div style="width:80px"></div>
+</nav>
+<div class="page">
+<div class="form-panel">
 
-<div class="loading-overlay" id="loading-overlay">
-  <div class="loading-spinner-big"></div>
-  <div class="loading-text">Building your Reveal Art...</div>
-  <div class="loading-sub">This takes about 3 seconds</div>
+  <!-- STEP 1: IMAGE -->
+  <div class="sh"><div class="sn">1</div><div class="st">Choose your image</div></div>
+  <div id="img-picker">
+    <div class="search-row">
+      <input type="text" class="inp" id="si" placeholder="Search photos... (Easter, space, animals...)">
+      <button class="search-btn" id="sb" onclick="searchPhotos()">Search</button>
+    </div>
+    <div class="photo-grid" id="pg"><div class="photo-empty">Search above or upload your own below</div></div>
+    <div class="or-row"><div class="or-line"></div><span>or upload your own</span><div class="or-line"></div></div>
+    <div class="upload-zone" onclick="document.getElementById('fu').click()">
+      <input type="file" id="fu" accept="image/*" onchange="handleUpload(event)">
+      <div style="font-size:22px;margin-bottom:4px;">📁</div>
+      <div class="upload-text">Click to upload from your computer</div>
+    </div>
+  </div>
+
+  <!-- IMAGE EDITOR -->
+  <div class="img-editor" id="img-editor">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);">Adjust image</span>
+      <button class="change-img-btn" onclick="clearImage()">Change image</button>
+    </div>
+    <div class="editor-preview-wrap" id="epw">
+      <canvas id="ec"></canvas>
+    </div>
+    <div class="editor-controls">
+      <div class="ctrl-row">
+        <span class="ctrl-label">Aspect</span>
+        <div class="aspect-btns">
+          <button class="aspect-btn active" onclick="setAspect(1,1,this)">■ Square<span class="rec-badge">★ recommended</span></button>
+          <button class="aspect-btn" onclick="setAspect(16,9,this)">▬ 16:9</button>
+          <button class="aspect-btn" onclick="setAspect(9,16,this)">▮ Portrait</button>
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">Zoom</span>
+        <input type="range" id="zoom-slider" min="50" max="200" value="100" oninput="updateZoom(this.value)">
+        <span style="font-size:11px;color:rgba(255,255,255,0.3);min-width:36px;" id="zoom-val">100%</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">Fit</span>
+        <button class="fit-btn" onclick="fitImage()">Fit to canvas</button>
+        <button class="crop-btn" onclick="cropDone()">✓ Use this image</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- STEP 2: PROBLEMS -->
+  <div class="sh"><div class="sn">2</div><div class="st">Choose your problems</div></div>
+  <div class="tabs" id="op-tabs">
+    <button class="tab active" onclick="setOp('addition',this)">➕ Addition</button>
+    <button class="tab" onclick="setOp('subtraction',this)">➖ Subtraction</button>
+    <button class="tab" onclick="setOp('multiplication',this)">✖️ Multiply</button>
+    <button class="tab" onclick="setOp('division',this)">➗ Division</button>
+  </div>
+  <div class="tabs" id="lv-tabs"></div>
+  <div class="neg-note" id="neg-note">⚠️ Levels 4–6 include negative numbers</div>
+  <div class="mode-row">
+    <button class="mode-btn active" onclick="setMode('random',this)">🎲 Random 20</button>
+    <button class="mode-btn" onclick="setMode('manual',this)">✋ Hand pick</button>
+  </div>
+  <div class="problem-pool" id="pp"></div>
+  <div class="sel-status">
+    <div class="sel-ct"><span id="sc">20</span> of 20 selected</div>
+    <button class="rand-btn" onclick="rand20()">🎲 Re-randomize</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- STEP 3: HINTS -->
+  <div class="sh"><div class="sn">3</div><div class="st">Hints <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(optional)</span></div></div>
+  <div class="hint-count-row">
+    <button class="hc-btn active" onclick="setHints(0,this)">No hints</button>
+    <button class="hc-btn" onclick="setHints(1,this)">1 hint</button>
+    <button class="hc-btn" onclick="setHints(2,this)">2 hints</button>
+  </div>
+  <div class="hint-inputs" id="hint-inputs"></div>
+
+  <div class="divider"></div>
+
+  <!-- STEP 4: TIMER -->
+  <div class="sh"><div class="sn">4</div><div class="st">Timer <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(optional)</span></div></div>
+  <div class="timer-toggle-row">
+    <span class="timer-toggle-label">Enable countdown timer</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="timer-toggle" onchange="toggleTimer(this.checked)">
+      <div class="toggle-track"></div>
+      <div class="toggle-thumb"></div>
+    </label>
+  </div>
+  <div class="timer-settings" id="timer-settings">
+    <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:4px;">Time limit</div>
+    <div class="timer-presets">
+      <button class="timer-preset active" onclick="setTimer(5,this)">5 min</button>
+      <button class="timer-preset" onclick="setTimer(10,this)">10 min</button>
+      <button class="timer-preset" onclick="setTimer(15,this)">15 min</button>
+      <button class="timer-preset" onclick="setTimer(20,this)">20 min</button>
+      <button class="timer-preset" onclick="setTimer(30,this)">30 min</button>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.3);">When time runs out the timer turns red and counts up so students and teacher can see how long they went over.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- STEP 5: DIFFERENTIATED -->
+  <div class="sh"><div class="sn">5</div><div class="st">Differentiated versions <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(optional)</span></div></div>
+  <div class="diff-toggle-row">
+    <span class="timer-toggle-label">Generate 3 versions (A, B, C)</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="diff-toggle">
+      <div class="toggle-track"></div>
+      <div class="toggle-thumb"></div>
+    </label>
+  </div>
+  <div class="diff-note">When enabled, clicking Download generates 3 separate HTML files — each with different randomly selected problems from the same bank. Same image, same topic, different problems so students can't copy.</div>
+
+  <div class="divider"></div>
+
+  <!-- STEP 6: TITLE -->
+  <div class="sh"><div class="sn">6</div><div class="st">Name your activity</div></div>
+  <input type="text" class="inp" id="act-title" placeholder="e.g. Spring Addition Practice" maxlength="60" style="margin-bottom:6px;">
+  <div class="val-msg" id="vm"></div>
+  <button class="gen-btn" onclick="generate()">✨ Preview my Reveal Art</button>
+
 </div>
 
-<nav>
-  <a href="index.html" class="nav-back">← Back to home</a>
-  <a href="index.html" class="nav-logo">
-    <span class="nav-logo-dot"></span>
-    Reveal Arts
-  </a>
-  <div style="width:120px;"></div>
-</nav>
-
-<div class="page">
-
-  <!-- LEFT: FORM -->
-  <div class="form-panel">
-
-    <!-- STEP 1: IMAGE -->
-    <div class="section-header">
-      <div class="section-num">1</div>
-      <div class="section-title">Choose your image</div>
-    </div>
-
-    <!-- Selected image display -->
-    <div class="selected-img-wrap" id="selected-img-wrap">
-      <img id="selected-img-preview" src="" alt="">
-      <div class="selected-img-label" id="selected-img-label">Selected image</div>
-      <button class="change-img-btn" onclick="clearSelectedImage()">Change image</button>
-    </div>
-
-    <!-- Search -->
-    <div id="image-picker-ui">
-      <div class="search-row">
-        <input type="text" class="search-input" id="search-input" placeholder="Search photos... (e.g. Easter, space, animals)" />
-        <button class="search-btn" id="search-btn" onclick="searchPhotos()">Search</button>
-      </div>
-      <div class="photo-grid" id="photo-grid">
-        <div class="photo-empty">Search above to find photos, or upload your own below</div>
-      </div>
-
-      <div class="or-row"><div class="or-line"></div><span>or upload your own</span><div class="or-line"></div></div>
-
-      <div class="upload-zone" onclick="document.getElementById('file-input').click()">
-        <input type="file" id="file-input" accept="image/*" onchange="handleUpload(event)">
-        <div class="upload-icon">📁</div>
-        <div class="upload-text">Click to upload an image from your computer</div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- STEP 2: PROBLEMS -->
-    <div class="section-header">
-      <div class="section-num">2</div>
-      <div class="section-title">Choose your problems</div>
-    </div>
-
-    <!-- Operation tabs -->
-    <div class="operation-tabs">
-      <button class="op-tab active" data-op="addition" onclick="setOperation('addition',this)">➕ Addition</button>
-      <button class="op-tab" data-op="subtraction" onclick="setOperation('subtraction',this)">➖ Subtraction</button>
-      <button class="op-tab" data-op="multiplication" onclick="setOperation('multiplication',this)">✖️ Multiplication</button>
-      <button class="op-tab" data-op="division" onclick="setOperation('division',this)">➗ Division</button>
-    </div>
-
-    <!-- Level tabs -->
-    <div class="level-tabs">
-      <button class="level-tab active" data-level="1" onclick="setLevel(1,this)">Level 1<br><span style="font-size:10px;font-weight:400;opacity:0.6;">Single digit</span></button>
-      <button class="level-tab" data-level="2" onclick="setLevel(2,this)">Level 2<br><span style="font-size:10px;font-weight:400;opacity:0.6;">Double digit</span></button>
-      <button class="level-tab" data-level="3" onclick="setLevel(3,this)">Level 3<br><span style="font-size:10px;font-weight:400;opacity:0.6;">Triple digit</span></button>
-    </div>
-
-    <!-- Selection mode -->
-    <div class="selection-mode-row">
-      <button class="mode-btn active" onclick="setMode('random',this)">🎲 Random 20</button>
-      <button class="mode-btn" onclick="setMode('manual',this)">✋ Hand pick</button>
-    </div>
-
-    <!-- Problem pool -->
-    <div class="problem-pool" id="problem-pool"></div>
-
-    <div class="selection-status">
-      <div class="sel-count"><span id="sel-count">20</span> of 20 selected</div>
-      <button class="randomize-btn" onclick="randomize20()">🎲 Re-randomize</button>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- STEP 3: TITLE -->
-    <div class="section-header">
-      <div class="section-num">3</div>
-      <div class="section-title">Name your activity</div>
-    </div>
-    <input type="text" class="title-input" id="activity-title" placeholder="e.g. Spring Addition Practice" maxlength="60">
-
-    <!-- GENERATE -->
-    <div class="validation-msg" id="val-msg">Please select an image and 20 problems before generating.</div>
-    <button class="generate-btn" id="generate-btn" onclick="generate()">
-      ✨ Preview my Reveal Art
-    </button>
-
+<!-- PREVIEW PANEL -->
+<div class="preview-panel">
+  <div class="prev-header">Preview</div>
+  <div class="prev-empty" id="pe">
+    <div class="prev-empty-icon">🎨</div>
+    <div class="prev-empty-text">Your Reveal Art preview will appear here after you click Generate.</div>
   </div>
-
-  <!-- RIGHT: PREVIEW -->
-  <div class="preview-panel">
-    <div class="preview-header">Preview</div>
-    <div class="preview-empty" id="preview-empty">
-      <div class="preview-empty-icon">🎨</div>
-      <div class="preview-empty-text">Your Reveal Art preview will appear here once you click Generate.<br><br>Choose an image and your problems first.</div>
-    </div>
-    <div id="preview-content" style="display:none;flex-direction:column;gap:16px;">
-      <div class="preview-frame">
-        <iframe id="preview-iframe" title="Reveal Art Preview"></iframe>
-      </div>
-      <button class="download-btn" onclick="downloadActivity()">
-        ⬇️ Download Activity
-      </button>
-      <div class="download-note">Downloads as an HTML file · Share via Google Classroom · Works on any device</div>
-    </div>
+  <div id="pc" style="display:none;flex-direction:column;gap:14px;">
+    <div class="prev-frame"><iframe id="pi" title="Preview"></iframe></div>
+    <div class="dl-btns" id="dl-btns"></div>
+    <div class="dl-note">Downloads as HTML · Share via Google Classroom · Works on any Chromebook · Progress auto-saves</div>
   </div>
-
+</div>
 </div>
 
 <script>
-const UNSPLASH_KEY = 'ylROEYPBWlyNF_ugwFmefRyruAWfr6xUHlwISoXiJk4';
+const UK='ylROEYPBWlyNF_ugwFmefRyruAWfr6xUHlwISoXiJk4';
+let selImgUrl=null,croppedDataUrl=null,curOp='addition',curLvl=1,curMode='random';
+let allProbs=[],selProbs=[],hintCount=0,hints=['',''],timerEnabled=false,timerMins=5;
+let generatedHTML='';
+// editor state
+let edAR={w:1,h:1},edZoom=100,edPanX=0,edPanY=0,edImg=null,isDragging=false,dragSX=0,dragSY=0,dragPX=0,dragPY=0;
 
-// ── STATE ────────────────────────────────────────────────────────────────────
-let selectedImageUrl = null;
-let selectedImageLabel = '';
-let currentOp = 'addition';
-let currentLevel = 1;
-let currentMode = 'random';
-let allProblems = [];
-let selectedProblems = [];
-let generatedHTML = '';
+// ── IMAGE SEARCH ────────────────────────────────────────────────────────────
+async function searchPhotos(){
+  const q=document.getElementById('si').value.trim();if(!q)return;
+  const btn=document.getElementById('sb');btn.disabled=true;btn.textContent='Searching...';
+  const grid=document.getElementById('pg');grid.innerHTML='<div class="photo-empty">Loading...</div>';
+  try{
+    const r=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=9&orientation=squarish`,{headers:{Authorization:`Client-ID ${UK}`}});
+    const d=await r.json();grid.innerHTML='';
+    if(!d.results||!d.results.length){grid.innerHTML='<div class="photo-empty">No photos found.</div>';return;}
+    d.results.forEach(p=>{
+      const t=document.createElement('div');t.className='photo-thumb';
+      t.innerHTML=`<img src="${p.urls.small}" loading="lazy"><div class="chk">✓</div>`;
+      t.onclick=()=>loadEditorImage(p.urls.regular,t);
+      grid.appendChild(t);
+    });
+  }catch(e){grid.innerHTML='<div class="photo-empty">Search failed.</div>';}
+  finally{btn.disabled=false;btn.textContent='Search';}
+}
+document.getElementById('si').addEventListener('keydown',e=>{if(e.key==='Enter')searchPhotos();});
+function handleUpload(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>loadEditorImage(e.target.result,null);r.readAsDataURL(f);
+}
+function loadEditorImage(url,thumb){
+  document.querySelectorAll('.photo-thumb').forEach(t=>t.classList.remove('selected'));
+  if(thumb)thumb.classList.add('selected');
+  selImgUrl=url;
+  const i=new Image();i.crossOrigin='anonymous';
+  i.onload=()=>{edImg=i;edZoom=100;edPanX=0;edPanY=0;document.getElementById('zoom-slider').value=100;document.getElementById('zoom-val').textContent='100%';fitImage();showEditor();};
+  i.src=url;
+}
+function clearImage(){
+  selImgUrl=null;croppedDataUrl=null;edImg=null;
+  document.getElementById('img-picker').style.display='block';
+  document.getElementById('img-editor').classList.remove('active');
+  document.querySelectorAll('.photo-thumb').forEach(t=>t.classList.remove('selected'));
+}
+function showEditor(){
+  document.getElementById('img-picker').style.display='none';
+  document.getElementById('img-editor').classList.add('active');
+  renderEditor();
+}
+
+// ── EDITOR ───────────────────────────────────────────────────────────────────
+function setAspect(w,h,btn){
+  edAR={w,h};
+  document.querySelectorAll('.aspect-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  fitImage();
+}
+function fitImage(){
+  if(!edImg)return;
+  const cw=edAR.w,ch=edAR.h;
+  const scaleW=cw/edImg.width,scaleH=ch/edImg.height;
+  edZoom=Math.round(Math.min(scaleW,scaleH)*100);
+  edPanX=0;edPanY=0;
+  document.getElementById('zoom-slider').value=edZoom;
+  document.getElementById('zoom-val').textContent=edZoom+'%';
+  renderEditor();
+}
+function updateZoom(v){
+  edZoom=parseInt(v);
+  document.getElementById('zoom-val').textContent=v+'%';
+  renderEditor();
+}
+function renderEditor(){
+  if(!edImg)return;
+  const ec=document.getElementById('ec');
+  const ratio=edAR.w/edAR.h;
+  const maxW=document.getElementById('epw').clientWidth||300;
+  ec.width=maxW;ec.height=Math.round(maxW/ratio);
+  const ctx=ec.getContext('2d');
+  ctx.clearRect(0,0,ec.width,ec.height);
+  ctx.fillStyle='#111';ctx.fillRect(0,0,ec.width,ec.height);
+  const scale=edZoom/100;
+  const dw=edImg.width*scale*(ec.width/(edAR.w||1));
+  const dh=edImg.height*scale*(ec.height/(edAR.h||1));
+  const dx=(ec.width-dw)/2+edPanX;
+  const dy=(ec.height-dh)/2+edPanY;
+  ctx.drawImage(edImg,dx,dy,dw,dh);
+}
+function cropDone(){
+  const ec=document.getElementById('ec');
+  croppedDataUrl=ec.toDataURL('image/jpeg',0.92);
+  document.getElementById('img-editor').style.border='1.5px solid rgba(200,241,53,0.4)';
+  // show small confirmation
+  const btn=document.querySelector('.crop-btn');
+  const orig=btn.textContent;btn.textContent='✓ Saved!';
+  setTimeout(()=>btn.textContent=orig,1500);
+}
+// pan drag
+const epw=document.getElementById('epw');
+epw.addEventListener('mousedown',e=>{isDragging=true;dragSX=e.clientX;dragSY=e.clientY;dragPX=edPanX;dragPY=edPanY;});
+window.addEventListener('mousemove',e=>{if(!isDragging)return;edPanX=dragPX+(e.clientX-dragSX);edPanY=dragPY+(e.clientY-dragSY);renderEditor();});
+window.addEventListener('mouseup',()=>isDragging=false);
+epw.addEventListener('touchstart',e=>{const t=e.touches[0];isDragging=true;dragSX=t.clientX;dragSY=t.clientY;dragPX=edPanX;dragPY=edPanY;},{passive:true});
+window.addEventListener('touchmove',e=>{if(!isDragging)return;const t=e.touches[0];edPanX=dragPX+(t.clientX-dragSX);edPanY=dragPY+(t.clientY-dragSY);renderEditor();},{passive:true});
+window.addEventListener('touchend',()=>isDragging=false);
 
 // ── PROBLEM BANK ─────────────────────────────────────────────────────────────
-function generateBank(op, level) {
-  const problems = [];
-  const seen = new Set();
-
-  function add(a, b, ans, eq) {
-    const key = eq;
-    if (!seen.has(key)) { seen.add(key); problems.push({eq, ans}); }
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function rneg(a,b){const v=rnd(a,b);return Math.random()<0.45?-v:v;}
+function genBank(op,lv){
+  const probs=[],seen=new Set();
+  const ranges={1:[1,9],2:[10,99],3:[100,999],4:[1,9],5:[10,99],6:[100,999]};
+  const[mn,mx]=ranges[lv];const neg=lv>=4;let att=0;
+  while(probs.length<50&&att<3000){
+    att++;let a,b,ans,eq;
+    if(op==='addition'){a=neg?rneg(mn,mx):rnd(mn,mx);b=neg?rneg(mn,mx):rnd(mn,mx);ans=a+b;eq=`${a} + ${b} = ?`;}
+    else if(op==='subtraction'){a=neg?rneg(mn,mx):rnd(mn,mx);b=neg?rneg(mn,mx):rnd(mn,mx);ans=a-b;eq=`${a} − ${b} = ?`;}
+    else if(op==='multiplication'){const mm=lv===1||lv===4?9:lv===2||lv===5?12:15;a=neg?(Math.random()<0.45?-rnd(1,mm):rnd(1,mm)):rnd(1,mm);b=neg?(Math.random()<0.45?-rnd(1,mm):rnd(1,mm)):rnd(1,mm);ans=a*b;eq=`${a} × ${b} = ?`;}
+    else{const dm=lv===1||lv===4?8:lv===2||lv===5?11:14,qm=lv===1||lv===4?8:lv===2||lv===5?12:15;const dv=rnd(2,dm),qt=rnd(1,qm),dd=dv*qt;const nd=neg&&Math.random()<0.4,nq=neg&&Math.random()<0.4;a=nd?-dd:dd;b=nd?-dv:dv;ans=nq?-qt:qt;eq=`${a} ÷ ${b} = ?`;}
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq,ans});}
   }
-
-  const ranges = {
-    1: [1, 9],
-    2: [10, 99],
-    3: [100, 999],
-  };
-  const [min, max] = ranges[level];
-
-  let attempts = 0;
-  while (problems.length < 50 && attempts < 2000) {
-    attempts++;
-    let a = Math.floor(Math.random() * (max - min + 1)) + min;
-    let b = Math.floor(Math.random() * (max - min + 1)) + min;
-
-    if (op === 'addition') {
-      add(a, b, a + b, `${a} + ${b} = ?`);
-    } else if (op === 'subtraction') {
-      if (a < b) [a, b] = [b, a];
-      add(a, b, a - b, `${a} − ${b} = ?`);
-    } else if (op === 'multiplication') {
-      // keep multiplication manageable
-      const ma = level === 1 ? Math.floor(Math.random()*9)+1 : level === 2 ? Math.floor(Math.random()*12)+1 : Math.floor(Math.random()*15)+1;
-      const mb = level === 1 ? Math.floor(Math.random()*9)+1 : level === 2 ? Math.floor(Math.random()*12)+1 : Math.floor(Math.random()*15)+1;
-      add(ma, mb, ma * mb, `${ma} × ${mb} = ?`);
-    } else if (op === 'division') {
-      const divisor = level === 1 ? Math.floor(Math.random()*8)+2 : level === 2 ? Math.floor(Math.random()*11)+2 : Math.floor(Math.random()*14)+2;
-      const quotient = level === 1 ? Math.floor(Math.random()*8)+1 : level === 2 ? Math.floor(Math.random()*12)+1 : Math.floor(Math.random()*15)+1;
-      const dividend = divisor * quotient;
-      add(dividend, divisor, quotient, `${dividend} ÷ ${divisor} = ?`);
-    }
-  }
-  return problems;
+  return probs;
 }
-
-function renderProblems() {
-  allProblems = generateBank(currentOp, currentLevel);
-  if (currentMode === 'random') {
-    randomize20();
-  } else {
-    renderProblemList(allProblems, selectedProblems.map(p => p.eq));
-  }
-}
-
-function renderProblemList(pool, selectedEqs = []) {
-  const container = document.getElementById('problem-pool');
-  container.innerHTML = '';
-  pool.forEach((p, i) => {
-    const isSel = selectedEqs.includes(p.eq);
-    const row = document.createElement('div');
-    row.className = 'problem-row' + (isSel ? ' selected' : '');
-    row.innerHTML = `<div class="prob-check">${isSel ? '✓' : ''}</div>
-      <div class="prob-eq">${p.eq}</div>
-      <div class="prob-ans">= ${p.ans}</div>`;
-    row.onclick = () => toggleProblem(p, row);
-    container.appendChild(row);
+function renderProblems(){allProbs=genBank(curOp,curLvl);rand20();}
+function renderProbList(pool,selEqs=[]){
+  const c=document.getElementById('pp');c.innerHTML='';
+  pool.forEach(p=>{
+    const sel=selEqs.includes(p.eq);
+    const row=document.createElement('div');row.className='prob-row'+(sel?' selected':'');
+    row.innerHTML=`<div class="prob-chk">${sel?'✓':''}</div><div class="prob-eq">${p.eq}</div><div class="prob-ans">= ${p.ans}</div>`;
+    row.onclick=()=>toggleProb(p,row);c.appendChild(row);
   });
-  updateSelCount();
+  updSC();
+}
+function toggleProb(p,row){
+  if(curMode==='random')return;
+  const idx=selProbs.findIndex(x=>x.eq===p.eq);
+  if(idx>=0){selProbs.splice(idx,1);row.classList.remove('selected');row.querySelector('.prob-chk').textContent='';}
+  else{if(selProbs.length>=20){const old=selProbs.shift();document.querySelectorAll('.prob-row').forEach(r=>{if(r.querySelector('.prob-eq').textContent===old.eq){r.classList.remove('selected');r.querySelector('.prob-chk').textContent='';}});}selProbs.push(p);row.classList.add('selected');row.querySelector('.prob-chk').textContent='✓';}
+  updSC();
+}
+function rand20(){const sh=[...allProbs].sort(()=>Math.random()-0.5);selProbs=sh.slice(0,20);renderProbList(curMode==='random'?selProbs:allProbs,selProbs.map(p=>p.eq));}
+function updSC(){document.getElementById('sc').textContent=selProbs.length;}
+function setOp(op,btn){curOp=op;document.querySelectorAll('#op-tabs .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderProblems();}
+function setMode(m,btn){curMode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(m==='random')rand20();else renderProbList(allProbs,selProbs.map(p=>p.eq));}
+function buildLvTabs(){
+  const c=document.getElementById('lv-tabs');c.innerHTML='';
+  [{n:1,l:'L1',s:'Single'},{n:2,l:'L2',s:'Double'},{n:3,l:'L3',s:'Triple'},{n:4,l:'L4',s:'Single+neg',neg:true},{n:5,l:'L5',s:'Double+neg',neg:true},{n:6,l:'L6',s:'Triple+neg',neg:true}].forEach(lv=>{
+    const b=document.createElement('button');
+    b.className='tab'+(lv.neg?' neg':'')+(lv.n===curLvl?' active':'');
+    b.innerHTML=`${lv.l}<br><span style="font-size:9px;opacity:0.6;">${lv.s}</span>`;
+    b.onclick=()=>{curLvl=lv.n;document.querySelectorAll('#lv-tabs .tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('neg-note').style.display=lv.n>=4?'block':'none';renderProblems();};
+    c.appendChild(b);
+  });
 }
 
-function toggleProblem(p, row) {
-  if (currentMode === 'random') return; // no manual toggle in random mode
-  const idx = selectedProblems.findIndex(x => x.eq === p.eq);
-  if (idx >= 0) {
-    selectedProblems.splice(idx, 1);
-    row.classList.remove('selected');
-    row.querySelector('.prob-check').textContent = '';
-  } else {
-    if (selectedProblems.length >= 20) {
-      // swap oldest
-      const oldest = selectedProblems.shift();
-      // deselect oldest in DOM
-      document.querySelectorAll('.problem-row').forEach(r => {
-        if (r.querySelector('.prob-eq').textContent === oldest.eq) {
-          r.classList.remove('selected');
-          r.querySelector('.prob-check').textContent = '';
-        }
-      });
-    }
-    selectedProblems.push(p);
-    row.classList.add('selected');
-    row.querySelector('.prob-check').textContent = '✓';
-  }
-  updateSelCount();
-}
-
-function randomize20() {
-  const shuffled = [...allProblems].sort(() => Math.random() - 0.5);
-  selectedProblems = shuffled.slice(0, 20);
-  if (currentMode === 'random') {
-    renderProblemList(selectedProblems, selectedProblems.map(p => p.eq));
-  } else {
-    renderProblemList(allProblems, selectedProblems.map(p => p.eq));
-  }
-  updateSelCount();
-}
-
-function updateSelCount() {
-  document.getElementById('sel-count').textContent = selectedProblems.length;
-}
-
-function setOperation(op, btn) {
-  currentOp = op;
-  document.querySelectorAll('.op-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderProblems();
-}
-
-function setLevel(level, btn) {
-  currentLevel = level;
-  document.querySelectorAll('.level-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderProblems();
-}
-
-function setMode(mode, btn) {
-  currentMode = mode;
-  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  if (mode === 'random') {
-    randomize20();
-  } else {
-    renderProblemList(allProblems, selectedProblems.map(p => p.eq));
+// ── HINTS ────────────────────────────────────────────────────────────────────
+function setHints(n,btn){
+  hintCount=n;document.querySelectorAll('.hc-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  const c=document.getElementById('hint-inputs');c.innerHTML='';
+  for(let i=0;i<n;i++){
+    const inp=document.createElement('input');inp.type='text';inp.className='inp';inp.placeholder=`Hint ${i+1} — e.g. "First, subtract 4 from both sides"`;inp.style.marginBottom='6px';
+    inp.oninput=e=>{hints[i]=e.target.value;};inp.value=hints[i]||'';;c.appendChild(inp);
   }
 }
 
-// ── UNSPLASH SEARCH ──────────────────────────────────────────────────────────
-async function searchPhotos() {
-  const query = document.getElementById('search-input').value.trim();
-  if (!query) return;
-  const btn = document.getElementById('search-btn');
-  btn.disabled = true;
-  btn.textContent = 'Searching...';
-  const grid = document.getElementById('photo-grid');
-  grid.innerHTML = '<div class="photo-empty">Loading photos...</div>';
-
-  try {
-    const res = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=9&orientation=squarish`, {
-      headers: { Authorization: `Client-ID ${UNSPLASH_KEY}` }
-    });
-    const data = await res.json();
-    grid.innerHTML = '';
-    if (!data.results || data.results.length === 0) {
-      grid.innerHTML = '<div class="photo-empty">No photos found. Try a different search term.</div>';
-      return;
-    }
-    data.results.forEach(photo => {
-      const thumb = document.createElement('div');
-      thumb.className = 'photo-thumb';
-      thumb.innerHTML = `<img src="${photo.urls.small}" alt="${photo.alt_description || 'photo'}" loading="lazy"><div class="check">✓</div>`;
-      thumb.onclick = () => selectPhoto(photo.urls.regular, photo.alt_description || query, thumb);
-      grid.appendChild(thumb);
-    });
-  } catch(e) {
-    grid.innerHTML = '<div class="photo-empty">Search failed. Please try again.</div>';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Search';
-  }
-}
-
-function selectPhoto(url, label, thumbEl) {
-  document.querySelectorAll('.photo-thumb').forEach(t => t.classList.remove('selected'));
-  thumbEl.classList.add('selected');
-  selectedImageUrl = url;
-  selectedImageLabel = label;
-  showSelectedImage(url, label);
-}
-
-function showSelectedImage(url, label) {
-  document.getElementById('selected-img-preview').src = url;
-  document.getElementById('selected-img-label').textContent = label;
-  document.getElementById('selected-img-wrap').style.display = 'block';
-  document.getElementById('image-picker-ui').style.display = 'none';
-}
-
-function clearSelectedImage() {
-  selectedImageUrl = null;
-  selectedImageLabel = '';
-  document.getElementById('selected-img-wrap').style.display = 'none';
-  document.getElementById('image-picker-ui').style.display = 'block';
-  document.querySelectorAll('.photo-thumb').forEach(t => t.classList.remove('selected'));
-}
-
-// Upload handler
-function handleUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    selectedImageUrl = e.target.result;
-    selectedImageLabel = file.name;
-    showSelectedImage(e.target.result, file.name);
-  };
-  reader.readAsDataURL(file);
-}
-
-// Enter key on search
-document.getElementById('search-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') searchPhotos();
-});
+// ── TIMER ────────────────────────────────────────────────────────────────────
+function toggleTimer(on){timerEnabled=on;document.getElementById('timer-settings').classList.toggle('active',on);}
+function setTimer(m,btn){timerMins=m;document.querySelectorAll('.timer-preset').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 
 // ── GENERATE ─────────────────────────────────────────────────────────────────
-async function generate() {
-  const valMsg = document.getElementById('val-msg');
-  valMsg.style.display = 'none';
-
-  if (!selectedImageUrl) {
-    valMsg.textContent = 'Please choose an image first.';
-    valMsg.style.display = 'block';
-    return;
+async function generate(){
+  const vm=document.getElementById('vm');vm.style.display='none';
+  const imgToUse=croppedDataUrl||selImgUrl;
+  if(!imgToUse){vm.textContent='Please choose and adjust an image first.';vm.style.display='block';return;}
+  if(selProbs.length<20){vm.textContent=`Please select exactly 20 problems. You have ${selProbs.length}.`;vm.style.display='block';return;}
+  const title=document.getElementById('act-title').value.trim()||'Reveal Art Activity';
+  const lo=document.getElementById('lo');lo.classList.add('active');
+  let imgData=imgToUse;
+  if(!imgToUse.startsWith('data:')){
+    try{const r=await fetch(imgToUse);const bl=await r.blob();imgData=await new Promise(res=>{const rd=new FileReader();rd.onload=e=>res(e.target.result);rd.readAsDataURL(bl);});}catch(e){imgData=imgToUse;}
   }
-  if (selectedProblems.length < 20) {
-    valMsg.textContent = `Please select exactly 20 problems. You have ${selectedProblems.length}.`;
-    valMsg.style.display = 'block';
-    return;
-  }
-
-  const title = document.getElementById('activity-title').value.trim() || 'Reveal Art Activity';
-  document.getElementById('loading-overlay').classList.add('active');
-
-  // If it's a URL (not base64), fetch and convert to base64 so it works offline
-  let imageData = selectedImageUrl;
-  if (!selectedImageUrl.startsWith('data:')) {
-    try {
-      const res = await fetch(selectedImageUrl);
-      const blob = await res.blob();
-      imageData = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.readAsDataURL(blob);
-      });
-    } catch(e) {
-      // fallback: use URL directly
-      imageData = selectedImageUrl;
-    }
-  }
-
-  generatedHTML = buildActivityHTML(title, selectedProblems, imageData);
-
-  // Show preview
-  const iframe = document.getElementById('preview-iframe');
-  iframe.srcdoc = generatedHTML;
-
-  document.getElementById('preview-empty').style.display = 'none';
-  const pc = document.getElementById('preview-content');
-  pc.style.display = 'flex';
-
-  document.getElementById('loading-overlay').classList.remove('active');
-
-  // Scroll preview into view on mobile
+  const hintList=hints.slice(0,hintCount).filter(h=>h.trim());
+  generatedHTML=buildHTML(title,selProbs,imgData,hintList,timerEnabled?timerMins:0,edAR);
+  document.getElementById('pi').srcdoc=generatedHTML;
+  document.getElementById('pe').style.display='none';
+  const pc=document.getElementById('pc');pc.style.display='flex';
+  buildDLButtons(title,imgData,hintList);
+  lo.classList.remove('active');
   document.querySelector('.preview-panel').scrollIntoView({behavior:'smooth'});
 }
 
-function downloadActivity() {
-  if (!generatedHTML) return;
-  const title = document.getElementById('activity-title').value.trim() || 'reveal-art-activity';
-  const blob = new Blob([generatedHTML], {type:'text/html'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = title.replace(/[^a-z0-9]/gi,'_').toLowerCase() + '.html';
-  a.click();
+function buildDLButtons(title,imgData,hintList){
+  const c=document.getElementById('dl-btns');c.innerHTML='';
+  const diff=document.getElementById('diff-toggle').checked;
+  if(!diff){
+    const b=document.createElement('button');b.className='dl-btn';b.innerHTML='⬇️ Download Activity';b.onclick=()=>doDownload(generatedHTML,title);c.appendChild(b);
+  }else{
+    ['A','B','C'].forEach(v=>{
+      const b=document.createElement('button');b.className='dl-btn dl-btn-diff';b.innerHTML=`⬇️ Download Version ${v}`;
+      b.onclick=async()=>{
+        document.getElementById('lo-txt').textContent=`Building Version ${v}...`;
+        document.getElementById('lo').classList.add('active');
+        const sh=[...allProbs].sort(()=>Math.random()-0.5).slice(0,20);
+        const html=buildHTML(`${title} — Version ${v}`,sh,imgData,hintList,timerEnabled?timerMins:0,edAR);
+        doDownload(html,`${title}_Version_${v}`);
+        document.getElementById('lo').classList.remove('active');
+      };
+      c.appendChild(b);
+    });
+  }
+}
+
+function doDownload(html,title){
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=title.replace(/[^a-z0-9]/gi,'_').toLowerCase()+'.html';a.click();
 }
 
 // ── BUILD ACTIVITY HTML ───────────────────────────────────────────────────────
-function buildActivityHTML(title, problems, imageData) {
-  const GRID_N = 20;
-  const anchors = [
-    [10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],
-    [7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15]
-  ];
+function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar){
+  const anchors=[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15]];
+  const escapedImg=imageData.replace(/\\/g,'\\\\').replace(/`/g,'\\`');
+  const IW=500,IH=Math.round(500*(ar.h/ar.w));
+  const hasTimer=timerMinsVal>0;
+  const hasHints=hintList.length>0;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>${title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff;padding:12px;}
-.header{text-align:center;margin-bottom:10px;}
-.title{font-family:'Fredoka One',cursive;font-size:clamp(18px,3vw,28px);color:#c8f135;margin-bottom:3px;}
-.subtitle{font-size:11px;color:rgba(255,255,255,0.35);}
-.rasta{display:flex;height:3px;border-radius:99px;overflow:hidden;max-width:800px;margin:7px auto;}
+body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff;padding:10px;}
+.header{text-align:center;margin-bottom:8px;}
+.act-title{font-family:'Fredoka One',cursive;font-size:clamp(16px,3vw,26px);color:#c8f135;}
+.subtitle{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;}
+.rasta{display:flex;height:3px;border-radius:99px;overflow:hidden;max-width:800px;margin:6px auto;}
 .rasta div{flex:1;}
-.rasta div:nth-child(1){background:#e53935;}
-.rasta div:nth-child(2){background:#FFD600;}
-.rasta div:nth-child(3){background:#43a047;}
-.layout{display:grid;grid-template-columns:190px 1fr 190px;gap:10px;max-width:900px;margin:0 auto;align-items:start;}
-.prob-col{display:flex;flex-direction:column;gap:5px;}
-.col-label{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:2px;}
-.card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 8px;display:flex;align-items:center;gap:5px;transition:all .2s;}
+.rasta div:nth-child(1){background:#e53935;}.rasta div:nth-child(2){background:#FFD600;}.rasta div:nth-child(3){background:#43a047;}
+.top-bar{display:flex;align-items:center;justify-content:center;gap:16px;max-width:900px;margin:0 auto 8px;flex-wrap:wrap;}
+.timer-display{font-family:'Fredoka One',cursive;font-size:20px;color:#FFD600;letter-spacing:1px;min-width:80px;text-align:center;}
+.timer-display.overtime{color:#e53935;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.hint-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.hint-btn{background:rgba(255,214,10,0.1);border:1px solid rgba(255,214,10,0.3);color:#FFD600;border-radius:8px;padding:5px 14px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+.hint-btn:hover{background:rgba(255,214,10,0.2);}
+.hint-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.hint-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center;}
+.hint-modal.active{display:flex;}
+.hint-box{background:#1a1a2e;border:1px solid rgba(255,214,10,0.3);border-radius:16px;padding:28px;max-width:380px;text-align:center;}
+.hint-box h3{font-family:'Fredoka One',cursive;color:#FFD600;margin-bottom:10px;font-size:20px;}
+.hint-box p{font-size:14px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:18px;}
+.hint-close{background:var(--lime,#c8f135);color:#0a0a0f;border:none;border-radius:8px;padding:8px 24px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;}
+.layout{display:grid;grid-template-columns:185px 1fr 185px;gap:8px;max-width:900px;margin:0 auto;align-items:start;}
+.prob-col{display:flex;flex-direction:column;gap:4px;}
+.col-label{font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.18);margin-bottom:2px;}
+.card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:5px 7px;display:flex;align-items:center;gap:4px;transition:all .2s;}
 .card.correct{background:rgba(67,160,71,0.18);border-color:rgba(67,160,71,0.55);}
 .card.wrong{animation:shake .35s ease;background:rgba(229,57,53,0.2);border-color:rgba(229,57,53,0.7);}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.num{font-size:9px;font-weight:800;color:rgba(255,255,255,0.2);min-width:12px;}
+.num{font-size:8px;font-weight:800;color:rgba(255,255,255,0.18);min-width:10px;}
 .card.correct .num{color:#81c784;}
-.eq{font-size:11px;font-weight:700;flex:1;}
+.eq{font-size:10px;font-weight:700;flex:1;}
 .card.correct .eq{color:#c8e6c9;}
-.xlbl{font-size:9px;color:rgba(255,255,255,0.3);}
-.ans{width:32px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:2px 3px;font-size:11px;font-weight:800;font-family:'Nunito',sans-serif;color:#fff;text-align:center;outline:none;}
+.xlbl{font-size:8px;color:rgba(255,255,255,0.25);}
+.ans{width:36px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:2px 3px;font-size:10px;font-weight:800;font-family:'Nunito',sans-serif;color:#fff;text-align:center;outline:none;}
 .ans:focus{border-color:#FFD600;}
 .card.correct .ans{background:rgba(67,160,71,0.3);border-color:#43a047;color:#c8e6c9;}
-.go{font-size:9px;font-family:'Nunito',sans-serif;font-weight:800;padding:2px 6px;border:1px solid rgba(255,255,255,0.15);border-radius:5px;background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;}
+.go{font-size:8px;font-family:'Nunito',sans-serif;font-weight:800;padding:2px 5px;border:1px solid rgba(255,255,255,0.12);border-radius:4px;background:transparent;color:rgba(255,255,255,0.35);cursor:pointer;}
 .card.correct .go{display:none;}
-.tick{display:none;color:#43a047;font-size:12px;font-weight:900;}
+.tick{display:none;color:#43a047;font-size:11px;font-weight:900;}
 .card.correct .tick{display:block;}
-.center-col{display:flex;flex-direction:column;gap:8px;}
-.canvas-outer{position:relative;border-radius:10px;overflow:hidden;border:1.5px solid rgba(255,214,0,0.15);}
+.center-col{display:flex;flex-direction:column;gap:7px;}
+.canvas-outer{position:relative;border-radius:10px;overflow:hidden;border:1.5px solid rgba(255,214,0,0.12);}
 #rc{display:block;width:100%;}
-.prog-row{display:flex;flex-direction:column;gap:3px;}
+.prog-row{display:flex;flex-direction:column;gap:2px;}
 .prog-top{display:flex;justify-content:space-between;}
-.prog-text{font-size:10px;color:rgba(255,255,255,0.35);}
-.prog-pct{font-size:11px;font-weight:800;color:#FFD600;}
-.prog-track{background:rgba(255,255,255,0.08);border-radius:99px;height:4px;overflow:hidden;}
+.prog-text{font-size:9px;color:rgba(255,255,255,0.3);}
+.prog-pct{font-size:10px;font-weight:800;color:#FFD600;}
+.prog-track{background:rgba(255,255,255,0.07);border-radius:99px;height:4px;overflow:hidden;}
 .prog-fill{height:100%;background:linear-gradient(90deg,#e53935,#FFD600,#43a047);border-radius:99px;width:0%;transition:width .5s ease;}
-.reset-btn{font-family:'Fredoka One',cursive;font-size:11px;padding:4px 14px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;background:transparent;color:rgba(255,255,255,0.35);cursor:pointer;align-self:center;}
-.brand{text-align:center;font-size:9px;color:rgba(255,255,255,0.15);margin-top:4px;font-style:italic;}
-@media(max-width:640px){.layout{grid-template-columns:1fr;}.prob-col{flex-direction:row;flex-wrap:wrap;}.card{width:calc(50% - 3px);}}
+.btm-row{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;}
+.reset-btn{font-family:'Fredoka One',cursive;font-size:10px;padding:3px 12px;border:1px solid rgba(255,255,255,0.1);border-radius:5px;background:transparent;color:rgba(255,255,255,0.3);cursor:pointer;}
+.saved-badge{font-size:9px;color:rgba(67,160,71,0.6);display:none;align-items:center;gap:3px;}
+.saved-badge.vis{display:flex;}
+.brand{text-align:center;font-size:8px;color:rgba(255,255,255,0.12);margin-top:3px;font-style:italic;}
+@media(max-width:600px){.layout{grid-template-columns:1fr;}.prob-col{flex-direction:row;flex-wrap:wrap;}.card{width:calc(50% - 2px);}}
 </style>
 </head>
 <body>
 <div class="header">
-  <div class="title">${title}</div>
-  <div class="subtitle">Solve each equation · Correct answers reveal the image · Wrong answers turn red</div>
+  <div class="act-title">${title}</div>
+  <div class="subtitle">Solve each problem · Correct answers reveal the image · Progress auto-saves</div>
 </div>
 <div class="rasta"><div></div><div></div><div></div></div>
+${hasTimer||hasHints?`<div class="top-bar">${hasTimer?`<div class="timer-display" id="td">⏱ 00:00</div>`:''}${hasHints?`<div class="hint-bar">${hintList.map((h,i)=>`<button class="hint-btn" id="hb${i}" onclick="useHint(${i})">💡 Hint ${i+1}</button>`).join('')}</div>`:''}</div>`:''}
+${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3>💡 Hint</h3><p id="hmt"></p><button class="hint-close" onclick="closeHint()">Got it!</button></div></div>`:''}
 <div class="layout">
   <div class="prob-col" id="lc"><div class="col-label">Problems 1–10</div></div>
   <div class="center-col">
-    <div class="canvas-outer"><canvas id="rc" width="500" height="500"></canvas></div>
-    <div class="prog-row">
-      <div class="prog-top"><span class="prog-text" id="pt">0 of 20 solved</span><span class="prog-pct" id="pp">0%</span></div>
-      <div class="prog-track"><div class="prog-fill" id="pf"></div></div>
-    </div>
-    <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
+    <div class="canvas-outer"><canvas id="rc" width="${IW}" height="${IH}"></canvas></div>
+    <div class="prog-row"><div class="prog-top"><span class="prog-text" id="pt">0 of 20 solved</span><span class="prog-pct" id="pp">0%</span></div><div class="prog-track"><div class="prog-fill" id="pf"></div></div></div>
+    <div class="btm-row"><button class="reset-btn" onclick="resetAll()">↺ Reset</button><div class="saved-badge" id="sb2">✓ Saved</div></div>
     <div class="brand">© The Real Sum Shady · Reveal Arts</div>
   </div>
   <div class="prob-col" id="rc2"><div class="col-label">Problems 11–20</div></div>
@@ -946,21 +613,20 @@ body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff
 <script>
 const PROBS=${JSON.stringify(problems)};
 const ANCHORS=${JSON.stringify(anchors)};
-const GN=20,IW=500,IH=500;
-const TW=IW/GN,TH=IH/GN;
+const HINTS=${JSON.stringify(hintList)};
+const TIMER_MINS=${timerMinsVal};
+const SAVE_KEY='ra_'+encodeURIComponent('${title.replace(/'/g,"\'")}');
+const GN=20,IW=${IW},IH=${IH},TW=IW/GN,TH=IH/GN;
 
 function buildAssign(){
   const a=Array.from({length:GN},()=>new Array(GN).fill(-1));
-  const rem=new Set();
-  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)rem.add(r*GN+c);
+  const rem=new Set();for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)rem.add(r*GN+c);
   const pp=(GN*GN)/ANCHORS.length;
   for(let z=0;z<ANCHORS.length;z++){
     const[ar,ac]=ANCHORS[z];
     const s=[...rem].map(i=>{const r=Math.floor(i/GN),c=i%GN;return{i,r,c,d:Math.sqrt((r-ar)**2+(c-ac)**2)};}).sort((a,b)=>a.d-b.d);
-    let n=0;
-    for(const{i,r,c}of s){if(n>=pp)break;a[r][c]=z;rem.delete(i);n++;}
-  }
-  return a;
+    let n=0;for(const{i,r,c}of s){if(n>=pp)break;a[r][c]=z;rem.delete(i);n++;}
+  }return a;
 }
 const assign=buildAssign();
 const rev=Array.from({length:GN},()=>new Array(GN).fill(false));
@@ -968,83 +634,88 @@ const solved=new Set();
 const canvas=document.getElementById('rc');
 const ctx=canvas.getContext('2d');
 const img=new Image();
-img.src='${imageData.replace(/'/g,"\\'")}';
-img.onload=()=>{drawAll();};
-img.onerror=()=>{drawAll();};
+img.src=\`${escapedImg}\`;
+img.onload=()=>{loadProgress();drawAll();};
+img.onerror=()=>{loadProgress();drawAll();};
+
+// TIMER
+let timerInterval=null,elapsed=0,overtime=false;
+if(TIMER_MINS>0){
+  const td=document.getElementById('td');
+  const total=TIMER_MINS*60;
+  function fmtTime(s){const m=Math.floor(Math.abs(s)/60),sec=Math.abs(s)%60;return(m<10?'0'+m:m)+':'+(sec<10?'0'+sec:sec);}
+  timerInterval=setInterval(()=>{
+    elapsed++;
+    const rem=total-elapsed;
+    if(rem>=0){td.textContent='⏱ '+fmtTime(rem);}
+    else{if(!overtime){overtime=true;td.classList.add('overtime');}td.textContent='⚠ +'+fmtTime(elapsed-total);}
+  },1000);
+}
+
+// HINTS
+function useHint(i){
+  const modal=document.getElementById('hm');
+  document.getElementById('hmt').textContent=HINTS[i];
+  modal.classList.add('active');
+  const btn=document.getElementById('hb'+i);
+  if(btn){btn.disabled=true;btn.textContent='💡 Hint '+(i+1)+' (used)';}
+}
+function closeHint(){document.getElementById('hm').classList.remove('active');}
+
+// SAVE/LOAD
+function saveProgress(){
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify({solved:[...solved],rev:rev.map(r=>[...r])}));const b=document.getElementById('sb2');b.classList.add('vis');setTimeout(()=>b.classList.remove('vis'),2000);}catch(e){}
+}
+function loadProgress(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;
+    const d=JSON.parse(raw);
+    if(d.solved)d.solved.forEach(i=>{solved.add(i);const card=document.getElementById('card-'+i);if(card){card.classList.add('correct');const inp=card.querySelector('input');if(inp){inp.value=PROBS[i].ans;inp.disabled=true;}}});
+    if(d.rev)d.rev.forEach((row,r)=>row.forEach((v,c)=>{rev[r][c]=v;}));
+    updateProg();drawAll();
+  }catch(e){}
+}
 
 function drawCover(){
   for(let r=0;r<GN;r++)for(let c=0;c<GN;c++){
     if(!rev[r][c]){ctx.fillStyle='#232323';ctx.fillRect(c*TW,r*TH,TW,TH);ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;ctx.strokeRect(c*TW,r*TH,TW,TH);}
   }
-  ctx.save();
-  ctx.beginPath();
+  ctx.save();ctx.beginPath();
   for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)if(!rev[r][c])ctx.rect(c*TW,r*TH,TW,TH);
-  ctx.clip();
-  ctx.translate(IW/2,IH/2);ctx.rotate(-0.08);
-  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.clip();ctx.translate(IW/2,IH/2);ctx.rotate(-0.08);ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.font='900 '+Math.floor(IW*0.11)+'px Fredoka One,cursive';
   ctx.fillStyle='rgba(255,255,255,0.2)';ctx.fillText('The Real',0,-Math.floor(IW*0.065));
   ctx.fillStyle='rgba(255,214,0,0.16)';ctx.fillText('Sum Shady',0,Math.floor(IW*0.065));
   ctx.restore();
 }
 function drawAll(){ctx.clearRect(0,0,IW,IH);if(img.complete&&img.naturalWidth>0)ctx.drawImage(img,0,0,IW,IH);drawCover();}
-
 function revealZone(z){
-  const tiles=[];
-  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)if(assign[r][c]===z&&!rev[r][c])tiles.push([r,c]);
+  const tiles=[];for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)if(assign[r][c]===z&&!rev[r][c])tiles.push([r,c]);
   for(let i=tiles.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[tiles[i],tiles[j]]=[tiles[j],tiles[i]];}
-  tiles.forEach(([r,c],i)=>setTimeout(()=>{rev[r][c]=true;ctx.clearRect(c*TW,r*TH,TW,TH);if(img.complete&&img.naturalWidth>0)ctx.drawImage(img,c*TW,r*TH,TW,TH,c*TW,r*TH,TW,TH);drawCover();},i*35));
+  tiles.forEach(([r,c],i)=>setTimeout(()=>{rev[r][c]=true;ctx.clearRect(c*TW,r*TH,TW,TH);if(img.complete&&img.naturalWidth>0)ctx.drawImage(img,c*TW,r*TH,TW,TH,c*TW,r*TH,TW,TH);drawCover();if(i===tiles.length-1)saveProgress();},i*35));
 }
-
 function buildUI(){
   const lc=document.getElementById('lc'),rc=document.getElementById('rc2');
-  while(lc.children.length>1)lc.removeChild(lc.lastChild);
-  while(rc.children.length>1)rc.removeChild(rc.lastChild);
-  PROBS.forEach((p,i)=>{
-    const col=i<10?lc:rc;
-    const card=document.createElement('div');
-    card.className='card';card.id='card-'+i;
-    card.innerHTML='<span class="num">'+(i+1)+'</span><span class="eq">'+p.eq+'</span><span class="xlbl">x=</span><input class="ans" type="number" id="inp-'+i+'" placeholder="?"><button class="go" onclick="chk('+i+')">Go</button><span class="tick">✓</span>';
-    card.querySelector('input').addEventListener('keydown',e=>{if(e.key==='Enter')chk(i);});
-    col.appendChild(card);
-  });
+  while(lc.children.length>1)lc.removeChild(lc.lastChild);while(rc.children.length>1)rc.removeChild(rc.lastChild);
+  PROBS.forEach((p,i)=>{const col=i<10?lc:rc;const card=document.createElement('div');card.className='card';card.id='card-'+i;
+    card.innerHTML='<span class="num">'+(i+1)+'</span><span class="eq">'+p.eq+'</span><span class="xlbl">=</span><input class="ans" type="number" id="inp-'+i+'" placeholder="?"><button class="go" onclick="chk('+i+')">Go</button><span class="tick">✓</span>';
+    card.querySelector('input').addEventListener('keydown',e=>{if(e.key==='Enter')chk(i);});col.appendChild(card);});
 }
-
 function chk(i){
-  const inp=document.getElementById('inp-'+i);
-  const card=document.getElementById('card-'+i);
-  const val=parseInt(inp.value);
-  if(val===PROBS[i].ans){
-    solved.add(i);card.classList.add('correct');card.classList.remove('wrong');inp.disabled=true;
-    revealZone(i);updateProg();
-  }else{
-    card.classList.remove('wrong');void card.offsetWidth;card.classList.add('wrong');
-    inp.value='';inp.placeholder='✗';
-    setTimeout(()=>{card.classList.remove('wrong');inp.placeholder='?';},900);
-  }
+  const inp=document.getElementById('inp-'+i),card=document.getElementById('card-'+i),val=parseInt(inp.value);
+  if(val===PROBS[i].ans){solved.add(i);card.classList.add('correct');card.classList.remove('wrong');inp.disabled=true;revealZone(i);updateProg();}
+  else{card.classList.remove('wrong');void card.offsetWidth;card.classList.add('wrong');inp.value='';inp.placeholder='✗';setTimeout(()=>{card.classList.remove('wrong');inp.placeholder='?';},900);}
 }
-
-function updateProg(){
-  const n=solved.size,pct=Math.round(n/20*100);
-  document.getElementById('pt').textContent=n+' of 20 solved';
-  document.getElementById('pp').textContent=pct+'%';
-  document.getElementById('pf').style.width=pct+'%';
-}
-
-function resetAll(){
-  solved.clear();
-  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)rev[r][c]=false;
-  buildUI();updateProg();drawAll();
-}
-
+function updateProg(){const n=solved.size,pct=Math.round(n/20*100);document.getElementById('pt').textContent=n+' of 20 solved';document.getElementById('pp').textContent=pct+'%';document.getElementById('pf').style.width=pct+'%';}
+function resetAll(){if(!confirm('Reset all progress?'))return;solved.clear();for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)rev[r][c]=false;try{localStorage.removeItem(SAVE_KEY);}catch(e){}buildUI();updateProg();drawAll();}
 buildUI();drawAll();
 <\/script>
 </body>
 </html>`;
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────────────
-renderProblems();
+// ── INIT ──────────────────────────────────────────────────────────────────────
+buildLvTabs();renderProblems();
 </script>
 </body>
 </html>
