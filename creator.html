@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create — Reveal Arts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0a0a0f;
+  --white: #fafaf8;
+  --lime: #c8f135;
+  --coral: #ff5c3a;
+  --sky: #4fc3f7;
+  --violet: #9b5de5;
+  --gold: #ffd60a;
+  --teal: #00f5d4;
+  --panel: #0f0f18;
+  --border: rgba(255,255,255,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;
+  padding:14px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,10,15,0.95);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:8px;}
+.nav-logo-dot{width:7px;height:7px;background:var(--lime);border-radius:50%;display:inline-block;}
+.nav-back{font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s;}
+.nav-back:hover{color:var(--white);}
+
+/* LAYOUT */
+.page{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 57px);}
+
+/* LEFT PANEL - FORM */
+.form-panel{
+  padding:32px;
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  max-height:calc(100vh - 57px);
+}
+.form-panel::-webkit-scrollbar{width:4px;}
+.form-panel::-webkit-scrollbar-track{background:transparent;}
+.form-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px;}
+
+/* RIGHT PANEL - PREVIEW */
+.preview-panel{
+  padding:32px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+  overflow-y:auto;
+  max-height:calc(100vh - 57px);
+  background:#08080f;
+}
+
+/* SECTION HEADERS */
+.section-header{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:16px;
+}
+.section-num{
+  width:24px;height:24px;
+  background:var(--lime);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;
+  font-weight:800;font-size:11px;
+  color:var(--ink);
+  flex-shrink:0;
+}
+.section-title{
+  font-family:'Syne',sans-serif;
+  font-weight:700;font-size:15px;
+  color:var(--white);
+}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:24px 0;}
+
+/* IMAGE PICKER */
+.search-row{display:flex;gap:8px;margin-bottom:12px;}
+.search-input{
+  flex:1;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 14px;
+  font-size:13px;
+  font-family:'DM Sans',sans-serif;
+  color:var(--white);
+  outline:none;
+  transition:border-color .2s;
+}
+.search-input:focus{border-color:rgba(200,241,53,0.4);}
+.search-input::placeholder{color:rgba(255,255,255,0.25);}
+.search-btn{
+  background:var(--lime);
+  color:var(--ink);
+  border:none;
+  border-radius:10px;
+  padding:10px 16px;
+  font-family:'Syne',sans-serif;
+  font-weight:700;font-size:13px;
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  white-space:nowrap;
+}
+.search-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,241,53,0.3);}
+.search-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+.photo-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+  margin-bottom:8px;
+}
+.photo-thumb{
+  aspect-ratio:1;
+  border-radius:8px;
+  overflow:hidden;
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:border-color .2s,transform .15s;
+  position:relative;
+}
+.photo-thumb:hover{transform:scale(1.03);}
+.photo-thumb.selected{border-color:var(--lime);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-thumb .check{
+  position:absolute;top:4px;right:4px;
+  width:20px;height:20px;
+  background:var(--lime);
+  border-radius:50%;
+  display:none;
+  align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;color:var(--ink);
+}
+.photo-thumb.selected .check{display:flex;}
+
+.photo-empty{
+  grid-column:1/-1;
+  text-align:center;
+  padding:32px;
+  color:rgba(255,255,255,0.25);
+  font-size:13px;
+}
+
+/* OR DIVIDER */
+.or-row{
+  display:flex;align-items:center;gap:12px;
+  margin:12px 0;
+  color:rgba(255,255,255,0.25);
+  font-size:12px;
+}
+.or-line{flex:1;height:1px;background:var(--border);}
+
+/* UPLOAD */
+.upload-zone{
+  border:1.5px dashed rgba(255,255,255,0.15);
+  border-radius:12px;
+  padding:20px;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color .2s,background .2s;
+}
+.upload-zone:hover{border-color:rgba(200,241,53,0.4);background:rgba(200,241,53,0.03);}
+.upload-zone input{display:none;}
+.upload-icon{font-size:24px;margin-bottom:6px;}
+.upload-text{font-size:12px;color:rgba(255,255,255,0.35);}
+.upload-preview{
+  width:100%;aspect-ratio:16/9;
+  object-fit:cover;
+  border-radius:8px;
+  margin-top:8px;
+  display:none;
+}
+
+/* SELECTED IMAGE DISPLAY */
+.selected-img-wrap{
+  position:relative;
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:8px;
+  display:none;
+}
+.selected-img-wrap img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
+.selected-img-label{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:8px 12px;
+  background:linear-gradient(transparent,rgba(0,0,0,0.7));
+  font-size:11px;color:rgba(255,255,255,0.7);
+}
+.change-img-btn{
+  position:absolute;top:8px;right:8px;
+  background:rgba(0,0,0,0.6);
+  border:1px solid rgba(255,255,255,0.2);
+  color:var(--white);
+  border-radius:6px;
+  padding:4px 10px;
+  font-size:11px;font-weight:600;
+  cursor:pointer;
+  transition:background .2s;
+}
+.change-img-btn:hover{background:rgba(0,0,0,0.85);}
+
+/* PROBLEM BANK */
+.operation-tabs{
+  display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;
+}
+.op-tab{
+  padding:7px 14px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:rgba(255,255,255,0.45);
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+}
+.op-tab:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.op-tab.active{background:var(--lime);border-color:var(--lime);color:var(--ink);}
+
+.level-tabs{
+  display:flex;gap:6px;margin-bottom:14px;
+}
+.level-tab{
+  flex:1;padding:8px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:rgba(255,255,255,0.45);
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+  text-align:center;
+}
+.level-tab:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.level-tab.active{background:rgba(159,93,229,0.2);border-color:var(--violet);color:var(--white);}
+
+/* SELECTION MODE */
+.selection-mode-row{
+  display:flex;gap:8px;margin-bottom:14px;
+}
+.mode-btn{
+  flex:1;padding:9px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:rgba(255,255,255,0.45);
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+  text-align:center;
+}
+.mode-btn.active{background:rgba(79,195,247,0.15);border-color:var(--sky);color:var(--white);}
+.mode-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+
+/* PROBLEM LIST */
+.problem-pool{
+  display:flex;flex-direction:column;gap:4px;
+  max-height:280px;
+  overflow-y:auto;
+  padding-right:4px;
+}
+.problem-pool::-webkit-scrollbar{width:3px;}
+.problem-pool::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px;}
+
+.problem-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid transparent;
+  cursor:pointer;
+  transition:background .15s,border-color .15s;
+  user-select:none;
+}
+.problem-row:hover{background:rgba(255,255,255,0.04);}
+.problem-row.selected{background:rgba(200,241,53,0.06);border-color:rgba(200,241,53,0.2);}
+.prob-check{
+  width:16px;height:16px;
+  border:1.5px solid rgba(255,255,255,0.2);
+  border-radius:4px;
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;
+  transition:all .15s;
+}
+.problem-row.selected .prob-check{background:var(--lime);border-color:var(--lime);color:var(--ink);font-weight:900;}
+.prob-eq{font-size:13px;color:rgba(255,255,255,0.8);font-weight:500;}
+.prob-ans{font-size:11px;color:rgba(255,255,255,0.25);margin-left:auto;}
+
+.selection-status{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:10px;
+  font-size:12px;
+}
+.sel-count{color:rgba(255,255,255,0.4);}
+.sel-count span{color:var(--lime);font-weight:700;}
+.randomize-btn{
+  background:transparent;
+  border:1px solid var(--border);
+  color:rgba(255,255,255,0.5);
+  border-radius:6px;
+  padding:4px 10px;
+  font-size:11px;font-weight:600;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  transition:all .2s;
+}
+.randomize-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--white);}
+
+/* ACTIVITY TITLE */
+.title-input{
+  width:100%;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 14px;
+  font-size:13px;
+  font-family:'DM Sans',sans-serif;
+  color:var(--white);
+  outline:none;
+  transition:border-color .2s;
+  margin-bottom:8px;
+}
+.title-input:focus{border-color:rgba(200,241,53,0.4);}
+.title-input::placeholder{color:rgba(255,255,255,0.25);}
+
+/* GENERATE BUTTON */
+.generate-btn{
+  width:100%;
+  background:var(--lime);
+  color:var(--ink);
+  border:none;
+  border-radius:12px;
+  padding:16px;
+  font-family:'Syne',sans-serif;
+  font-weight:800;font-size:15px;
+  cursor:pointer;
+  transition:transform .2s,box-shadow .2s,opacity .2s;
+  margin-top:8px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.generate-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.35);}
+.generate-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+
+/* VALIDATION MSG */
+.validation-msg{
+  font-size:12px;
+  color:var(--coral);
+  margin-top:8px;
+  display:none;
+}
+
+/* PREVIEW PANEL */
+.preview-header{
+  font-family:'Syne',sans-serif;
+  font-weight:700;font-size:14px;
+  color:rgba(255,255,255,0.4);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.preview-empty{
+  flex:1;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:12px;
+  color:rgba(255,255,255,0.2);
+  text-align:center;
+  padding:40px;
+}
+.preview-empty-icon{font-size:48px;opacity:0.4;}
+.preview-empty-text{font-size:14px;line-height:1.6;}
+
+.preview-frame{
+  background:#111;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  flex-shrink:0;
+}
+.preview-frame iframe{
+  width:100%;
+  height:500px;
+  border:none;
+  display:block;
+}
+
+.download-btn{
+  width:100%;
+  background:var(--lime);
+  color:var(--ink);
+  border:none;
+  border-radius:12px;
+  padding:14px;
+  font-family:'Syne',sans-serif;
+  font-weight:800;font-size:14px;
+  cursor:pointer;
+  transition:transform .2s,box-shadow .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.download-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.35);}
+.download-note{font-size:11px;color:rgba(255,255,255,0.25);text-align:center;}
+
+/* LOADING SPINNER */
+.spinner{
+  width:18px;height:18px;
+  border:2px solid rgba(10,10,15,0.3);
+  border-top-color:var(--ink);
+  border-radius:50%;
+  animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* LOADING OVERLAY */
+.loading-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(10,10,15,0.85);
+  z-index:200;
+  align-items:center;justify-content:center;
+  flex-direction:column;
+  gap:16px;
+}
+.loading-overlay.active{display:flex;}
+.loading-spinner-big{
+  width:48px;height:48px;
+  border:3px solid rgba(200,241,53,0.2);
+  border-top-color:var(--lime);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+.loading-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--white);}
+.loading-sub{font-size:13px;color:rgba(255,255,255,0.4);}
+
+@media(max-width:800px){
+  .page{grid-template-columns:1fr;}
+  .form-panel{max-height:none;border-right:none;border-bottom:1px solid var(--border);}
+  .preview-panel{max-height:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner-big"></div>
+  <div class="loading-text">Building your Reveal Art...</div>
+  <div class="loading-sub">This takes about 3 seconds</div>
+</div>
+
+<nav>
+  <a href="index.html" class="nav-back">← Back to home</a>
+  <a href="index.html" class="nav-logo">
+    <span class="nav-logo-dot"></span>
+    Reveal Arts
+  </a>
+  <div style="width:120px;"></div>
+</nav>
+
+<div class="page">
+
+  <!-- LEFT: FORM -->
+  <div class="form-panel">
+
+    <!-- STEP 1: IMAGE -->
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">Choose your image</div>
+    </div>
+
+    <!-- Selected image display -->
+    <div class="selected-img-wrap" id="selected-img-wrap">
+      <img id="selected-img-preview" src="" alt="">
+      <div class="selected-img-label" id="selected-img-label">Selected image</div>
+      <button class="change-img-btn" onclick="clearSelectedImage()">Change image</button>
+    </div>
+
+    <!-- Search -->
+    <div id="image-picker-ui">
+      <div class="search-row">
+        <input type="text" class="search-input" id="search-input" placeholder="Search photos... (e.g. Easter, space, animals)" />
+        <button class="search-btn" id="search-btn" onclick="searchPhotos()">Search</button>
+      </div>
+      <div class="photo-grid" id="photo-grid">
+        <div class="photo-empty">Search above to find photos, or upload your own below</div>
+      </div>
+
+      <div class="or-row"><div class="or-line"></div><span>or upload your own</span><div class="or-line"></div></div>
+
+      <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept="image/*" onchange="handleUpload(event)">
+        <div class="upload-icon">📁</div>
+        <div class="upload-text">Click to upload an image from your computer</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- STEP 2: PROBLEMS -->
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title">Choose your problems</div>
+    </div>
+
+    <!-- Operation tabs -->
+    <div class="operation-tabs">
+      <button class="op-tab active" data-op="addition" onclick="setOperation('addition',this)">➕ Addition</button>
+      <button class="op-tab" data-op="subtraction" onclick="setOperation('subtraction',this)">➖ Subtraction</button>
+      <button class="op-tab" data-op="multiplication" onclick="setOperation('multiplication',this)">✖️ Multiplication</button>
+      <button class="op-tab" data-op="division" onclick="setOperation('division',this)">➗ Division</button>
+    </div>
+
+    <!-- Level tabs -->
+    <div class="level-tabs">
+      <button class="level-tab active" data-level="1" onclick="setLevel(1,this)">Level 1<br><span style="font-size:10px;font-weight:400;opacity:0.6;">Single digit</span></button>
+      <button class="level-tab" data-level="2" onclick="setLevel(2,this)">Level 2<br><span style="font-size:10px;font-weight:400;opacity:0.6;">Double digit</span></button>
+      <button class="level-tab" data-level="3" onclick="setLevel(3,this)">Level 3<br><span style="font-size:10px;font-weight:400;opacity:0.6;">Triple digit</span></button>
+    </div>
+
+    <!-- Selection mode -->
+    <div class="selection-mode-row">
+      <button class="mode-btn active" onclick="setMode('random',this)">🎲 Random 20</button>
+      <button class="mode-btn" onclick="setMode('manual',this)">✋ Hand pick</button>
+    </div>
+
+    <!-- Problem pool -->
+    <div class="problem-pool" id="problem-pool"></div>
+
+    <div class="selection-status">
+      <div class="sel-count"><span id="sel-count">20</span> of 20 selected</div>
+      <button class="randomize-btn" onclick="randomize20()">🎲 Re-randomize</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- STEP 3: TITLE -->
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title">Name your activity</div>
+    </div>
+    <input type="text" class="title-input" id="activity-title" placeholder="e.g. Spring Addition Practice" maxlength="60">
+
+    <!-- GENERATE -->
+    <div class="validation-msg" id="val-msg">Please select an image and 20 problems before generating.</div>
+    <button class="generate-btn" id="generate-btn" onclick="generate()">
+      ✨ Preview my Reveal Art
+    </button>
+
+  </div>
+
+  <!-- RIGHT: PREVIEW -->
+  <div class="preview-panel">
+    <div class="preview-header">Preview</div>
+    <div class="preview-empty" id="preview-empty">
+      <div class="preview-empty-icon">🎨</div>
+      <div class="preview-empty-text">Your Reveal Art preview will appear here once you click Generate.<br><br>Choose an image and your problems first.</div>
+    </div>
+    <div id="preview-content" style="display:none;flex-direction:column;gap:16px;">
+      <div class="preview-frame">
+        <iframe id="preview-iframe" title="Reveal Art Preview"></iframe>
+      </div>
+      <button class="download-btn" onclick="downloadActivity()">
+        ⬇️ Download Activity
+      </button>
+      <div class="download-note">Downloads as an HTML file · Share via Google Classroom · Works on any device</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const UNSPLASH_KEY = 'ylROEYPBWlyNF_ugwFmefRyruAWfr6xUHlwISoXiJk4';
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let selectedImageUrl = null;
+let selectedImageLabel = '';
+let currentOp = 'addition';
+let currentLevel = 1;
+let currentMode = 'random';
+let allProblems = [];
+let selectedProblems = [];
+let generatedHTML = '';
+
+// ── PROBLEM BANK ─────────────────────────────────────────────────────────────
+function generateBank(op, level) {
+  const problems = [];
+  const seen = new Set();
+
+  function add(a, b, ans, eq) {
+    const key = eq;
+    if (!seen.has(key)) { seen.add(key); problems.push({eq, ans}); }
+  }
+
+  const ranges = {
+    1: [1, 9],
+    2: [10, 99],
+    3: [100, 999],
+  };
+  const [min, max] = ranges[level];
+
+  let attempts = 0;
+  while (problems.length < 50 && attempts < 2000) {
+    attempts++;
+    let a = Math.floor(Math.random() * (max - min + 1)) + min;
+    let b = Math.floor(Math.random() * (max - min + 1)) + min;
+
+    if (op === 'addition') {
+      add(a, b, a + b, `${a} + ${b} = ?`);
+    } else if (op === 'subtraction') {
+      if (a < b) [a, b] = [b, a];
+      add(a, b, a - b, `${a} − ${b} = ?`);
+    } else if (op === 'multiplication') {
+      // keep multiplication manageable
+      const ma = level === 1 ? Math.floor(Math.random()*9)+1 : level === 2 ? Math.floor(Math.random()*12)+1 : Math.floor(Math.random()*15)+1;
+      const mb = level === 1 ? Math.floor(Math.random()*9)+1 : level === 2 ? Math.floor(Math.random()*12)+1 : Math.floor(Math.random()*15)+1;
+      add(ma, mb, ma * mb, `${ma} × ${mb} = ?`);
+    } else if (op === 'division') {
+      const divisor = level === 1 ? Math.floor(Math.random()*8)+2 : level === 2 ? Math.floor(Math.random()*11)+2 : Math.floor(Math.random()*14)+2;
+      const quotient = level === 1 ? Math.floor(Math.random()*8)+1 : level === 2 ? Math.floor(Math.random()*12)+1 : Math.floor(Math.random()*15)+1;
+      const dividend = divisor * quotient;
+      add(dividend, divisor, quotient, `${dividend} ÷ ${divisor} = ?`);
+    }
+  }
+  return problems;
+}
+
+function renderProblems() {
+  allProblems = generateBank(currentOp, currentLevel);
+  if (currentMode === 'random') {
+    randomize20();
+  } else {
+    renderProblemList(allProblems, selectedProblems.map(p => p.eq));
+  }
+}
+
+function renderProblemList(pool, selectedEqs = []) {
+  const container = document.getElementById('problem-pool');
+  container.innerHTML = '';
+  pool.forEach((p, i) => {
+    const isSel = selectedEqs.includes(p.eq);
+    const row = document.createElement('div');
+    row.className = 'problem-row' + (isSel ? ' selected' : '');
+    row.innerHTML = `<div class="prob-check">${isSel ? '✓' : ''}</div>
+      <div class="prob-eq">${p.eq}</div>
+      <div class="prob-ans">= ${p.ans}</div>`;
+    row.onclick = () => toggleProblem(p, row);
+    container.appendChild(row);
+  });
+  updateSelCount();
+}
+
+function toggleProblem(p, row) {
+  if (currentMode === 'random') return; // no manual toggle in random mode
+  const idx = selectedProblems.findIndex(x => x.eq === p.eq);
+  if (idx >= 0) {
+    selectedProblems.splice(idx, 1);
+    row.classList.remove('selected');
+    row.querySelector('.prob-check').textContent = '';
+  } else {
+    if (selectedProblems.length >= 20) {
+      // swap oldest
+      const oldest = selectedProblems.shift();
+      // deselect oldest in DOM
+      document.querySelectorAll('.problem-row').forEach(r => {
+        if (r.querySelector('.prob-eq').textContent === oldest.eq) {
+          r.classList.remove('selected');
+          r.querySelector('.prob-check').textContent = '';
+        }
+      });
+    }
+    selectedProblems.push(p);
+    row.classList.add('selected');
+    row.querySelector('.prob-check').textContent = '✓';
+  }
+  updateSelCount();
+}
+
+function randomize20() {
+  const shuffled = [...allProblems].sort(() => Math.random() - 0.5);
+  selectedProblems = shuffled.slice(0, 20);
+  if (currentMode === 'random') {
+    renderProblemList(selectedProblems, selectedProblems.map(p => p.eq));
+  } else {
+    renderProblemList(allProblems, selectedProblems.map(p => p.eq));
+  }
+  updateSelCount();
+}
+
+function updateSelCount() {
+  document.getElementById('sel-count').textContent = selectedProblems.length;
+}
+
+function setOperation(op, btn) {
+  currentOp = op;
+  document.querySelectorAll('.op-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProblems();
+}
+
+function setLevel(level, btn) {
+  currentLevel = level;
+  document.querySelectorAll('.level-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProblems();
+}
+
+function setMode(mode, btn) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (mode === 'random') {
+    randomize20();
+  } else {
+    renderProblemList(allProblems, selectedProblems.map(p => p.eq));
+  }
+}
+
+// ── UNSPLASH SEARCH ──────────────────────────────────────────────────────────
+async function searchPhotos() {
+  const query = document.getElementById('search-input').value.trim();
+  if (!query) return;
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true;
+  btn.textContent = 'Searching...';
+  const grid = document.getElementById('photo-grid');
+  grid.innerHTML = '<div class="photo-empty">Loading photos...</div>';
+
+  try {
+    const res = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=9&orientation=squarish`, {
+      headers: { Authorization: `Client-ID ${UNSPLASH_KEY}` }
+    });
+    const data = await res.json();
+    grid.innerHTML = '';
+    if (!data.results || data.results.length === 0) {
+      grid.innerHTML = '<div class="photo-empty">No photos found. Try a different search term.</div>';
+      return;
+    }
+    data.results.forEach(photo => {
+      const thumb = document.createElement('div');
+      thumb.className = 'photo-thumb';
+      thumb.innerHTML = `<img src="${photo.urls.small}" alt="${photo.alt_description || 'photo'}" loading="lazy"><div class="check">✓</div>`;
+      thumb.onclick = () => selectPhoto(photo.urls.regular, photo.alt_description || query, thumb);
+      grid.appendChild(thumb);
+    });
+  } catch(e) {
+    grid.innerHTML = '<div class="photo-empty">Search failed. Please try again.</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Search';
+  }
+}
+
+function selectPhoto(url, label, thumbEl) {
+  document.querySelectorAll('.photo-thumb').forEach(t => t.classList.remove('selected'));
+  thumbEl.classList.add('selected');
+  selectedImageUrl = url;
+  selectedImageLabel = label;
+  showSelectedImage(url, label);
+}
+
+function showSelectedImage(url, label) {
+  document.getElementById('selected-img-preview').src = url;
+  document.getElementById('selected-img-label').textContent = label;
+  document.getElementById('selected-img-wrap').style.display = 'block';
+  document.getElementById('image-picker-ui').style.display = 'none';
+}
+
+function clearSelectedImage() {
+  selectedImageUrl = null;
+  selectedImageLabel = '';
+  document.getElementById('selected-img-wrap').style.display = 'none';
+  document.getElementById('image-picker-ui').style.display = 'block';
+  document.querySelectorAll('.photo-thumb').forEach(t => t.classList.remove('selected'));
+}
+
+// Upload handler
+function handleUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    selectedImageUrl = e.target.result;
+    selectedImageLabel = file.name;
+    showSelectedImage(e.target.result, file.name);
+  };
+  reader.readAsDataURL(file);
+}
+
+// Enter key on search
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchPhotos();
+});
+
+// ── GENERATE ─────────────────────────────────────────────────────────────────
+async function generate() {
+  const valMsg = document.getElementById('val-msg');
+  valMsg.style.display = 'none';
+
+  if (!selectedImageUrl) {
+    valMsg.textContent = 'Please choose an image first.';
+    valMsg.style.display = 'block';
+    return;
+  }
+  if (selectedProblems.length < 20) {
+    valMsg.textContent = `Please select exactly 20 problems. You have ${selectedProblems.length}.`;
+    valMsg.style.display = 'block';
+    return;
+  }
+
+  const title = document.getElementById('activity-title').value.trim() || 'Reveal Art Activity';
+  document.getElementById('loading-overlay').classList.add('active');
+
+  // If it's a URL (not base64), fetch and convert to base64 so it works offline
+  let imageData = selectedImageUrl;
+  if (!selectedImageUrl.startsWith('data:')) {
+    try {
+      const res = await fetch(selectedImageUrl);
+      const blob = await res.blob();
+      imageData = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.readAsDataURL(blob);
+      });
+    } catch(e) {
+      // fallback: use URL directly
+      imageData = selectedImageUrl;
+    }
+  }
+
+  generatedHTML = buildActivityHTML(title, selectedProblems, imageData);
+
+  // Show preview
+  const iframe = document.getElementById('preview-iframe');
+  iframe.srcdoc = generatedHTML;
+
+  document.getElementById('preview-empty').style.display = 'none';
+  const pc = document.getElementById('preview-content');
+  pc.style.display = 'flex';
+
+  document.getElementById('loading-overlay').classList.remove('active');
+
+  // Scroll preview into view on mobile
+  document.querySelector('.preview-panel').scrollIntoView({behavior:'smooth'});
+}
+
+function downloadActivity() {
+  if (!generatedHTML) return;
+  const title = document.getElementById('activity-title').value.trim() || 'reveal-art-activity';
+  const blob = new Blob([generatedHTML], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = title.replace(/[^a-z0-9]/gi,'_').toLowerCase() + '.html';
+  a.click();
+}
+
+// ── BUILD ACTIVITY HTML ───────────────────────────────────────────────────────
+function buildActivityHTML(title, problems, imageData) {
+  const GRID_N = 20;
+  const anchors = [
+    [10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],
+    [7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15]
+  ];
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff;padding:12px;}
+.header{text-align:center;margin-bottom:10px;}
+.title{font-family:'Fredoka One',cursive;font-size:clamp(18px,3vw,28px);color:#c8f135;margin-bottom:3px;}
+.subtitle{font-size:11px;color:rgba(255,255,255,0.35);}
+.rasta{display:flex;height:3px;border-radius:99px;overflow:hidden;max-width:800px;margin:7px auto;}
+.rasta div{flex:1;}
+.rasta div:nth-child(1){background:#e53935;}
+.rasta div:nth-child(2){background:#FFD600;}
+.rasta div:nth-child(3){background:#43a047;}
+.layout{display:grid;grid-template-columns:190px 1fr 190px;gap:10px;max-width:900px;margin:0 auto;align-items:start;}
+.prob-col{display:flex;flex-direction:column;gap:5px;}
+.col-label{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:2px;}
+.card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 8px;display:flex;align-items:center;gap:5px;transition:all .2s;}
+.card.correct{background:rgba(67,160,71,0.18);border-color:rgba(67,160,71,0.55);}
+.card.wrong{animation:shake .35s ease;background:rgba(229,57,53,0.2);border-color:rgba(229,57,53,0.7);}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.num{font-size:9px;font-weight:800;color:rgba(255,255,255,0.2);min-width:12px;}
+.card.correct .num{color:#81c784;}
+.eq{font-size:11px;font-weight:700;flex:1;}
+.card.correct .eq{color:#c8e6c9;}
+.xlbl{font-size:9px;color:rgba(255,255,255,0.3);}
+.ans{width:32px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:2px 3px;font-size:11px;font-weight:800;font-family:'Nunito',sans-serif;color:#fff;text-align:center;outline:none;}
+.ans:focus{border-color:#FFD600;}
+.card.correct .ans{background:rgba(67,160,71,0.3);border-color:#43a047;color:#c8e6c9;}
+.go{font-size:9px;font-family:'Nunito',sans-serif;font-weight:800;padding:2px 6px;border:1px solid rgba(255,255,255,0.15);border-radius:5px;background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;}
+.card.correct .go{display:none;}
+.tick{display:none;color:#43a047;font-size:12px;font-weight:900;}
+.card.correct .tick{display:block;}
+.center-col{display:flex;flex-direction:column;gap:8px;}
+.canvas-outer{position:relative;border-radius:10px;overflow:hidden;border:1.5px solid rgba(255,214,0,0.15);}
+#rc{display:block;width:100%;}
+.prog-row{display:flex;flex-direction:column;gap:3px;}
+.prog-top{display:flex;justify-content:space-between;}
+.prog-text{font-size:10px;color:rgba(255,255,255,0.35);}
+.prog-pct{font-size:11px;font-weight:800;color:#FFD600;}
+.prog-track{background:rgba(255,255,255,0.08);border-radius:99px;height:4px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#e53935,#FFD600,#43a047);border-radius:99px;width:0%;transition:width .5s ease;}
+.reset-btn{font-family:'Fredoka One',cursive;font-size:11px;padding:4px 14px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;background:transparent;color:rgba(255,255,255,0.35);cursor:pointer;align-self:center;}
+.brand{text-align:center;font-size:9px;color:rgba(255,255,255,0.15);margin-top:4px;font-style:italic;}
+@media(max-width:640px){.layout{grid-template-columns:1fr;}.prob-col{flex-direction:row;flex-wrap:wrap;}.card{width:calc(50% - 3px);}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="title">${title}</div>
+  <div class="subtitle">Solve each equation · Correct answers reveal the image · Wrong answers turn red</div>
+</div>
+<div class="rasta"><div></div><div></div><div></div></div>
+<div class="layout">
+  <div class="prob-col" id="lc"><div class="col-label">Problems 1–10</div></div>
+  <div class="center-col">
+    <div class="canvas-outer"><canvas id="rc" width="500" height="500"></canvas></div>
+    <div class="prog-row">
+      <div class="prog-top"><span class="prog-text" id="pt">0 of 20 solved</span><span class="prog-pct" id="pp">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" id="pf"></div></div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
+    <div class="brand">© The Real Sum Shady · Reveal Arts</div>
+  </div>
+  <div class="prob-col" id="rc2"><div class="col-label">Problems 11–20</div></div>
+</div>
+<script>
+const PROBS=${JSON.stringify(problems)};
+const ANCHORS=${JSON.stringify(anchors)};
+const GN=20,IW=500,IH=500;
+const TW=IW/GN,TH=IH/GN;
+
+function buildAssign(){
+  const a=Array.from({length:GN},()=>new Array(GN).fill(-1));
+  const rem=new Set();
+  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)rem.add(r*GN+c);
+  const pp=(GN*GN)/ANCHORS.length;
+  for(let z=0;z<ANCHORS.length;z++){
+    const[ar,ac]=ANCHORS[z];
+    const s=[...rem].map(i=>{const r=Math.floor(i/GN),c=i%GN;return{i,r,c,d:Math.sqrt((r-ar)**2+(c-ac)**2)};}).sort((a,b)=>a.d-b.d);
+    let n=0;
+    for(const{i,r,c}of s){if(n>=pp)break;a[r][c]=z;rem.delete(i);n++;}
+  }
+  return a;
+}
+const assign=buildAssign();
+const rev=Array.from({length:GN},()=>new Array(GN).fill(false));
+const solved=new Set();
+const canvas=document.getElementById('rc');
+const ctx=canvas.getContext('2d');
+const img=new Image();
+img.src='${imageData.replace(/'/g,"\\'")}';
+img.onload=()=>{drawAll();};
+img.onerror=()=>{drawAll();};
+
+function drawCover(){
+  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++){
+    if(!rev[r][c]){ctx.fillStyle='#232323';ctx.fillRect(c*TW,r*TH,TW,TH);ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;ctx.strokeRect(c*TW,r*TH,TW,TH);}
+  }
+  ctx.save();
+  ctx.beginPath();
+  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)if(!rev[r][c])ctx.rect(c*TW,r*TH,TW,TH);
+  ctx.clip();
+  ctx.translate(IW/2,IH/2);ctx.rotate(-0.08);
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font='900 '+Math.floor(IW*0.11)+'px Fredoka One,cursive';
+  ctx.fillStyle='rgba(255,255,255,0.2)';ctx.fillText('The Real',0,-Math.floor(IW*0.065));
+  ctx.fillStyle='rgba(255,214,0,0.16)';ctx.fillText('Sum Shady',0,Math.floor(IW*0.065));
+  ctx.restore();
+}
+function drawAll(){ctx.clearRect(0,0,IW,IH);if(img.complete&&img.naturalWidth>0)ctx.drawImage(img,0,0,IW,IH);drawCover();}
+
+function revealZone(z){
+  const tiles=[];
+  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)if(assign[r][c]===z&&!rev[r][c])tiles.push([r,c]);
+  for(let i=tiles.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[tiles[i],tiles[j]]=[tiles[j],tiles[i]];}
+  tiles.forEach(([r,c],i)=>setTimeout(()=>{rev[r][c]=true;ctx.clearRect(c*TW,r*TH,TW,TH);if(img.complete&&img.naturalWidth>0)ctx.drawImage(img,c*TW,r*TH,TW,TH,c*TW,r*TH,TW,TH);drawCover();},i*35));
+}
+
+function buildUI(){
+  const lc=document.getElementById('lc'),rc=document.getElementById('rc2');
+  while(lc.children.length>1)lc.removeChild(lc.lastChild);
+  while(rc.children.length>1)rc.removeChild(rc.lastChild);
+  PROBS.forEach((p,i)=>{
+    const col=i<10?lc:rc;
+    const card=document.createElement('div');
+    card.className='card';card.id='card-'+i;
+    card.innerHTML='<span class="num">'+(i+1)+'</span><span class="eq">'+p.eq+'</span><span class="xlbl">x=</span><input class="ans" type="number" id="inp-'+i+'" placeholder="?"><button class="go" onclick="chk('+i+')">Go</button><span class="tick">✓</span>';
+    card.querySelector('input').addEventListener('keydown',e=>{if(e.key==='Enter')chk(i);});
+    col.appendChild(card);
+  });
+}
+
+function chk(i){
+  const inp=document.getElementById('inp-'+i);
+  const card=document.getElementById('card-'+i);
+  const val=parseInt(inp.value);
+  if(val===PROBS[i].ans){
+    solved.add(i);card.classList.add('correct');card.classList.remove('wrong');inp.disabled=true;
+    revealZone(i);updateProg();
+  }else{
+    card.classList.remove('wrong');void card.offsetWidth;card.classList.add('wrong');
+    inp.value='';inp.placeholder='✗';
+    setTimeout(()=>{card.classList.remove('wrong');inp.placeholder='?';},900);
+  }
+}
+
+function updateProg(){
+  const n=solved.size,pct=Math.round(n/20*100);
+  document.getElementById('pt').textContent=n+' of 20 solved';
+  document.getElementById('pp').textContent=pct+'%';
+  document.getElementById('pf').style.width=pct+'%';
+}
+
+function resetAll(){
+  solved.clear();
+  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)rev[r][c]=false;
+  buildUI();updateProg();drawAll();
+}
+
+buildUI();drawAll();
+<\/script>
+</body>
+</html>`;
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+renderProblems();
+</script>
+</body>
+</html>
