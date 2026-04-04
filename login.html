@@ -299,6 +299,12 @@ document.addEventListener('keydown', function(e) {
 // Check if already logged in
 var token = localStorage.getItem('sb_access_token');
 if (token) window.location.href = 'creator_v8.html';
+
+// Check for ?tab=signup in URL
+var urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('tab') === 'signup') {
+  show('up');
+}
 </script>
 </body>
 </html>
