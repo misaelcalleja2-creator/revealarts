@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Reveal Arts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0a0f;--white:#fafaf8;--lime:#c8f135;--coral:#ff5c3a;--violet:#9b5de5;--gold:#ffd60a;--border:rgba(255,255,255,0.08);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--ink);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;}
+nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:8px;}
+.nav-dot{width:7px;height:7px;background:var(--lime);border-radius:50%;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-user{font-size:13px;color:rgba(255,255,255,0.4);}
+.nav-signout{background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.nav-signout:hover{border-color:rgba(255,255,255,0.3);color:var(--white);}
+
+.page{max-width:1100px;margin:0 auto;padding:40px 32px;}
+
+/* header */
+.dash-header{margin-bottom:32px;}
+.dash-title{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:6px;}
+.dash-sub{font-size:14px;color:rgba(255,255,255,0.4);}
+.dash-sub span{color:var(--lime);}
+
+/* product tabs */
+.product-tabs{display:flex;gap:8px;margin-bottom:32px;flex-wrap:wrap;}
+.product-tab{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.45);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;}
+.product-tab:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.product-tab.active{background:rgba(200,241,53,0.1);border-color:rgba(200,241,53,0.3);color:var(--lime);}
+.product-tab.coming{opacity:0.4;cursor:not-allowed;}
+.product-tab .tab-badge{font-size:9px;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:rgba(255,255,255,0.3);}
+.product-tab.active .tab-badge{background:rgba(200,241,53,0.15);color:rgba(200,241,53,0.6);}
+
+/* quick actions */
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:40px;}
+.action-card{background:#0f0f18;border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:12px;text-decoration:none;transition:border-color .2s,transform .2s;cursor:pointer;}
+.action-card:hover{border-color:rgba(200,241,53,0.3);transform:translateY(-2px);}
+.action-icon{font-size:28px;}
+.action-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--white);}
+.action-desc{font-size:12px;color:rgba(255,255,255,0.35);line-height:1.5;}
+.action-btn{display:inline-flex;align-items:center;gap:6px;background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:8px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;width:fit-content;text-decoration:none;}
+
+/* saved activities */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.section-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
+.section-sub{font-size:12px;color:rgba(255,255,255,0.3);}
+
+.empty-state{background:#0f0f18;border:1px dashed rgba(255,255,255,0.1);border-radius:16px;padding:60px 40px;text-align:center;}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:0.4;}
+.empty-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;color:rgba(255,255,255,0.5);}
+.empty-desc{font-size:13px;color:rgba(255,255,255,0.25);line-height:1.6;max-width:320px;margin:0 auto 24px;}
+.empty-btn{display:inline-flex;align-items:center;gap:8px;background:var(--lime);color:var(--ink);border:none;border-radius:10px;padding:12px 24px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;}
+
+/* trial banner */
+.trial-bar{background:rgba(200,241,53,0.07);border:1px solid rgba(200,241,53,0.15);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:10px;}
+.trial-bar-text{font-size:13px;color:rgba(255,255,255,0.6);}
+.trial-bar-text strong{color:var(--lime);}
+.trial-bar-btn{background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:7px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+
+footer{padding:24px 32px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:60px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span class="nav-dot"></span>Reveal Arts</a>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-email"></span>
+    <button class="nav-signout" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="dash-header">
+    <div class="dash-title">Welcome back 👋</div>
+    <div class="dash-sub">You're on your <span id="trial-days">7-day free trial</span></div>
+  </div>
+
+  <!-- Trial banner -->
+  <div class="trial-bar" id="trial-bar">
+    <div class="trial-bar-text"><strong id="trial-bar-msg">7 days left</strong> in your free trial — upgrade to keep creating after it ends.</div>
+    <a href="pricing.html" class="trial-bar-btn">View Plans</a>
+  </div>
+
+  <!-- Product tabs -->
+  <div class="product-tabs">
+    <a href="#" class="product-tab active" onclick="showProduct('reveal')">
+      🎨 Reveal Arts <span class="tab-badge">Active</span>
+    </a>
+    <span class="product-tab coming">
+      🌀 Spiraled Review <span class="tab-badge">Coming soon</span>
+    </span>
+    <span class="product-tab coming">
+      🔐 Escape Rooms <span class="tab-badge">Coming soon</span>
+    </span>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="quick-actions">
+    <a href="creator.html" class="action-card">
+      <div class="action-icon">✨</div>
+      <div class="action-title">Create New Activity</div>
+      <div class="action-desc">Build a new Reveal Art with any image and problem set</div>
+      <span class="action-btn">Create now →</span>
+    </a>
+  </div>
+
+  <!-- Saved activities -->
+  <div class="section-header">
+    <div>
+      <div class="section-title">My Activities</div>
+      <div class="section-sub">Activities you've created and downloaded</div>
+    </div>
+  </div>
+
+  <div class="empty-state">
+    <div class="empty-icon">🎨</div>
+    <div class="empty-title">No saved activities yet</div>
+    <div class="empty-desc">Activities you create will appear here once we add cloud saving. For now your downloaded HTML files are saved on your computer.</div>
+    <a href="creator.html" class="empty-btn">Create your first activity →</a>
+  </div>
+
+</div>
+
+<footer>© 2025 The Real Sum Shady LLC · Reveal Arts</footer>
+
+<script>
+const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+
+async function init() {
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) { window.location.href = 'login.html'; return; }
+
+  try {
+    const r = await fetch(SB_URL + '/auth/v1/user', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (!r.ok) {
+      localStorage.removeItem('sb_access_token');
+      localStorage.removeItem('sb_refresh_token');
+      window.location.href = 'login.html';
+      return;
+    }
+    const user = await r.json();
+    document.getElementById('nav-email').textContent = user.email;
+
+    // Get profile for trial info
+    const pr = await fetch(SB_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const profiles = await pr.json();
+    const profile = profiles[0];
+
+    if (profile) {
+      if (profile.is_paid) {
+        document.getElementById('trial-days').textContent = 'active subscription';
+        document.getElementById('trial-bar').style.display = 'none';
+      } else {
+        const trialStart = new Date(profile.trial_started_at);
+        const expiryDate = new Date(trialStart);
+        expiryDate.setDate(expiryDate.getDate() + 7);
+        const daysElapsed = Math.floor((Date.now() - trialStart) / (1000*60*60*24));
+        const daysLeft = Math.max(0, 7 - daysElapsed);
+        const expStr = expiryDate.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+        document.getElementById('trial-days').textContent = daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' left in free trial · Expires ' + expStr;
+        if (daysLeft === 0) {
+          document.getElementById('trial-bar-msg').textContent = 'Your trial has ended — upgrade to keep creating';
+        } else {
+          document.getElementById('trial-bar-msg').textContent = daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' left · Expires ' + expStr;
+        }
+      }
+    }
+  } catch(e) {
+    console.log('Auth check failed', e);
+  }
+}
+
+function signOut() {
+  localStorage.removeItem('sb_access_token');
+  localStorage.removeItem('sb_refresh_token');
+  window.location.href = 'login.html';
+}
+
+function showProduct(product) {
+  // Future: switch between product tabs
+}
+
+init();
+</script>
+</body>
+</html>
