@@ -9,8 +9,8 @@
 :root{--ink:#0a0a0f;--white:#fafaf8;--lime:#c8f135;--coral:#ff5c3a;--sky:#4fc3f7;--violet:#9b5de5;--gold:#ffd60a;--border:rgba(255,255,255,0.08);}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--ink);color:var(--white);font-family:"DM Sans",sans-serif;min-height:100vh;}
-nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);}
-.nav-logo{font-family:"Syne",sans-serif;font-weight:800;font-size:18px;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:8px;}
+nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:rgba(10,10,15,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);}
+.nav-logo{font-family:"Syne",sans-serif;font-weight:800;font-size:18px;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:8px;justify-self:center;}
 .nav-logo-dot{width:7px;height:7px;background:var(--lime);border-radius:50%;}
 .nav-back{font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;}
 .nav-back:hover{color:var(--white);}
@@ -138,13 +138,44 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:flex;align-items
 .load-sub{font-size:12px;color:rgba(255,255,255,0.35);}
 @media(max-width:800px){.page{grid-template-columns:1fr;}.form-panel,.preview-panel{max-height:none;}}
 </style>
+<style>
+.auth-nav{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
+.trial-pill{font-size:11px;color:rgba(255,255,255,0.5);background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.2);border-radius:100px;padding:4px 10px;white-space:nowrap;}
+.trial-pill strong{color:#c8f135;}
+.trial-pill.expired{background:rgba(255,92,58,0.08);border-color:rgba(255,92,58,0.2);}
+.trial-pill.expired strong{color:#ff5c3a;}
+.nav-upgrade{background:#c8f135;color:#0a0a0f;border:none;border-radius:100px;padding:6px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+.nav-signout{background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;}
+.nav-signout:hover{color:var(--white);}
+.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.95);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:32px;text-align:center;}
+.paywall-overlay.active{display:flex;}
+.paywall-title{font-family:Syne,sans-serif;font-weight:800;font-size:28px;color:#c8f135;}
+.paywall-sub{font-size:15px;color:rgba(255,255,255,0.5);max-width:400px;line-height:1.6;}
+.paywall-btn{background:#c8f135;color:#0a0a0f;border:none;border-radius:12px;padding:16px 32px;font-family:Syne,sans-serif;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-block;}
+.paywall-signin{font-size:13px;color:rgba(255,255,255,0.35);margin-top:8px;}
+.paywall-signin a{color:rgba(255,255,255,0.6);text-decoration:none;}
+</style>
 </head>
 <body>
+<!-- PAYWALL OVERLAY -->
+<div class="paywall-overlay" id="paywall-overlay">
+  <div style="font-size:48px;">⏰</div>
+  <div class="paywall-title">Your free trial has ended</div>
+  <div class="paywall-sub">You've had 7 days of free access. Subscribe to keep creating Reveal Art activities for your students.</div>
+  <a href="pricing.html" class="paywall-btn">View Plans — from $2 per activity</a>
+  <div class="paywall-signin">Already subscribed? <a href="login.html">Sign in</a></div>
+</div>
+
+
+
 <div class="loading-overlay" id="lo"><div class="spin"></div><div class="load-txt" id="lo-txt">Building your Reveal Art...</div><div class="load-sub">This takes about 3 seconds</div></div>
 <nav>
-  <a href="index.html" class="nav-back">← Back</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="dashboard.html" class="nav-back">← Back</a>
+    <span id="trial-pill"></span>
+  </div>
   <a href="index.html" class="nav-logo"><span class="nav-logo-dot"></span>Reveal Arts</a>
-  <div style="width:80px"></div>
+  <div class="auth-nav" id="auth-nav"></div>
 </nav>
 <div class="page">
 <div class="form-panel">
@@ -632,6 +663,23 @@ body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff
 .brand{text-align:center;font-size:9px;color:rgba(255,255,255,0.15);margin-top:3px;font-style:italic;}
 @media(max-width:680px){.layout{grid-template-columns:1fr;}.center-col{width:100%;}.prob-col{flex-direction:row;flex-wrap:wrap;}.card{width:calc(50% - 2px);}}
 </style>
+<style>
+.auth-nav{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
+.trial-pill{font-size:11px;color:rgba(255,255,255,0.5);background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.2);border-radius:100px;padding:4px 10px;white-space:nowrap;}
+.trial-pill strong{color:#c8f135;}
+.trial-pill.expired{background:rgba(255,92,58,0.08);border-color:rgba(255,92,58,0.2);}
+.trial-pill.expired strong{color:#ff5c3a;}
+.nav-upgrade{background:#c8f135;color:#0a0a0f;border:none;border-radius:100px;padding:6px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+.nav-signout{background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;}
+.nav-signout:hover{color:var(--white);}
+.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.95);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:32px;text-align:center;}
+.paywall-overlay.active{display:flex;}
+.paywall-title{font-family:Syne,sans-serif;font-weight:800;font-size:28px;color:#c8f135;}
+.paywall-sub{font-size:15px;color:rgba(255,255,255,0.5);max-width:400px;line-height:1.6;}
+.paywall-btn{background:#c8f135;color:#0a0a0f;border:none;border-radius:12px;padding:16px 32px;font-family:Syne,sans-serif;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-block;}
+.paywall-signin{font-size:13px;color:rgba(255,255,255,0.35);margin-top:8px;}
+.paywall-signin a{color:rgba(255,255,255,0.6);text-decoration:none;}
+</style>
 </head>
 <body>
 <div class="header">
@@ -936,6 +984,162 @@ function genAlgBank(type, lv) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 buildLvTabs();renderProblems();
+
+// ── AUTH GATE ──────────────────────────────────────────────────────────────────
+const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+
+async function sbGet(path, token) {
+  const r = await fetch(SB_URL + path, {
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  return r.json();
+}
+
+async function sbPost(path, body, token) {
+  const r = await fetch(SB_URL + path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + (token || SB_KEY)
+    },
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+async function checkAuth() {
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Verify token is valid
+  let user;
+  try {
+    const resp = await fetch(SB_URL + '/auth/v1/user', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (!resp.ok) {
+      // Token expired or invalid - clear and redirect to login
+      localStorage.removeItem('sb_access_token');
+      localStorage.removeItem('sb_refresh_token');
+      window.location.href = 'login.html';
+      return;
+    }
+    user = await resp.json();
+    if (!user.id) {
+      localStorage.removeItem('sb_access_token');
+      localStorage.removeItem('sb_refresh_token');
+      window.location.href = 'login.html';
+      return;
+    }
+  } catch(e) {
+    // Network error - let them through rather than loop
+    showTrialBanner(7);
+    return;
+  }
+
+  // Get or create profile
+  let profile;
+  try {
+    const profileData = await fetch(SB_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const profiles = await profileData.json();
+    profile = profiles[0];
+  } catch(e) {}
+
+  if (!profile) {
+    // Create profile for new user
+    await sbPost('/rest/v1/profiles', {
+      id: user.id,
+      email: user.email,
+      trial_started_at: new Date().toISOString()
+    }, token);
+    showTrialBanner(7);
+    return;
+  }
+
+  // Check if paid
+  if (profile.is_paid) {
+    showTrialBanner(null, true);
+    return;
+  }
+
+  // Check trial
+  const trialStart = new Date(profile.trial_started_at);
+  const daysElapsed = Math.floor((Date.now() - trialStart) / (1000 * 60 * 60 * 24));
+  const daysLeft = 7 - daysElapsed;
+
+  if (daysLeft <= 0) {
+    document.getElementById('paywall-overlay').classList.add('active');
+  } else {
+    const expiryDate = new Date(trialStart);
+    expiryDate.setDate(expiryDate.getDate() + 7);
+    showTrialBanner(daysLeft, false, expiryDate);
+  }
+}
+
+function showTrialBanner(daysLeft, isPaid, expiryDate) {
+  const pill = document.getElementById('trial-pill');
+  const nav = document.getElementById('auth-nav');
+  if (!nav) return;
+
+  // Right side buttons
+  nav.style.display = 'flex';
+  nav.style.alignItems = 'center';
+  nav.style.justifyContent = 'flex-end';
+  nav.style.gap = '8px';
+  nav.innerHTML = '<a href="pricing.html" class="nav-upgrade">Manage Membership</a><button class="nav-signout" onclick="signOut()">Sign out</button>';
+
+  // Left side pill - countdown timer
+  if (!pill) return;
+  if (isPaid) {
+    pill.innerHTML = '<span class="trial-pill"><strong>✅ Active</strong></span>';
+    return;
+  }
+
+  // Countdown timer
+  function updatePill() {
+    if (!expiryDate) return;
+    const msLeft = new Date(expiryDate) - Date.now();
+    if (msLeft <= 0) {
+      pill.innerHTML = '<span class="trial-pill expired"><strong>Trial ended</strong></span>';
+      return;
+    }
+    const hoursLeft = Math.floor(msLeft / (1000*60*60));
+    const daysLeft = Math.floor(hoursLeft / 24);
+    const hRem = hoursLeft % 24;
+    const mRem = Math.floor((msLeft % (1000*60*60)) / (1000*60));
+    const sRem = Math.floor((msLeft % (1000*60)) / 1000);
+    let txt;
+    if (daysLeft >= 1) {
+      txt = daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' ' + hRem + 'h left';
+    } else if (hoursLeft >= 1) {
+      txt = hoursLeft + 'h ' + mRem + 'm left';
+    } else {
+      txt = mRem + 'm ' + sRem + 's left';
+    }
+    const cls = daysLeft <= 1 ? 'trial-pill expired' : 'trial-pill';
+    pill.innerHTML = '<span class="' + cls + '">⏱ <strong>' + txt + '</strong></span>';
+  }
+  updatePill();
+  setInterval(updatePill, 1000);
+}
+
+function signOut() {
+  localStorage.removeItem('sb_access_token');
+  localStorage.removeItem('sb_refresh_token');
+  window.location.href = 'login.html';
+}
+
+checkAuth();
 </script>
 </body>
 </html>
