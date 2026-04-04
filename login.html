@@ -296,9 +296,25 @@ document.addEventListener('keydown', function(e) {
   else doSignUp();
 });
 
-// Check if already logged in
+// Check if already logged in with a valid token
 var token = localStorage.getItem('sb_access_token');
-if (token) window.location.href = 'creator_v8.html';
+if (token) {
+  // Verify the token is still valid before redirecting
+  fetch('https://zionhfdaksktpwcvjnde.supabase.co/auth/v1/user', {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+  }).then(function(r) {
+    if (r.ok) {
+      window.location.href = 'creator_v8.html';
+    } else {
+      // Token expired - clear it and stay on login page
+      localStorage.removeItem('sb_access_token');
+      localStorage.removeItem('sb_refresh_token');
+    }
+  }).catch(function() {
+    localStorage.removeItem('sb_access_token');
+    localStorage.removeItem('sb_refresh_token');
+  });
+}
 
 // Check for ?tab=signup in URL
 var urlParams = new URLSearchParams(window.location.search);
