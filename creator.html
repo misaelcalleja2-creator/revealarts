@@ -138,43 +138,8 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:flex;align-items
 .load-sub{font-size:12px;color:rgba(255,255,255,0.35);}
 @media(max-width:800px){.page{grid-template-columns:1fr;}.form-panel,.preview-panel{max-height:none;}}
 </style>
-<style>
-.trial-banner{position:fixed;top:0;left:0;right:0;z-index:999;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:12px;gap:12px;flex-wrap:wrap;}
-.trial-banner.trial{background:rgba(200,241,53,0.12);border-bottom:1px solid rgba(200,241,53,0.2);color:rgba(255,255,255,0.7);}
-.trial-banner.expired{background:rgba(255,92,58,0.12);border-bottom:1px solid rgba(255,92,58,0.3);color:rgba(255,255,255,0.7);}
-.trial-banner strong{color:#c8f135;}
-.trial-banner.expired strong{color:#ff5c3a;}
-.banner-btn{padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;font-family:Syne,sans-serif;text-decoration:none;}
-.banner-upgrade{background:#c8f135;color:#0a0a0f;}
-.banner-signout{background:transparent;border:1px solid rgba(255,255,255,0.15)!important;color:rgba(255,255,255,0.4);border:none;}
-.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.95);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:32px;text-align:center;}
-.paywall-overlay.active{display:flex;}
-.paywall-title{font-family:Syne,sans-serif;font-weight:800;font-size:28px;color:#c8f135;}
-.paywall-sub{font-size:15px;color:rgba(255,255,255,0.5);max-width:400px;line-height:1.6;}
-.paywall-btn{background:#c8f135;color:#0a0a0f;border:none;border-radius:12px;padding:16px 32px;font-family:Syne,sans-serif;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-block;}
-.paywall-signin{font-size:13px;color:rgba(255,255,255,0.35);margin-top:8px;}
-.paywall-signin a{color:rgba(255,255,255,0.6);text-decoration:none;}
-</style>
 </head>
 <body>
-<!-- PAYWALL OVERLAY -->
-<div class="paywall-overlay" id="paywall-overlay">
-  <div style="font-size:48px;">⏰</div>
-  <div class="paywall-title">Your free trial has ended</div>
-  <div class="paywall-sub">You've had 7 days of free access. Subscribe to keep creating Reveal Art activities for your students.</div>
-  <a href="pricing.html" class="paywall-btn">View Plans — from $2 per activity</a>
-  <div class="paywall-signin">Already subscribed? <a href="login.html">Sign in</a></div>
-</div>
-
-<!-- TRIAL BANNER -->
-<div class="trial-banner trial" id="trial-banner" style="display:none;">
-  <span id="trial-msg"><strong>7-day free trial</strong> — full access included</span>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <a href="pricing.html" class="banner-btn banner-upgrade">Upgrade</a>
-    <button class="banner-btn banner-signout" onclick="signOut()">Sign out</button>
-  </div>
-</div>
-
 <div class="loading-overlay" id="lo"><div class="spin"></div><div class="load-txt" id="lo-txt">Building your Reveal Art...</div><div class="load-sub">This takes about 3 seconds</div></div>
 <nav>
   <a href="index.html" class="nav-back">← Back</a>
@@ -667,23 +632,6 @@ body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff
 .brand{text-align:center;font-size:9px;color:rgba(255,255,255,0.15);margin-top:3px;font-style:italic;}
 @media(max-width:680px){.layout{grid-template-columns:1fr;}.center-col{width:100%;}.prob-col{flex-direction:row;flex-wrap:wrap;}.card{width:calc(50% - 2px);}}
 </style>
-<style>
-.trial-banner{position:fixed;top:0;left:0;right:0;z-index:999;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:12px;gap:12px;flex-wrap:wrap;}
-.trial-banner.trial{background:rgba(200,241,53,0.12);border-bottom:1px solid rgba(200,241,53,0.2);color:rgba(255,255,255,0.7);}
-.trial-banner.expired{background:rgba(255,92,58,0.12);border-bottom:1px solid rgba(255,92,58,0.3);color:rgba(255,255,255,0.7);}
-.trial-banner strong{color:#c8f135;}
-.trial-banner.expired strong{color:#ff5c3a;}
-.banner-btn{padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;font-family:Syne,sans-serif;text-decoration:none;}
-.banner-upgrade{background:#c8f135;color:#0a0a0f;}
-.banner-signout{background:transparent;border:1px solid rgba(255,255,255,0.15)!important;color:rgba(255,255,255,0.4);border:none;}
-.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.95);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:32px;text-align:center;}
-.paywall-overlay.active{display:flex;}
-.paywall-title{font-family:Syne,sans-serif;font-weight:800;font-size:28px;color:#c8f135;}
-.paywall-sub{font-size:15px;color:rgba(255,255,255,0.5);max-width:400px;line-height:1.6;}
-.paywall-btn{background:#c8f135;color:#0a0a0f;border:none;border-radius:12px;padding:16px 32px;font-family:Syne,sans-serif;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-block;}
-.paywall-signin{font-size:13px;color:rgba(255,255,255,0.35);margin-top:8px;}
-.paywall-signin a{color:rgba(255,255,255,0.6);text-decoration:none;}
-</style>
 </head>
 <body>
 <div class="header">
@@ -988,130 +936,6 @@ function genAlgBank(type, lv) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 buildLvTabs();renderProblems();
-
-// ── AUTH GATE ──────────────────────────────────────────────────────────────────
-const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
-
-async function sbGet(path, token) {
-  const r = await fetch(SB_URL + path, {
-    headers: {
-      'apikey': SB_KEY,
-      'Authorization': 'Bearer ' + token
-    }
-  });
-  return r.json();
-}
-
-async function sbPost(path, body, token) {
-  const r = await fetch(SB_URL + path, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SB_KEY,
-      'Authorization': 'Bearer ' + (token || SB_KEY)
-    },
-    body: JSON.stringify(body)
-  });
-  return r.json();
-}
-
-async function checkAuth() {
-  const token = localStorage.getItem('sb_access_token');
-  if (!token) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  // Verify token is valid
-  let user;
-  try {
-    const resp = await fetch(SB_URL + '/auth/v1/user', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
-    });
-    if (!resp.ok) {
-      // Token expired or invalid - clear and redirect to login
-      localStorage.removeItem('sb_access_token');
-      localStorage.removeItem('sb_refresh_token');
-      window.location.href = 'login.html';
-      return;
-    }
-    user = await resp.json();
-    if (!user.id) {
-      localStorage.removeItem('sb_access_token');
-      localStorage.removeItem('sb_refresh_token');
-      window.location.href = 'login.html';
-      return;
-    }
-  } catch(e) {
-    // Network error - let them through rather than loop
-    showTrialBanner(7);
-    return;
-  }
-
-  // Get or create profile
-  let profile;
-  try {
-    const profileData = await fetch(SB_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=*', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
-    });
-    const profiles = await profileData.json();
-    profile = profiles[0];
-  } catch(e) {}
-
-  if (!profile) {
-    // Create profile for new user
-    await sbPost('/rest/v1/profiles', {
-      id: user.id,
-      email: user.email,
-      trial_started_at: new Date().toISOString()
-    }, token);
-    showTrialBanner(7);
-    return;
-  }
-
-  // Check if paid
-  if (profile.is_paid) {
-    showTrialBanner(null, true);
-    return;
-  }
-
-  // Check trial
-  const trialStart = new Date(profile.trial_started_at);
-  const daysElapsed = Math.floor((Date.now() - trialStart) / (1000 * 60 * 60 * 24));
-  const daysLeft = 7 - daysElapsed;
-
-  if (daysLeft <= 0) {
-    document.getElementById('paywall-overlay').classList.add('active');
-  } else {
-    showTrialBanner(daysLeft);
-  }
-}
-
-function showTrialBanner(daysLeft, isPaid) {
-  const banner = document.getElementById('trial-banner');
-  const msg = document.getElementById('trial-msg');
-  banner.style.display = 'flex';
-  document.querySelector('.page').style.marginTop = '48px';
-  if (isPaid) {
-    msg.innerHTML = '✅ <strong>Active subscription</strong> — thanks for supporting Reveal Arts!';
-  } else if (daysLeft >= 7) {
-    msg.innerHTML = '🎉 <strong>7-day free trial started</strong> — enjoy full access!';
-  } else if (daysLeft === 1) {
-    msg.innerHTML = '⚠️ <strong>Last day of your free trial</strong> — upgrade to keep creating!';
-    banner.classList.remove('trial'); banner.classList.add('expired');
-  } else {
-    msg.innerHTML = `⏱ <strong>${daysLeft} days left</strong> in your free trial`;
-  }
-}
-
-function signOut() {
-  localStorage.removeItem('sb_access_token');
-  localStorage.removeItem('sb_refresh_token');
-  window.location.href = 'login.html';
-}
-
-checkAuth();
 </script>
 </body>
 </html>
