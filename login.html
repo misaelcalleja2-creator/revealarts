@@ -260,7 +260,7 @@ async function doSignIn() {
     } else {
       localStorage.setItem('sb_access_token', data.access_token);
       localStorage.setItem('sb_refresh_token', data.refresh_token);
-      window.location.href = 'creator_v8.html';
+      window.location.href = 'dashboard.html';
     }
   } catch(e) {
     msg('in-msg','error','Connection error. Please try again.');
@@ -304,7 +304,7 @@ if (token) {
     headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
   }).then(function(r) {
     if (r.ok) {
-      window.location.href = 'creator_v8.html';
+      window.location.href = 'dashboard.html';
     } else {
       // Token expired - clear it and stay on login page
       localStorage.removeItem('sb_access_token');
