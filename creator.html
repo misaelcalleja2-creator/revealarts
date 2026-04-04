@@ -430,7 +430,8 @@ function setCat(cat,btn){
   document.getElementById('ops-section').style.display=cat==='ops'?'block':'none';
   document.getElementById('alg-section').style.display=cat==='alg'?'block':'none';
   // AI hint toggle only relevant for algebra
-  document.getElementById('ai-toggle').closest('.toggle-row').style.opacity=cat==='alg'?'1':'0.35';
+  const aiToggle=document.getElementById('ai-toggle');
+  if(aiToggle){const row=aiToggle.closest('.toggle-row');if(row)row.style.opacity=cat==='alg'?'1':'0.35';}
   if(cat==='ops')renderProblems();
   else renderAlgProblems();
 }
