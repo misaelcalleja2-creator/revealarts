@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — Reveal Arts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --ink:#0a0a0f;--white:#fafaf8;--lime:#c8f135;--coral:#ff5c3a;
+  --border:rgba(255,255,255,0.08);--panel:rgba(255,255,255,0.04);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--ink);color:var(--white);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:24px;
+  position:relative;overflow:hidden;
+}
+
+/* background orbs */
+.orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.12;pointer-events:none;}
+.orb-1{width:500px;height:500px;background:#c8f135;top:-200px;right:-100px;}
+.orb-2{width:400px;height:400px;background:#9b5de5;bottom:-150px;left:-100px;}
+
+/* logo */
+.logo{
+  display:flex;align-items:center;gap:8px;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:20px;
+  text-decoration:none;color:var(--white);
+  margin-bottom:40px;
+}
+.logo-dot{width:8px;height:8px;background:var(--lime);border-radius:50%;}
+
+/* card */
+.card{
+  width:100%;max-width:420px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:36px;
+  backdrop-filter:blur(20px);
+  position:relative;z-index:1;
+}
+
+/* tabs */
+.tabs{display:flex;gap:4px;background:rgba(255,255,255,0.05);border-radius:10px;padding:4px;margin-bottom:28px;}
+.tab-btn{
+  flex:1;padding:9px;border-radius:7px;border:none;background:transparent;
+  color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.tab-btn.active{background:var(--lime);color:var(--ink);}
+
+/* form */
+.form-title{font-family:'Syne',sans-serif;font-weight:700;font-size:22px;margin-bottom:6px;}
+.form-sub{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px;line-height:1.5;}
+.form-sub strong{color:var(--lime);}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase;}
+.field input{
+  width:100%;background:rgba(255,255,255,0.06);
+  border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;font-size:14px;
+  font-family:'DM Sans',sans-serif;color:var(--white);outline:none;
+  transition:border-color .2s;
+}
+.field input:focus{border-color:rgba(200,241,53,0.5);}
+.field input::placeholder{color:rgba(255,255,255,0.2);}
+
+/* google btn */
+.google-btn{
+  width:100%;background:var(--white);color:#1a1a1a;
+  border:none;border-radius:10px;padding:11px;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:transform .15s,box-shadow .15s;margin-bottom:14px;
+}
+.google-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,255,255,0.12);}
+.google-icon{width:18px;height:18px;}
+
+.or-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;color:rgba(255,255,255,0.2);font-size:12px;}
+.or-line{flex:1;height:1px;background:var(--border);}
+
+/* submit btn */
+.submit-btn{
+  width:100%;background:var(--lime);color:var(--ink);
+  border:none;border-radius:10px;padding:13px;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:14px;
+  cursor:pointer;transition:transform .2s,box-shadow .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(200,241,53,0.3);}
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
+
+/* spinner */
+.spin{width:16px;height:16px;border:2px solid rgba(10,10,15,0.3);border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* messages */
+.msg{font-size:13px;padding:10px 14px;border-radius:8px;margin-top:12px;display:none;line-height:1.5;}
+.msg.error{background:rgba(255,92,58,0.12);border:1px solid rgba(255,92,58,0.3);color:var(--coral);}
+.msg.success{background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.2);color:var(--lime);}
+
+/* trial badge */
+.trial-badge{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(200,241,53,0.07);border:1px solid rgba(200,241,53,0.2);
+  border-radius:10px;padding:12px 14px;margin-bottom:20px;
+}
+.trial-badge-icon{font-size:20px;}
+.trial-badge-text{font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5;}
+.trial-badge-text strong{color:var(--lime);}
+
+.back-link{
+  text-align:center;margin-top:20px;
+  font-size:12px;color:rgba(255,255,255,0.3);
+}
+.back-link a{color:rgba(255,255,255,0.5);text-decoration:none;}
+.back-link a:hover{color:var(--white);}
+</style>
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<a href="index.html" class="logo"><span class="logo-dot"></span>Reveal Arts</a>
+
+<div class="card">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('signin')">Sign In</button>
+    <button class="tab-btn" onclick="switchTab('signup')">Create Account</button>
+  </div>
+
+  <!-- SIGN IN -->
+  <div id="signin-form">
+    <div class="form-title">Welcome back 👋</div>
+    <div class="form-sub">Sign in to access your Reveal Arts dashboard.</div>
+
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="or-row"><div class="or-line"></div><span>or</span><div class="or-line"></div></div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="signin-email" placeholder="you@school.edu">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="signin-password" placeholder="••••••••">
+    </div>
+
+    <button class="submit-btn" id="signin-btn" onclick="signIn()">
+      <span>Sign In</span><div class="spin" id="signin-spin"></div>
+    </button>
+    <div class="msg" id="signin-msg"></div>
+  </div>
+
+  <!-- SIGN UP -->
+  <div id="signup-form" style="display:none;">
+    <div class="trial-badge">
+      <div class="trial-badge-icon">🎉</div>
+      <div class="trial-badge-text"><strong>7-day free trial</strong> — no credit card required. Full access to all features.</div>
+    </div>
+
+    <div class="form-title">Create your account</div>
+    <div class="form-sub">Join thousands of teachers making math more engaging.</div>
+
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Sign up with Google
+    </button>
+
+    <div class="or-row"><div class="or-line"></div><span>or</span><div class="or-line"></div></div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="signup-email" placeholder="you@school.edu">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="signup-password" placeholder="At least 6 characters">
+    </div>
+
+    <button class="submit-btn" id="signup-btn" onclick="signUp()">
+      <span>Start Free Trial</span><div class="spin" id="signup-spin"></div>
+    </button>
+    <div class="msg" id="signup-msg"></div>
+  </div>
+
+  <div class="back-link"><a href="index.html">← Back to home</a></div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+function switchTab(tab) {
+  document.getElementById('signin-form').style.display = tab === 'signin' ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='signin')||(i===1&&tab==='signup')));
+}
+
+function setLoading(formId, loading) {
+  const btn = document.getElementById(formId+'-btn');
+  const spin = document.getElementById(formId+'-spin');
+  btn.disabled = loading;
+  spin.style.display = loading ? 'block' : 'none';
+}
+
+function showMsg(formId, type, text) {
+  const el = document.getElementById(formId+'-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+}
+
+async function signInWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/creator.html' }
+  });
+  if (error) showMsg('signin', 'error', error.message);
+}
+
+async function signIn() {
+  const email = document.getElementById('signin-email').value.trim();
+  const password = document.getElementById('signin-password').value;
+  if (!email || !password) { showMsg('signin','error','Please fill in all fields.'); return; }
+  setLoading('signin', true);
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  setLoading('signin', false);
+  if (error) { showMsg('signin','error', error.message); return; }
+  window.location.href = 'creator.html';
+}
+
+async function signUp() {
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  if (!email || !password) { showMsg('signup','error','Please fill in all fields.'); return; }
+  if (password.length < 6) { showMsg('signup','error','Password must be at least 6 characters.'); return; }
+  setLoading('signup', true);
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  setLoading('signup', false);
+  if (error) { showMsg('signup','error', error.message); return; }
+  // Create profile row
+  if (data.user) {
+    await supabase.from('profiles').insert({
+      id: data.user.id,
+      email: email,
+      trial_started_at: new Date().toISOString()
+    });
+  }
+  showMsg('signup','success','Account created! Check your email to confirm, then sign in.');
+}
+
+// If already logged in, redirect to creator
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.href = 'creator.html';
+});
+
+// Handle enter key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const activeForm = document.getElementById('signin-form').style.display !== 'none' ? 'signin' : 'signup';
+    activeForm === 'signin' ? signIn() : signUp();
+  }
+});
+</script>
+</body>
+</html>
