@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — Reveal Arts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+:root{--ink:#0a0a0f;--white:#fafaf8;--lime:#c8f135;--coral:#ff5c3a;--violet:#9b5de5;--border:rgba(255,255,255,0.08);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--ink);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;}
+nav{padding:20px 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:8px;}
+.nav-dot{width:8px;height:8px;background:var(--lime);border-radius:50%;}
+.nav-back{font-size:13px;color:rgba(255,255,255,0.4);text-decoration:none;}
+.nav-back:hover{color:var(--white);}
+.hero{text-align:center;padding:72px 48px 48px;}
+.eyebrow{display:inline-block;background:rgba(200,241,53,0.1);border:1px solid rgba(200,241,53,0.2);border-radius:100px;padding:6px 16px;font-size:12px;font-weight:600;color:var(--lime);letter-spacing:1px;text-transform:uppercase;margin-bottom:24px;}
+h1{font-family:'Syne',sans-serif;font-size:clamp(36px,5vw,64px);font-weight:800;letter-spacing:-2px;line-height:1;margin-bottom:16px;}
+.sub{font-size:17px;color:rgba(255,255,255,0.45);max-width:480px;margin:0 auto 16px;line-height:1.6;}
+.trial-note{font-size:13px;color:rgba(255,255,255,0.3);}
+.trial-note strong{color:var(--lime);}
+
+/* pricing grid */
+.pricing{display:grid;grid-template-columns:1fr 1.1fr 1fr 1fr;gap:16px;max-width:1100px;margin:0 auto;padding:0 48px 80px;}
+.card{background:#0f0f18;border:1px solid var(--border);border-radius:24px;padding:36px 28px;display:flex;flex-direction:column;transition:transform .2s,border-color .2s;}
+.card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.15);}
+.card.featured{background:var(--white);border-color:var(--white);color:var(--ink);position:relative;}
+.badge{position:absolute;top:20px;right:20px;background:var(--lime);color:var(--ink);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:4px 10px;border-radius:100px;}
+.plan-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.4);margin-bottom:20px;}
+.card.featured .plan-name{color:rgba(10,10,15,0.45);}
+.price{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;letter-spacing:-2px;line-height:1;margin-bottom:4px;}
+.price sup{font-size:22px;vertical-align:super;letter-spacing:0;}
+.card.featured .price{color:var(--ink);}
+.per{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:28px;}
+.card.featured .per{color:rgba(10,10,15,0.4);}
+.features{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:32px;flex:1;}
+.features li{font-size:13px;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:9px;line-height:1.4;}
+.card.featured .features li{color:rgba(10,10,15,0.6);}
+.check{color:var(--lime);font-weight:700;flex-shrink:0;}
+.card.featured .check{color:var(--violet);}
+.btn{display:block;width:100%;text-align:center;padding:14px;border-radius:100px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;border:none;transition:all .2s;text-decoration:none;}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--white);}
+.btn-outline:hover{border-color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.05);}
+.btn-filled{background:var(--ink);color:var(--white);}
+.btn-filled:hover{background:#1a1a2e;}
+.btn-lime{background:var(--lime);color:var(--ink);}
+.btn-lime:hover{box-shadow:0 8px 24px rgba(200,241,53,0.35);transform:translateY(-1px);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* coupon row */
+.coupon-section{max-width:480px;margin:0 auto 60px;text-align:center;padding:0 48px;}
+.coupon-label{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:10px;}
+.coupon-row{display:flex;gap:8px;}
+.coupon-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--white);outline:none;}
+.coupon-input:focus{border-color:rgba(200,241,53,0.4);}
+.coupon-input::placeholder{color:rgba(255,255,255,0.2);}
+.coupon-btn{background:var(--lime);color:var(--ink);border:none;border-radius:10px;padding:10px 18px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
+.coupon-msg{margin-top:8px;font-size:12px;display:none;}
+.coupon-msg.ok{color:var(--lime);}
+.coupon-msg.err{color:var(--coral);}
+
+/* faq */
+.faq{max-width:640px;margin:0 auto;padding:0 48px 80px;}
+.faq h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:24px;text-align:center;}
+.faq-item{border-top:1px solid var(--border);padding:20px 0;}
+.faq-item:last-child{border-bottom:1px solid var(--border);}
+.faq-q{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:8px;}
+.faq-a{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;}
+
+/* loading overlay */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.9);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.loading-overlay.active{display:flex;}
+.spin{width:40px;height:40px;border:3px solid rgba(200,241,53,0.2);border-top-color:var(--lime);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.load-txt{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+
+footer{padding:32px 48px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:rgba(255,255,255,0.3);}
+.footer-copy{font-size:11px;color:rgba(255,255,255,0.2);}
+
+@media(max-width:900px){
+  .pricing{grid-template-columns:1fr 1fr;padding:0 24px 60px;}
+  nav{padding:16px 24px;}
+  .hero{padding:48px 24px 32px;}
+  .coupon-section,.faq{padding:0 24px 48px;}
+  footer{padding:24px;}
+}
+@media(max-width:560px){.pricing{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spin"></div>
+  <div class="load-txt">Redirecting to checkout...</div>
+</div>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span class="nav-dot"></span>Reveal Arts</a>
+  <a href="index.html" class="nav-back">← Back to home</a>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Pricing</div>
+  <h1>Simple, fair,<br>teacher-first.</h1>
+  <p class="sub">No surprise fees. No platform taking a cut. Keep everything you create.</p>
+  <p class="trial-note"><strong>7-day free trial</strong> on all plans — no credit card required to start.</p>
+</div>
+
+<div class="pricing">
+
+  <!-- FREE TRIAL -->
+  <div class="card">
+    <div class="plan-name">Free Trial</div>
+    <div class="price"><sup></sup>$0</div>
+    <div class="per">for 7 days</div>
+    <ul class="features">
+      <li><span class="check">✓</span> Full access to everything</li>
+      <li><span class="check">✓</span> Unlimited activities</li>
+      <li><span class="check">✓</span> All subjects & grade levels</li>
+      <li><span class="check">✓</span> No credit card needed</li>
+    </ul>
+    <a href="login.html?tab=signup" class="btn btn-outline">Start free trial</a>
+  </div>
+
+  <!-- MONTHLY (featured) -->
+  <div class="card featured">
+    <div class="badge">Most Popular</div>
+    <div class="plan-name">Monthly</div>
+    <div class="price"><sup>$</sup>8</div>
+    <div class="per">per month · cancel anytime</div>
+    <ul class="features">
+      <li><span class="check">✓</span> Unlimited activities</li>
+      <li><span class="check">✓</span> All operations & algebra</li>
+      <li><span class="check">✓</span> Image library + uploads</li>
+      <li><span class="check">✓</span> Hints, timer, differentiated versions</li>
+      <li><span class="check">✓</span> Escape rooms (coming soon)</li>
+      <li><span class="check">✓</span> New features first</li>
+    </ul>
+    <button class="btn btn-filled" onclick="checkout('price_1TIN9I2MGMrnqoN3n5Q3ge4P')">Get started →</button>
+  </div>
+
+  <!-- ANNUAL -->
+  <div class="card">
+    <div class="plan-name">Annual</div>
+    <div class="price"><sup>$</sup>72</div>
+    <div class="per">per year · save $24</div>
+    <ul class="features">
+      <li><span class="check">✓</span> Everything in Monthly</li>
+      <li><span class="check">✓</span> Priority support</li>
+      <li><span class="check">✓</span> Early access to new products</li>
+      <li><span class="check">✓</span> Best value</li>
+    </ul>
+    <button class="btn btn-outline" onclick="checkout('price_1TINAg2MGMrnqoN3hCoYiirL')">Get annual plan</button>
+  </div>
+
+  <!-- SINGLE -->
+  <div class="card">
+    <div class="plan-name">Pay Per Activity</div>
+    <div class="price"><sup>$</sup>2</div>
+    <div class="per">per download, one-time</div>
+    <ul class="features">
+      <li><span class="check">✓</span> 1 activity download</li>
+      <li><span class="check">✓</span> Yours forever</li>
+      <li><span class="check">✓</span> Works offline on Chromebooks</li>
+      <li><span class="check">✓</span> No subscription needed</li>
+    </ul>
+    <button class="btn btn-outline" onclick="checkout('price_1TINAD2MGMrnqoN3PsM80Uaa')">Buy single activity</button>
+  </div>
+
+</div>
+
+<!-- COUPON -->
+<div class="coupon-section">
+  <div class="coupon-label">Have a promo code?</div>
+  <div class="coupon-row">
+    <input type="text" class="coupon-input" id="coupon-input" placeholder="Enter code (e.g. TRYREVEAL2W)">
+    <button class="coupon-btn" onclick="applyCoupon()">Apply</button>
+  </div>
+  <div class="coupon-msg" id="coupon-msg"></div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <h2>Common questions</h2>
+  <div class="faq-item">
+    <div class="faq-q">Do I need a credit card for the free trial?</div>
+    <div class="faq-a">No — your 7-day trial starts the moment you create an account. No payment info required until you decide to subscribe.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Can I cancel anytime?</div>
+    <div class="faq-a">Yes. Cancel from your account settings at any time. You keep access until the end of your billing period.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What's the difference between monthly and pay-per-activity?</div>
+    <div class="faq-a">If you create more than 4 activities per month, the $8 subscription pays for itself. Pay-per-activity is great for teachers who want to try one activity before committing.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Do activities work offline?</div>
+    <div class="faq-a">Yes — every downloaded activity is a self-contained HTML file. Once opened in Chrome it works completely offline. Perfect for Chromebooks in schools with spotty WiFi.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What subjects are supported?</div>
+    <div class="faq-a">Currently math — operations (addition, subtraction, multiplication, division) and algebra (one-step and two-step equations). ELA, science, and social studies are coming soon.</div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Reveal Arts by The Real Sum Shady</div>
+  <div class="footer-copy">© 2025 The Real Sum Shady LLC. All rights reserved.</div>
+</footer>
+
+<script>
+const STRIPE_KEY = 'pk_test_51TIMtM2MGMrnqoN3iEIm3vVztTKII5QR6j9No3Yvp1NygPCcnI2Uw3S90g4tbST5YsXhGAOvLDLqDhlxonuEgZSb00hTWwVcD2';
+const stripe = Stripe(STRIPE_KEY);
+let appliedCoupon = null;
+
+async function checkout(priceId) {
+  // Check if logged in
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) {
+    window.location.href = 'login.html?tab=signup';
+    return;
+  }
+
+  document.getElementById('loading-overlay').classList.add('active');
+
+  try {
+    // Use Stripe's hosted checkout
+    const params = {
+      lineItems: [{ price: priceId, quantity: 1 }],
+      mode: priceId === 'price_1TINAD2MGMrnqoN3PsM80Uaa' ? 'payment' : 'subscription',
+      successUrl: window.location.origin + '/creator_v8.html?payment=success',
+      cancelUrl: window.location.origin + '/pricing.html',
+    };
+
+    if (appliedCoupon) {
+      params.discounts = [{ coupon: appliedCoupon }];
+    }
+
+    const { error } = await stripe.redirectToCheckout(params);
+    if (error) {
+      alert(error.message);
+      document.getElementById('loading-overlay').classList.remove('active');
+    }
+  } catch(e) {
+    alert('Something went wrong. Please try again.');
+    document.getElementById('loading-overlay').classList.remove('active');
+  }
+}
+
+function applyCoupon() {
+  const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+  const msg = document.getElementById('coupon-msg');
+  const validCodes = ['SUMSHADY100', 'TRYREVEAL2W'];
+
+  if (!code) { return; }
+
+  if (validCodes.includes(code)) {
+    appliedCoupon = code;
+    msg.className = 'coupon-msg ok';
+    msg.textContent = '✓ Promo code applied! Discount will be applied at checkout.';
+    msg.style.display = 'block';
+  } else {
+    appliedCoupon = null;
+    msg.className = 'coupon-msg err';
+    msg.textContent = '✗ Invalid promo code. Please check and try again.';
+    msg.style.display = 'block';
+  }
+}
+
+document.getElementById('coupon-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') applyCoupon();
+});
+</script>
+</body>
+</html>
