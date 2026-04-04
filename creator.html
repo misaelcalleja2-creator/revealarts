@@ -920,8 +920,8 @@ function buildUI(){
   PROBS.forEach((p,i)=>{
     const col=i<10?lc:rc;const card=document.createElement('div');card.className='card';card.id='card-'+i;
     const isAlg=p.isAlgebra;
-    const aiBtn=USE_AI&&isAlg?`<button class="ai-hint-trigger" id="ai-trig-${i}" onclick="openAI(${i})">🤖 Ask</button>`:'';
-    card.innerHTML='<span class="num">'+(i+1)+'</span><span class="eq">'+p.eq+'</span><span class="xlbl">x =</span><input class="ans" type="text" inputmode="decimal" id="inp-'+i+'" placeholder=""><button class="go" onclick="chk('+ i +')">Go</button>'+aiBtn+'<span class="tick">✓</span>';
+    const aiBtn=USE_AI&&isAlg?'<button class="ai-hint-trigger" id="ai-trig-'+i+'" onclick="openAI('+i+')">🤖 Ask</button>':'';
+    card.innerHTML='<span class="num">'+(i+1)+'</span><span class="eq">'+p.eq+'</span><span class="xlbl">x =</span><input class="ans" type="text" inputmode="decimal" id="inp-'+i+'" placeholder=""><button class="go" onclick="chk('+i+')">Go</button>'+aiBtn+'<span class="tick">✓</span>';
     const inp=card.querySelector('input');
     inp.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();chk(i);}});
     inp.addEventListener('change',()=>{if(inp.value!=='')chk(i);});
