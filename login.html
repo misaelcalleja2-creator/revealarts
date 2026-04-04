@@ -164,6 +164,7 @@ input::placeholder { color: rgba(255,255,255,0.2); }
   font-size: 11px;
   color: rgba(255,255,255,0.4);
   line-height: 1.5;
+  text-transform: none;
 }
 .check-row span a { color: rgba(255,255,255,0.6); }
 </style>
@@ -171,6 +172,7 @@ input::placeholder { color: rgba(255,255,255,0.2); }
 <body>
 
 <a href="index.html" class="logo"><span class="dot"></span>Reveal Arts</a>
+<div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:-20px;margin-bottom:24px;">© The Real Sum Shady</div>
 
 <div class="card">
   <div class="tabs">
@@ -201,7 +203,7 @@ input::placeholder { color: rgba(255,255,255,0.2); }
     <input type="password" id="up-pass" placeholder="At least 6 characters">
     <label class="check-row">
       <input type="checkbox" id="up-emails" checked>
-      <span>I agree to receive occasional product updates and teaching tips from Reveal Arts. You can unsubscribe anytime.</span>
+      <span>I agree to receive occasional product updates and teaching tips from The Real Sum Shady. You can unsubscribe anytime.</span>
     </label>
     <button class="btn" id="up-btn" onclick="doSignUp()">Start Free Trial</button>
     <div class="msg" id="up-msg"></div>
