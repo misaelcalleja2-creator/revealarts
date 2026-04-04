@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create — Reveal Arts</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#0a0a0f;--white:#fafaf8;--lime:#c8f135;--coral:#ff5c3a;--sky:#4fc3f7;--violet:#9b5de5;--gold:#ffd60a;--border:rgba(255,255,255,0.08);}
@@ -991,31 +990,67 @@ function genAlgBank(type, lv) {
 buildLvTabs();renderProblems();
 
 // ── AUTH GATE ──────────────────────────────────────────────────────────────────
-const SUPABASE_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
-const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+
+async function sbGet(path, token) {
+  const r = await fetch(SB_URL + path, {
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  return r.json();
+}
+
+async function sbPost(path, body, token) {
+  const r = await fetch(SB_URL + path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + (token || SB_KEY)
+    },
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
 
 async function checkAuth() {
-  const { data: { session } } = await _supabase.auth.getSession();
-  if (!session) {
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) {
     window.location.href = 'login.html';
     return;
   }
 
-  // Get profile
-  const { data: profile } = await _supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', session.user.id)
-    .single();
+  // Get user info
+  let user;
+  try {
+    const userData = await sbGet('/auth/v1/user', token);
+    if (!userData.id) { window.location.href = 'login.html'; return; }
+    user = userData;
+  } catch(e) {
+    window.location.href = 'login.html';
+    return;
+  }
 
-  // Create profile if doesn't exist (Google sign in)
-  if (!profile) {
-    await _supabase.from('profiles').insert({
-      id: session.user.id,
-      email: session.user.email,
-      trial_started_at: new Date().toISOString()
+  // Get or create profile
+  let profile;
+  try {
+    const profileData = await fetch(SB_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
+    const profiles = await profileData.json();
+    profile = profiles[0];
+  } catch(e) {}
+
+  if (!profile) {
+    // Create profile for new user
+    await sbPost('/rest/v1/profiles', {
+      id: user.id,
+      email: user.email,
+      trial_started_at: new Date().toISOString()
+    }, token);
     showTrialBanner(7);
     return;
   }
@@ -1026,15 +1061,13 @@ async function checkAuth() {
     return;
   }
 
-  // Check trial days remaining
+  // Check trial
   const trialStart = new Date(profile.trial_started_at);
-  const now = new Date();
-  const daysElapsed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
+  const daysElapsed = Math.floor((Date.now() - trialStart) / (1000 * 60 * 60 * 24));
   const daysLeft = 7 - daysElapsed;
 
   if (daysLeft <= 0) {
     document.getElementById('paywall-overlay').classList.add('active');
-    document.getElementById('trial-banner').style.display = 'none';
   } else {
     showTrialBanner(daysLeft);
   }
@@ -1044,11 +1077,10 @@ function showTrialBanner(daysLeft, isPaid) {
   const banner = document.getElementById('trial-banner');
   const msg = document.getElementById('trial-msg');
   banner.style.display = 'flex';
-  // Add top padding to page so banner doesn't cover content
-  document.querySelector('.page').style.paddingTop = '60px';
+  document.querySelector('.page').style.marginTop = '48px';
   if (isPaid) {
     msg.innerHTML = '✅ <strong>Active subscription</strong> — thanks for supporting Reveal Arts!';
-  } else if (daysLeft === 7) {
+  } else if (daysLeft >= 7) {
     msg.innerHTML = '🎉 <strong>7-day free trial started</strong> — enjoy full access!';
   } else if (daysLeft === 1) {
     msg.innerHTML = '⚠️ <strong>Last day of your free trial</strong> — upgrade to keep creating!';
@@ -1058,8 +1090,9 @@ function showTrialBanner(daysLeft, isPaid) {
   }
 }
 
-async function signOut() {
-  await _supabase.auth.signOut();
+function signOut() {
+  localStorage.removeItem('sb_access_token');
+  localStorage.removeItem('sb_refresh_token');
   window.location.href = 'login.html';
 }
 
