@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign In — Reveal Arts</title>
+<title>Sign In — The Real Sum Shady</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -101,7 +101,32 @@ label {
   margin-bottom: 6px;
   margin-top: 14px;
 }
-input[type=email], input[type=password] {
+/* Password wrapper for reveal toggle */
+.pass-wrap {
+  position: relative;
+  width: 100%;
+}
+.pass-wrap input {
+  width: 100%;
+  padding-right: 44px !important;
+}
+.reveal-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,0.3);
+  font-size: 16px;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.reveal-btn:hover { color: rgba(255,255,255,0.7); }
+
+input[type=email], input[type=password], input[type=text] {
   width: 100%;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.1);
@@ -112,7 +137,7 @@ input[type=email], input[type=password] {
   color: #fff;
   outline: none;
 }
-input[type=email]:focus, input[type=password]:focus {
+input[type=email]:focus, input[type=password]:focus, input[type=text]:focus {
   border-color: rgba(200,241,53,0.5);
 }
 input::placeholder { color: rgba(255,255,255,0.2); }
@@ -142,6 +167,7 @@ input::placeholder { color: rgba(255,255,255,0.2); }
 }
 .msg.error { background: rgba(255,92,58,0.12); border: 1px solid rgba(255,92,58,0.3); color: #ff5c3a; }
 .msg.success { background: rgba(200,241,53,0.08); border: 1px solid rgba(200,241,53,0.2); color: #c8f135; }
+.msg a { color: #c8f135; cursor: pointer; text-decoration: underline; }
 .back { text-align: center; margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.3); }
 .back a { color: rgba(255,255,255,0.5); text-decoration: none; }
 .back a:hover { color: #fff; }
@@ -171,7 +197,7 @@ input::placeholder { color: rgba(255,255,255,0.2); }
 </head>
 <body>
 
-<a href="index.html" class="logo"><span class="dot"></span>Reveal Arts</a>
+<a href="index.html" class="logo"><span class="dot"></span>The Real Sum Shady</a>
 <div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:-20px;margin-bottom:24px;">© The Real Sum Shady</div>
 
 <div class="card">
@@ -183,11 +209,14 @@ input::placeholder { color: rgba(255,255,255,0.2); }
   <!-- SIGN IN -->
   <div class="panel active" id="panel-in">
     <h2>Welcome back 👋</h2>
-    <p class="sub">Sign in to access your Reveal Arts account.</p>
+    <p class="sub">Sign in to access your account.</p>
     <label>Email</label>
     <input type="email" id="in-email" placeholder="you@school.edu">
     <label>Password</label>
-    <input type="password" id="in-pass" placeholder="••••••••">
+    <div class="pass-wrap">
+      <input type="password" id="in-pass" placeholder="••••••••">
+      <button class="reveal-btn" type="button" onclick="toggleReveal('in-pass', this)" title="Show/hide password">👁</button>
+    </div>
     <button class="btn" id="in-btn" onclick="doSignIn()">Sign In</button>
     <div class="msg" id="in-msg"></div>
   </div>
@@ -200,7 +229,10 @@ input::placeholder { color: rgba(255,255,255,0.2); }
     <label>Email</label>
     <input type="email" id="up-email" placeholder="you@school.edu">
     <label>Password</label>
-    <input type="password" id="up-pass" placeholder="At least 6 characters">
+    <div class="pass-wrap">
+      <input type="password" id="up-pass" placeholder="At least 6 characters">
+      <button class="reveal-btn" type="button" onclick="toggleReveal('up-pass', this)" title="Show/hide password">👁</button>
+    </div>
     <label class="check-row">
       <input type="checkbox" id="up-emails" checked>
       <span>I agree to receive occasional product updates and teaching tips from The Real Sum Shady. You can unsubscribe anytime.</span>
@@ -221,11 +253,23 @@ function show(which) {
   document.getElementById('tab-up').classList.toggle('active', which === 'up');
 }
 
-// Message helper
-function msg(id, type, text) {
+// Password reveal toggle
+function toggleReveal(inputId, btn) {
+  var input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+// Message helper — supports HTML for links
+function msg(id, type, html) {
   var el = document.getElementById(id);
   el.className = 'msg ' + type;
-  el.textContent = text;
+  el.innerHTML = html;
   el.style.display = 'block';
 }
 
@@ -233,7 +277,6 @@ function msg(id, type, text) {
 var SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
 var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 
-// Call Supabase REST API directly - no SDK needed
 async function sbFetch(path, body) {
   var r = await fetch(SB_URL + path, {
     method: 'POST',
@@ -256,7 +299,15 @@ async function doSignIn() {
   try {
     var data = await sbFetch('/auth/v1/token?grant_type=password', { email: email, password: pass });
     if (data.error || data.error_description) {
-      msg('in-msg','error', data.error_description || data.error || 'Sign in failed.');
+      var errMsg = data.error_description || data.error || '';
+      // Detect "no account" errors
+      if (errMsg.toLowerCase().includes('invalid') || errMsg.toLowerCase().includes('credentials') || errMsg.toLowerCase().includes('not found')) {
+        msg('in-msg','error','No account found with that email. <a onclick="show(\'up\')">Create one now →</a>');
+      } else if (errMsg.toLowerCase().includes('email not confirmed')) {
+        msg('in-msg','error','Please confirm your email first — check your inbox for the confirmation link.');
+      } else {
+        msg('in-msg','error', errMsg || 'Sign in failed. Please try again.');
+      }
     } else {
       localStorage.setItem('sb_access_token', data.access_token);
       localStorage.setItem('sb_refresh_token', data.refresh_token);
@@ -296,17 +347,15 @@ document.addEventListener('keydown', function(e) {
   else doSignUp();
 });
 
-// Check if already logged in with a valid token
+// Check if already logged in
 var token = localStorage.getItem('sb_access_token');
 if (token) {
-  // Verify the token is still valid before redirecting
-  fetch('https://zionhfdaksktpwcvjnde.supabase.co/auth/v1/user', {
+  fetch(SB_URL + '/auth/v1/user', {
     headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
   }).then(function(r) {
     if (r.ok) {
       window.location.href = 'dashboard.html';
     } else {
-      // Token expired - clear it and stay on login page
       localStorage.removeItem('sb_access_token');
       localStorage.removeItem('sb_refresh_token');
     }
