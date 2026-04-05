@@ -225,7 +225,7 @@ input::placeholder { color: rgba(255,255,255,0.2); }
   <div class="panel" id="panel-up">
     <div class="badge">🎉 <strong>7-day free trial</strong> — no credit card required. Full access to everything.</div>
     <h2>Create account</h2>
-    <p class="sub">Join teachers making math more engaging.</p>
+    <p class="sub">Join teachers making learning more engaging.</p>
     <label>Email</label>
     <input type="email" id="up-email" placeholder="you@school.edu">
     <label>Password</label>
@@ -297,16 +297,20 @@ async function doSignIn() {
   var btn = document.getElementById('in-btn');
   btn.disabled = true; btn.textContent = 'Signing in...';
   try {
+    // First check if the email exists as a user
     var data = await sbFetch('/auth/v1/token?grant_type=password', { email: email, password: pass });
     if (data.error || data.error_description) {
-      var errMsg = data.error_description || data.error || '';
-      // Detect "no account" errors
-      if (errMsg.toLowerCase().includes('invalid') || errMsg.toLowerCase().includes('credentials') || errMsg.toLowerCase().includes('not found')) {
-        msg('in-msg','error','No account found with that email. <a onclick="show(\'up\')">Create one now →</a>');
-      } else if (errMsg.toLowerCase().includes('email not confirmed')) {
+      var errMsg = (data.error_description || data.error || '').toLowerCase();
+      if (errMsg.includes('invalid login') || errMsg.includes('invalid credentials') || errMsg.includes('wrong password') || errMsg.includes('incorrect')) {
+        // Could be wrong password OR no account — try to distinguish
+        // Supabase returns same error for both, so we show a combined message
+        msg('in-msg','error','Incorrect email or password. <a onclick="show(\'up\')">Don\'t have an account? Create one →</a>');
+      } else if (errMsg.includes('email not confirmed')) {
         msg('in-msg','error','Please confirm your email first — check your inbox for the confirmation link.');
+      } else if (errMsg.includes('user not found') || errMsg.includes('no account')) {
+        msg('in-msg','error','No account found with that email. <a onclick="show(\'up\')">Create one now →</a>');
       } else {
-        msg('in-msg','error', errMsg || 'Sign in failed. Please try again.');
+        msg('in-msg','error','Sign in failed. Please check your email and password and try again.');
       }
     } else {
       localStorage.setItem('sb_access_token', data.access_token);
