@@ -47,152 +47,65 @@ body {
   gap: 4px;
 }
 .tab {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 7px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  background: transparent;
-  color: rgba(255,255,255,0.45);
-  transition: all 0.2s;
+  flex: 1; padding: 10px; border: none; border-radius: 7px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; background: transparent; color: rgba(255,255,255,0.45); transition: all 0.2s;
 }
-.tab.active {
-  background: #c8f135;
-  color: #0a0a0f;
-}
-.tab:not(.active):hover {
-  color: #fff;
-  background: rgba(255,255,255,0.08);
-}
+.tab.active { background: #c8f135; color: #0a0a0f; }
+.tab:not(.active):hover { color: #fff; background: rgba(255,255,255,0.08); }
 .panel { display: none; }
 .panel.active { display: block; }
-h2 {
-  font-family: 'Syne', sans-serif;
-  font-size: 22px;
-  margin-bottom: 6px;
-}
-.sub {
-  font-size: 13px;
-  color: rgba(255,255,255,0.4);
-  margin-bottom: 24px;
-  line-height: 1.5;
-}
+h2 { font-family: 'Syne', sans-serif; font-size: 22px; margin-bottom: 6px; }
+.sub { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 24px; line-height: 1.5; }
 .badge {
-  background: rgba(200,241,53,0.08);
-  border: 1px solid rgba(200,241,53,0.2);
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.6);
-  margin-bottom: 20px;
-  line-height: 1.5;
+  background: rgba(200,241,53,0.08); border: 1px solid rgba(200,241,53,0.2);
+  border-radius: 10px; padding: 12px; font-size: 12px; color: rgba(255,255,255,0.6);
+  margin-bottom: 20px; line-height: 1.5;
 }
 .badge strong { color: #c8f135; }
 label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
-  margin-bottom: 6px;
-  margin-top: 14px;
+  display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
+  text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 6px; margin-top: 14px;
 }
-/* Password wrapper for reveal toggle */
-.pass-wrap {
-  position: relative;
-  width: 100%;
-}
-.pass-wrap input {
-  width: 100%;
-  padding-right: 44px !important;
-}
+.pass-wrap { position: relative; width: 100%; }
+.pass-wrap input { width: 100%; padding-right: 44px !important; }
 .reveal-btn {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: rgba(255,255,255,0.3);
-  font-size: 16px;
-  padding: 4px;
-  line-height: 1;
-  transition: color 0.2s;
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3);
+  font-size: 16px; padding: 4px; line-height: 1; transition: color 0.2s;
 }
 .reveal-btn:hover { color: rgba(255,255,255,0.7); }
-
 input[type=email], input[type=password], input[type=text] {
-  width: 100%;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 10px;
-  padding: 12px 14px;
-  font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
-  color: #fff;
-  outline: none;
+  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 12px 14px; font-size: 14px;
+  font-family: 'DM Sans', sans-serif; color: #fff; outline: none;
 }
 input[type=email]:focus, input[type=password]:focus, input[type=text]:focus {
   border-color: rgba(200,241,53,0.5);
 }
 input::placeholder { color: rgba(255,255,255,0.2); }
 .btn {
-  width: 100%;
-  margin-top: 20px;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  background: #c8f135;
-  color: #0a0a0f;
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 15px;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  width: 100%; margin-top: 20px; padding: 14px; border: none; border-radius: 10px;
+  background: #c8f135; color: #0a0a0f; font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 15px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
 }
 .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,241,53,0.3); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 .msg {
-  margin-top: 12px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  line-height: 1.5;
-  display: none;
+  margin-top: 12px; padding: 10px 14px; border-radius: 8px;
+  font-size: 13px; line-height: 1.5; display: none;
 }
 .msg.error { background: rgba(255,92,58,0.12); border: 1px solid rgba(255,92,58,0.3); color: #ff5c3a; }
 .msg.success { background: rgba(200,241,53,0.08); border: 1px solid rgba(200,241,53,0.2); color: #c8f135; }
-.msg a { color: #c8f135; cursor: pointer; text-decoration: underline; }
+.msg a { color: inherit; cursor: pointer; text-decoration: underline; font-weight: 700; }
 .back { text-align: center; margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.3); }
 .back a { color: rgba(255,255,255,0.5); text-decoration: none; }
 .back a:hover { color: #fff; }
-.check-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: 14px;
-  cursor: pointer;
-}
+.check-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; cursor: pointer; }
 .check-row input[type=checkbox] {
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
-  accent-color: #c8f135;
-  flex-shrink: 0;
-  cursor: pointer;
+  width: 16px; height: 16px; margin-top: 2px; accent-color: #c8f135; flex-shrink: 0; cursor: pointer;
 }
-.check-row span {
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-  line-height: 1.5;
-  text-transform: none;
-}
-.check-row span a { color: rgba(255,255,255,0.6); }
+.check-row span { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.5; text-transform: none; }
 </style>
 </head>
 <body>
@@ -211,11 +124,11 @@ input::placeholder { color: rgba(255,255,255,0.2); }
     <h2>Welcome back 👋</h2>
     <p class="sub">Sign in to access your account.</p>
     <label>Email</label>
-    <input type="email" id="in-email" placeholder="you@school.edu">
+    <input type="email" id="in-email" placeholder="you@school.edu" autocomplete="email">
     <label>Password</label>
     <div class="pass-wrap">
-      <input type="password" id="in-pass" placeholder="••••••••">
-      <button class="reveal-btn" type="button" onclick="toggleReveal('in-pass', this)" title="Show/hide password">👁</button>
+      <input type="password" id="in-pass" placeholder="••••••••" autocomplete="current-password">
+      <button class="reveal-btn" type="button" onclick="toggleReveal('in-pass', this)">👁</button>
     </div>
     <button class="btn" id="in-btn" onclick="doSignIn()">Sign In</button>
     <div class="msg" id="in-msg"></div>
@@ -227,11 +140,11 @@ input::placeholder { color: rgba(255,255,255,0.2); }
     <h2>Create account</h2>
     <p class="sub">Join teachers making learning more engaging.</p>
     <label>Email</label>
-    <input type="email" id="up-email" placeholder="you@school.edu">
+    <input type="email" id="up-email" placeholder="you@school.edu" autocomplete="email">
     <label>Password</label>
     <div class="pass-wrap">
-      <input type="password" id="up-pass" placeholder="At least 6 characters">
-      <button class="reveal-btn" type="button" onclick="toggleReveal('up-pass', this)" title="Show/hide password">👁</button>
+      <input type="password" id="up-pass" placeholder="At least 6 characters" autocomplete="new-password">
+      <button class="reveal-btn" type="button" onclick="toggleReveal('up-pass', this)">👁</button>
     </div>
     <label class="check-row">
       <input type="checkbox" id="up-emails" checked>
@@ -245,7 +158,9 @@ input::placeholder { color: rgba(255,255,255,0.2); }
 </div>
 
 <script>
-// Tab switching
+var SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+
 function show(which) {
   document.getElementById('panel-in').classList.toggle('active', which === 'in');
   document.getElementById('panel-up').classList.toggle('active', which === 'up');
@@ -253,7 +168,6 @@ function show(which) {
   document.getElementById('tab-up').classList.toggle('active', which === 'up');
 }
 
-// Password reveal toggle
 function toggleReveal(inputId, btn) {
   var input = document.getElementById(inputId);
   if (input.type === 'password') {
@@ -265,83 +179,96 @@ function toggleReveal(inputId, btn) {
   }
 }
 
-// Message helper — supports HTML for links
-function msg(id, type, html) {
+function showMsg(id, type, html) {
   var el = document.getElementById(id);
   el.className = 'msg ' + type;
   el.innerHTML = html;
   el.style.display = 'block';
 }
 
-// Supabase config
-var SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
-var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
-
-async function sbFetch(path, body) {
-  var r = await fetch(SB_URL + path, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SB_KEY,
-      'Authorization': 'Bearer ' + SB_KEY
-    },
-    body: JSON.stringify(body)
-  });
-  return r.json();
-}
-
 async function doSignIn() {
   var email = document.getElementById('in-email').value.trim();
   var pass = document.getElementById('in-pass').value;
-  if (!email || !pass) { msg('in-msg','error','Please fill in both fields.'); return; }
-  var btn = document.getElementById('in-btn');
-  btn.disabled = true; btn.textContent = 'Signing in...';
-  try {
-    // First check if the email exists as a user
-    var data = await sbFetch('/auth/v1/token?grant_type=password', { email: email, password: pass });
-    if (data.error || data.error_description) {
-      var errMsg = (data.error_description || data.error || '').toLowerCase();
-      if (errMsg.includes('invalid login') || errMsg.includes('invalid credentials') || errMsg.includes('wrong password') || errMsg.includes('incorrect')) {
-        // Could be wrong password OR no account — try to distinguish
-        // Supabase returns same error for both, so we show a combined message
-        msg('in-msg','error','Incorrect email or password. <a onclick="show(\'up\')">Don\'t have an account? Create one →</a>');
-      } else if (errMsg.includes('email not confirmed')) {
-        msg('in-msg','error','Please confirm your email first — check your inbox for the confirmation link.');
-      } else if (errMsg.includes('user not found') || errMsg.includes('no account')) {
-        msg('in-msg','error','No account found with that email. <a onclick="show(\'up\')">Create one now →</a>');
-      } else {
-        msg('in-msg','error','Sign in failed. Please check your email and password and try again.');
-      }
-    } else {
-      localStorage.setItem('sb_access_token', data.access_token);
-      localStorage.setItem('sb_refresh_token', data.refresh_token);
-      window.location.href = 'dashboard.html';
-    }
-  } catch(e) {
-    msg('in-msg','error','Connection error. Please try again.');
+  if (!email || !pass) {
+    showMsg('in-msg', 'error', 'Please fill in both fields.');
+    return;
   }
-  btn.disabled = false; btn.textContent = 'Sign In';
+
+  var btn = document.getElementById('in-btn');
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+
+  try {
+    var r = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY
+      },
+      body: JSON.stringify({ email: email, password: pass })
+    });
+
+    var data = await r.json();
+
+    if (!r.ok || data.error || data.error_description) {
+      var errMsg = (data.error_description || data.error || '').toLowerCase();
+      if (errMsg.includes('email not confirmed')) {
+        showMsg('in-msg', 'error', 'Please confirm your email first — check your inbox for the confirmation link.');
+      } else {
+        showMsg('in-msg', 'error', 'Incorrect email or password. <a onclick="show(\'up\')">No account? Create one &rarr;</a>');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      return;
+    }
+
+    // Success — save tokens and go to dashboard
+    localStorage.setItem('sb_access_token', data.access_token);
+    localStorage.setItem('sb_refresh_token', data.refresh_token);
+    window.location.href = 'dashboard.html';
+
+  } catch(e) {
+    showMsg('in-msg', 'error', 'Connection error. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
 }
 
 async function doSignUp() {
   var email = document.getElementById('up-email').value.trim();
   var pass = document.getElementById('up-pass').value;
-  if (!email || !pass) { msg('up-msg','error','Please fill in both fields.'); return; }
-  if (pass.length < 6) { msg('up-msg','error','Password must be at least 6 characters.'); return; }
+  if (!email || !pass) { showMsg('up-msg', 'error', 'Please fill in both fields.'); return; }
+  if (pass.length < 6) { showMsg('up-msg', 'error', 'Password must be at least 6 characters.'); return; }
+
   var btn = document.getElementById('up-btn');
-  btn.disabled = true; btn.textContent = 'Creating account...';
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+
   try {
     var emailsOk = document.getElementById('up-emails').checked;
-    var data = await sbFetch('/auth/v1/signup', { email: email, password: pass, data: { marketing_emails: emailsOk } });
-    if (data.error || data.error_description) {
-      msg('up-msg','error', data.error_description || data.error || 'Sign up failed.');
+    var r = await fetch(SB_URL + '/auth/v1/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY
+      },
+      body: JSON.stringify({ email: email, password: pass, data: { marketing_emails: emailsOk } })
+    });
+    var data = await r.json();
+
+    if (!r.ok || data.error || data.error_description) {
+      showMsg('up-msg', 'error', data.error_description || data.error || 'Sign up failed. Please try again.');
     } else {
-      msg('up-msg','success','Account created! Check your email for a confirmation link, then sign in.');
+      showMsg('up-msg', 'success', 'Account created! Check your email for a confirmation link, then sign in.');
     }
   } catch(e) {
-    msg('up-msg','error','Connection error. Please try again.');
+    showMsg('up-msg', 'error', 'Connection error. Please try again.');
   }
-  btn.disabled = false; btn.textContent = 'Start Free Trial';
+
+  btn.disabled = false;
+  btn.textContent = 'Start Free Trial';
 }
 
 // Enter key support
@@ -351,11 +278,11 @@ document.addEventListener('keydown', function(e) {
   else doSignUp();
 });
 
-// Check if already logged in
-var token = localStorage.getItem('sb_access_token');
-if (token) {
+// Auto-redirect if already logged in
+var existingToken = localStorage.getItem('sb_access_token');
+if (existingToken) {
   fetch(SB_URL + '/auth/v1/user', {
-    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + existingToken }
   }).then(function(r) {
     if (r.ok) {
       window.location.href = 'dashboard.html';
@@ -371,9 +298,7 @@ if (token) {
 
 // Check for ?tab=signup in URL
 var urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('tab') === 'signup') {
-  show('up');
-}
+if (urlParams.get('tab') === 'signup') { show('up'); }
 </script>
 </body>
 </html>
