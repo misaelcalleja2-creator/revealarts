@@ -49,6 +49,19 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:flex;align-items
 .trial-bar-text strong{color:var(--lime);}
 .trial-bar-btn{background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:7px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
 footer{padding:24px 32px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:60px;}
+.activities-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.act-card{background:#0f0f18;border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .2s;}
+.act-card:hover{border-color:rgba(200,241,53,0.25);transform:translateY(-2px);}
+.act-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.act-meta{font-size:11px;color:rgba(255,255,255,0.3);display:flex;gap:10px;align-items:center;}
+.act-subject{background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.15);color:rgba(200,241,53,0.7);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.act-actions{display:flex;gap:8px;margin-top:4px;}
+.act-dl{flex:1;background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-align:center;}
+.act-dl:hover{opacity:0.9;}
+.act-del{background:transparent;border:1px solid rgba(255,92,58,0.2);color:rgba(255,92,58,0.5);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;transition:all .2s;}
+.act-del:hover{border-color:var(--coral);color:var(--coral);}
+.save-limit{font-size:12px;color:rgba(255,255,255,0.3);margin-top:4px;}
+.save-limit span{color:var(--lime);font-weight:700;}
 </style>
 </head>
 <body>
@@ -100,11 +113,15 @@ footer{padding:24px 32px;border-top:1px solid var(--border);text-align:center;fo
     </div>
   </div>
 
-  <div class="empty-state">
-    <div class="empty-icon">🎨</div>
-    <div class="empty-title">No saved activities yet</div>
-    <div class="empty-desc">Activities you create will appear here once we add cloud saving. For now your downloaded HTML files are saved on your computer.</div>
-    <a href="creator.html" class="empty-btn">Create your first activity →</a>
+  <div id="activities-container">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🎨</div>
+      <div class="empty-title">No saved activities yet</div>
+      <div class="empty-desc">Create and download an activity — it will automatically save here for easy re-download anytime.</div>
+      <a href="creator.html" class="empty-btn">Create your first activity →</a>
+    </div>
+    <div class="activities-grid" id="activities-grid" style="display:none;"></div>
+    <div class="save-limit" id="save-limit" style="margin-top:12px;"></div>
   </div>
 </div>
 
@@ -116,6 +133,7 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 async function init() {
   const token = localStorage.getItem('sb_access_token');
+  let profile = null;
 
   // No token at all — send to login
   if (!token) {
@@ -154,7 +172,7 @@ async function init() {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     const profiles = await pr.json();
-    const profile = Array.isArray(profiles) ? profiles[0] : null;
+    profile = Array.isArray(profiles) ? profiles[0] : null;
 
     if (profile) {
       if (profile.is_paid) {
@@ -176,8 +194,99 @@ async function init() {
       }
     }
   } catch(e) {
-    // Profile fetch failed — that's okay, dashboard still works
     console.log('Profile fetch failed', e);
+  }
+
+  // Load saved activities
+  loadActivities(token, user.id, profile);
+}
+
+async function loadActivities(token, userId, profile) {
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + userId + '&select=*&order=created_at.desc', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const acts = await r.json();
+    if (!Array.isArray(acts) || acts.length === 0) return;
+
+    const isPaid = profile && profile.is_paid;
+    const limit = isPaid ? 20 : 3;
+
+    document.getElementById('empty-state').style.display = 'none';
+    const grid = document.getElementById('activities-grid');
+    grid.style.display = 'grid';
+    grid.innerHTML = '';
+
+    acts.forEach(act => {
+      const card = document.createElement('div');
+      card.className = 'act-card';
+      const date = new Date(act.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+      card.innerHTML = `
+        <div class="act-title">${act.title}</div>
+        <div class="act-meta">
+          ${act.subject ? '<span class="act-subject">' + act.subject + '</span>' : ''}
+          <span>${date}</span>
+        </div>
+        <div class="act-actions">
+          <button class="act-dl" onclick="redownload('${act.id}')">⬇️ Re-download</button>
+          <button class="act-del" onclick="deleteActivity('${act.id}', this)">🗑</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    document.getElementById('save-limit').innerHTML =
+      '<span>' + acts.length + '</span> of <span>' + limit + '</span> activities saved' +
+      (isPaid ? '' : ' · <a href="pricing.html" style="color:var(--lime);">Upgrade for more</a>');
+
+  } catch(e) {
+    console.log('Activities fetch failed', e);
+  }
+}
+
+async function redownload(id) {
+  const token = localStorage.getItem('sb_access_token');
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + id + '&select=html,title', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const data = await r.json();
+    if (!Array.isArray(data) || !data[0]) return;
+    const blob = new Blob([data[0].html], {type: 'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = data[0].title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.html';
+    a.click();
+  } catch(e) {
+    alert('Download failed. Please try again.');
+  }
+}
+
+async function deleteActivity(id, btn) {
+  if (!confirm('Delete this activity? This cannot be undone.')) return;
+  const token = localStorage.getItem('sb_access_token');
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + id, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (r.ok) {
+      const card = btn.closest('.act-card');
+      card.style.opacity = '0';
+      card.style.transition = 'opacity 0.3s';
+      setTimeout(() => { card.remove(); checkEmpty(); }, 300);
+    }
+  } catch(e) {
+    alert('Delete failed. Please try again.');
+  }
+}
+
+function checkEmpty() {
+  const grid = document.getElementById('activities-grid');
+  if (grid.children.length === 0) {
+    grid.style.display = 'none';
+    document.getElementById('empty-state').style.display = 'block';
+    document.getElementById('save-limit').innerHTML = '';
   }
 }
 
