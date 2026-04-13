@@ -621,6 +621,27 @@ async function saveActivity(html, title) {
       document.getElementById('cat-alg').style.background.includes('200,241')
       ? 'Algebra' : 'Operations';
 
+    // Generate thumbnail from croppedDataUrl
+    let thumbnail = null;
+    if (croppedDataUrl) {
+      try {
+        thumbnail = await new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const maxW = 300;
+            const scale = maxW / img.width;
+            const c = document.createElement('canvas');
+            c.width = maxW;
+            c.height = Math.round(img.height * scale);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            resolve(c.toDataURL('image/jpeg', 0.7));
+          };
+          img.onerror = () => resolve(null);
+          img.src = croppedDataUrl;
+        });
+      } catch(e) { thumbnail = null; }
+    }
+
     // Save activity
     const res = await fetch(SB_URL + '/rest/v1/activities', {
       method: 'POST',
@@ -634,7 +655,8 @@ async function saveActivity(html, title) {
         user_id: user.id,
         title: title,
         html: html,
-        subject: subject
+        subject: subject,
+        thumbnail: thumbnail
       })
     });
 
