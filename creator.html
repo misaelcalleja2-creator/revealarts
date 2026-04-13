@@ -171,11 +171,17 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
 <div class="loading-overlay" id="lo"><div class="spin"></div><div class="load-txt" id="lo-txt">Building your Reveal Art...</div><div class="load-sub">This takes about 3 seconds</div></div>
 <nav>
   <div style="display:flex;align-items:center;gap:12px;">
-    <a href="dashboard.html" class="nav-back">← Back</a>
+    <a href="dashboard.html" class="nav-back" id="nav-back-btn">← Back</a>
     <span id="trial-pill"></span>
   </div>
   <a href="index.html" class="nav-logo"><span class="nav-logo-dot"></span>Reveal Arts</a>
-  <div class="auth-nav" id="auth-nav"></div>
+  <div class="auth-nav" id="auth-nav">
+    <div id="edit-mode-btns" style="display:none;gap:8px;align-items:center;">
+      <span style="font-size:11px;color:rgba(255,255,255,0.35);">Editing saved activity</span>
+      <button onclick="discardChanges()" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;">Discard</button>
+      <button onclick="saveChanges()" style="background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:6px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer;">Save Changes</button>
+    </div>
+  </div>
 </nav>
 <div class="page">
 <div class="form-panel">
@@ -328,6 +334,7 @@ const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 let selImgUrl=null,croppedDataUrl=null,curOp='addition',curLvl=1,curMode='random';
 let allProbs=[],selProbs=[],hintCount=0,hints=['','','','',''],timerEnabled=false,timerMins=5,diffEnabled=false;
+let editingActivityId=null;
 let generatedHTML='';
 let edAR={w:1,h:1},edZoom=100,edPanX=0,edPanY=0,edImg=null;
 let isDragging=false,dragSX=0,dragSY=0,dragPX=0,dragPY=0;
@@ -579,49 +586,38 @@ function buildDLButtons(title,imgData,hintList){
   }
 }
 
+function captureSettings() {
+  return {
+    title: document.getElementById('act-title').value.trim(),
+    cat: curCat,
+    op: curOp,
+    lvl: curLvl,
+    algType: curAlgType,
+    algLv: curAlgLv,
+    mode: curMode,
+    selectedEqs: selProbs.map(p => p.eq),
+    hintCount: hintCount,
+    hints: [...hints],
+    timerEnabled: timerEnabled,
+    timerMins: timerMins,
+    diffEnabled: diffEnabled,
+    image: croppedDataUrl,
+    imageAR: edAR
+  };
+}
+
 async function saveActivity(html, title) {
   const token = localStorage.getItem('sb_access_token');
-  console.log('saveActivity called, token:', token ? 'exists' : 'MISSING');
   if (!token) { showSaveToast('Sign in to save activities to your dashboard', 'warn'); return; }
 
   try {
-    // Get user
     const ur = await fetch(SB_URL + '/auth/v1/user', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     if (!ur.ok) return;
     const user = await ur.json();
 
-    // Get profile to check save limit
-    const pr = await fetch(SB_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=*', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
-    });
-    const profiles = await pr.json();
-    const profile = Array.isArray(profiles) ? profiles[0] : null;
-    const isPaid = profile && profile.is_paid;
-    const limit = isPaid ? 20 : 3;
-
-    // Count existing activities
-    const cr = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
-    });
-    const existing = await cr.json();
-    const count = Array.isArray(existing) ? existing.length : 0;
-
-    if (count >= limit) {
-      const limitMsg = isPaid
-        ? 'You have reached your 20 activity limit. Please delete some activities from your dashboard to save new ones.'
-        : 'Free trial is limited to 3 saved activities. Upgrade to save up to 20!';
-      showSaveToast(limitMsg, 'warn');
-      return;
-    }
-
-    // Detect subject
-    const subject = document.querySelector('#cat-alg') &&
-      document.getElementById('cat-alg').style.background.includes('200,241')
-      ? 'Algebra' : 'Operations';
-
-    // Generate thumbnail from croppedDataUrl
+    // Generate thumbnail
     let thumbnail = null;
     if (croppedDataUrl) {
       try {
@@ -642,7 +638,48 @@ async function saveActivity(html, title) {
       } catch(e) { thumbnail = null; }
     }
 
-    // Save activity
+    const settings = captureSettings();
+    const subject = curCat === 'alg' ? 'Algebra' : 'Operations';
+
+    // If editing existing activity — UPDATE instead of INSERT
+    if (editingActivityId) {
+      const res = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + editingActivityId, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ title, html, subject, thumbnail, settings })
+      });
+      if (res.ok) showSaveToast('✓ Changes saved!', 'ok');
+      return;
+    }
+
+    // New activity — check limit first
+    const pr = await fetch(SB_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const profiles = await pr.json();
+    const profile = Array.isArray(profiles) ? profiles[0] : null;
+    const isPaid = profile && profile.is_paid;
+    const limit = isPaid ? 20 : 3;
+
+    const cr = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const existing = await cr.json();
+    const count = Array.isArray(existing) ? existing.length : 0;
+
+    if (count >= limit) {
+      const limitMsg = isPaid
+        ? 'You have reached your 20 activity limit. Delete some activities from your dashboard to save new ones.'
+        : 'Free trial is limited to 3 saved activities. Upgrade to save up to 20!';
+      showSaveToast(limitMsg, 'warn');
+      return;
+    }
+
     const res = await fetch(SB_URL + '/rest/v1/activities', {
       method: 'POST',
       headers: {
@@ -651,18 +688,10 @@ async function saveActivity(html, title) {
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify({
-        user_id: user.id,
-        title: title,
-        html: html,
-        subject: subject,
-        thumbnail: thumbnail
-      })
+      body: JSON.stringify({ user_id: user.id, title, html, subject, thumbnail, settings })
     });
 
-    if (res.ok) {
-      showSaveToast('✓ Activity saved to your dashboard!', 'ok');
-    }
+    if (res.ok) showSaveToast('✓ Activity saved to your dashboard!', 'ok');
   } catch(e) {
     console.log('Save failed silently', e);
   }
@@ -1095,6 +1124,150 @@ function genAlgBank(type, lv) {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 buildLvTabs();renderProblems();
 
+// ── EDIT MODE ──────────────────────────────────────────────────────────────────
+async function initEditMode() {
+  const params = new URLSearchParams(window.location.search);
+  const actId = params.get('edit');
+  if (!actId) return;
+
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) return;
+
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + actId + '&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const data = await r.json();
+    if (!Array.isArray(data) || !data[0] || !data[0].settings) return;
+
+    const s = data[0].settings;
+    editingActivityId = actId;
+
+    // Show edit mode UI
+    document.getElementById('edit-mode-btns').style.display = 'flex';
+    document.getElementById('nav-back-btn').textContent = '← Dashboard';
+
+    // Restore title
+    if (s.title) document.getElementById('act-title').value = s.title;
+
+    // Restore image
+    if (s.image) {
+      croppedDataUrl = s.image;
+      edAR = s.imageAR || {w:1,h:1};
+      // Show the cropped image in the editor
+      const ec = document.getElementById('ec');
+      if (ec) {
+        const img = new Image();
+        img.onload = () => {
+          edImg = img;
+          editorReady = true;
+          renderEditor();
+          document.getElementById('img-editor').classList.add('active');
+          document.querySelector('.upload-zone') && (document.querySelector('.upload-zone').style.display = 'none');
+        };
+        img.src = s.image;
+      }
+    }
+
+    // Restore category
+    if (s.cat) {
+      const catBtn = document.getElementById(s.cat === 'alg' ? 'cat-alg' : 'cat-ops');
+      if (catBtn) setCat(s.cat, catBtn);
+    }
+
+    // Restore ops settings
+    if (s.cat === 'ops' && s.op) {
+      const opBtn = document.querySelector('#op-tabs .tab.active');
+      curOp = s.op; curLvl = s.lvl || 1;
+      document.querySelectorAll('#op-tabs .tab').forEach(b => {
+        if (b.textContent.toLowerCase().includes(s.op.replace('addition','add').replace('subtraction','sub').replace('multiplication','mult').replace('division','div'))) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+      renderProblems();
+    }
+
+    // Restore alg settings
+    if (s.cat === 'alg' && s.algType) {
+      curAlgType = s.algType; curAlgLv = s.algLv || 1;
+      document.querySelectorAll('#alg-type-tabs .tab').forEach(b => {
+        if ((s.algType === 'one' && b.textContent.includes('One')) ||
+            (s.algType === 'two' && b.textContent.includes('Two'))) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+      buildAlgLvTabs();
+      renderAlgProblems();
+    }
+
+    // Restore mode
+    if (s.mode) {
+      curMode = s.mode;
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.toggle('active', b.textContent.toLowerCase().includes(s.mode));
+      });
+    }
+
+    // Restore selected problems in manual mode
+    if (s.mode === 'manual' && s.selectedEqs && s.selectedEqs.length) {
+      setTimeout(() => {
+        selProbs = allProbs.filter(p => s.selectedEqs.includes(p.eq));
+        renderProbList(allProbs, s.selectedEqs);
+      }, 100);
+    }
+
+    // Restore hints
+    if (s.hintCount) {
+      hintCount = s.hintCount;
+      hints = s.hints || hints;
+      document.querySelectorAll('.hc-btn').forEach((b, i) => b.classList.toggle('active', i === s.hintCount));
+      setHints(s.hintCount, document.querySelectorAll('.hc-btn')[s.hintCount]);
+      // Fill hint inputs
+      setTimeout(() => {
+        for (let i = 0; i < s.hintCount; i++) {
+          const inp = document.getElementById('hint-' + i);
+          if (inp && s.hints[i]) inp.value = s.hints[i];
+        }
+      }, 100);
+    }
+
+    // Restore timer
+    if (s.timerEnabled) {
+      timerEnabled = true;
+      timerMins = s.timerMins || 5;
+      document.getElementById('timer-toggle').checked = true;
+      toggleTimer(true);
+      document.querySelectorAll('.timer-preset').forEach(b => {
+        b.classList.toggle('active', parseInt(b.textContent) === timerMins);
+      });
+    }
+
+    // Restore diff
+    if (s.diffEnabled) {
+      diffEnabled = true;
+      document.getElementById('diff-toggle').checked = true;
+      toggleDiff(true);
+    }
+
+  } catch(e) {
+    console.log('Edit mode init failed', e);
+  }
+}
+
+function saveChanges() {
+  // Trigger a re-generate and save
+  const title = document.getElementById('act-title').value.trim() || 'Untitled Activity';
+  if (!croppedDataUrl) { alert('Please set an image first.'); return; }
+  const hintList = hints.slice(0, hintCount).filter(h => h.trim());
+  const selToUse = selProbs.length > 20 ? [...selProbs].sort(() => Math.random() - 0.5).slice(0, 20) : [...selProbs];
+  const html = buildHTML(title, selToUse, croppedDataUrl, hintList, timerEnabled ? timerMins : 0, edAR);
+  saveActivity(html, title);
+}
+
+function discardChanges() {
+  if (confirm('Discard all changes and go back to dashboard?')) {
+    window.location.href = 'dashboard.html';
+  }
+}
+
 // ── AUTH GATE ──────────────────────────────────────────────────────────────────
 
 async function sbGet(path, token) {
@@ -1248,6 +1421,7 @@ function signOut() {
 }
 
 checkAuth();
+initEditMode();
 </script>
 </body>
 </html>
