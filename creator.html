@@ -324,6 +324,8 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
 
 <script>
 const UK='ylROEYPBWlyNF_ugwFmefRyruAWfr6xUHlwISoXiJk4';
+const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 let selImgUrl=null,croppedDataUrl=null,curOp='addition',curLvl=1,curMode='random';
 let allProbs=[],selProbs=[],hintCount=0,hints=['','','','',''],timerEnabled=false,timerMins=5,diffEnabled=false;
 let generatedHTML='';
@@ -577,10 +579,96 @@ function buildDLButtons(title,imgData,hintList){
   }
 }
 
-function doDownload(html,title){
-  const blob=new Blob([html],{type:'text/html'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=title.replace(/[^a-z0-9]/gi,'_').toLowerCase()+'.html';a.click();
+async function saveActivity(html, title) {
+  const token = localStorage.getItem('sb_access_token');
+  console.log('saveActivity called, token:', token ? 'exists' : 'MISSING');
+  if (!token) { showSaveToast('Sign in to save activities to your dashboard', 'warn'); return; }
+
+  try {
+    // Get user
+    const ur = await fetch(SB_URL + '/auth/v1/user', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (!ur.ok) return;
+    const user = await ur.json();
+
+    // Get profile to check save limit
+    const pr = await fetch(SB_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const profiles = await pr.json();
+    const profile = Array.isArray(profiles) ? profiles[0] : null;
+    const isPaid = profile && profile.is_paid;
+    const limit = isPaid ? 20 : 3;
+
+    // Count existing activities
+    const cr = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const existing = await cr.json();
+    const count = Array.isArray(existing) ? existing.length : 0;
+
+    if (count >= limit) {
+      const limitMsg = isPaid
+        ? 'You have reached your 20 activity limit. Please delete some activities from your dashboard to save new ones.'
+        : 'Free trial is limited to 3 saved activities. Upgrade to save up to 20!';
+      showSaveToast(limitMsg, 'warn');
+      return;
+    }
+
+    // Detect subject
+    const subject = document.querySelector('#cat-alg') &&
+      document.getElementById('cat-alg').style.background.includes('200,241')
+      ? 'Algebra' : 'Operations';
+
+    // Save activity
+    const res = await fetch(SB_URL + '/rest/v1/activities', {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        user_id: user.id,
+        title: title,
+        html: html,
+        subject: subject
+      })
+    });
+
+    if (res.ok) {
+      showSaveToast('✓ Activity saved to your dashboard!', 'ok');
+    }
+  } catch(e) {
+    console.log('Save failed silently', e);
+  }
+}
+
+function showSaveToast(msg, type) {
+  let t = document.getElementById('save-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'save-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;font-family:Syne,sans-serif;font-weight:700;font-size:13px;z-index:9999;transition:opacity .3s;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.background = type === 'ok' ? '#c8f135' : '#ff5c3a';
+  t.style.color = type === 'ok' ? '#0a0a0f' : '#fff';
+  t.style.opacity = '1';
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => { t.style.opacity = '0'; }, 3500);
+}
+
+function doDownload(html, title) {
+  const blob = new Blob([html], {type: 'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.html';
+  a.click();
+  saveActivity(html, title); // save to cloud in background
 }
 
 // ── BUILD ACTIVITY HTML ─────────────────────────────────────────────────────────
@@ -986,8 +1074,6 @@ function genAlgBank(type, lv) {
 buildLvTabs();renderProblems();
 
 // ── AUTH GATE ──────────────────────────────────────────────────────────────────
-const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 
 async function sbGet(path, token) {
   const r = await fetch(SB_URL + path, {
