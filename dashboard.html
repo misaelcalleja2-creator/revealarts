@@ -50,12 +50,15 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:flex;align-items
 .trial-bar-btn{background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:7px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
 footer{padding:24px 32px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:60px;}
 .activities-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
-.act-card{background:#0f0f18;border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .2s;}
+.act-card{background:#0f0f18;border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s,transform .2s;}
 .act-card:hover{border-color:rgba(200,241,53,0.25);transform:translateY(-2px);}
+.act-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:#1a1a2e;}
+.act-thumb-placeholder{width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#1a1a2e,#0f0f18);display:flex;align-items:center;justify-content:center;font-size:36px;opacity:0.4;}
+.act-body{padding:16px;display:flex;flex-direction:column;gap:10px;}
 .act-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .act-meta{font-size:11px;color:rgba(255,255,255,0.3);display:flex;gap:10px;align-items:center;}
 .act-subject{background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.15);color:rgba(200,241,53,0.7);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
-.act-actions{display:flex;gap:8px;margin-top:4px;}
+.act-actions{display:flex;gap:8px;}
 .act-dl{flex:1;background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-align:center;}
 .act-dl:hover{opacity:0.9;}
 .act-del{background:transparent;border:1px solid rgba(255,92,58,0.2);color:rgba(255,92,58,0.5);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;transition:all .2s;}
@@ -221,15 +224,21 @@ async function loadActivities(token, userId, profile) {
       const card = document.createElement('div');
       card.className = 'act-card';
       const date = new Date(act.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+      const thumbHtml = act.thumbnail
+        ? `<img class="act-thumb" src="${act.thumbnail}" alt="${act.title}">`
+        : `<div class="act-thumb-placeholder">🎨</div>`;
       card.innerHTML = `
-        <div class="act-title">${act.title}</div>
-        <div class="act-meta">
-          ${act.subject ? '<span class="act-subject">' + act.subject + '</span>' : ''}
-          <span>${date}</span>
-        </div>
-        <div class="act-actions">
-          <button class="act-dl" onclick="redownload('${act.id}')">⬇️ Re-download</button>
-          <button class="act-del" onclick="deleteActivity('${act.id}', this)">🗑</button>
+        ${thumbHtml}
+        <div class="act-body">
+          <div class="act-title">${act.title}</div>
+          <div class="act-meta">
+            ${act.subject ? '<span class="act-subject">' + act.subject + '</span>' : ''}
+            <span>${date}</span>
+          </div>
+          <div class="act-actions">
+            <button class="act-dl" onclick="redownload('${act.id}')">⬇️ Re-download</button>
+            <button class="act-del" onclick="deleteActivity('${act.id}', this)">🗑</button>
+          </div>
         </div>
       `;
       grid.appendChild(card);
