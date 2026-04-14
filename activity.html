@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading Activity — The Real Sum Shady</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0a0a0f;
+  color: #fafaf8;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+#loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 20px;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.dot { width: 8px; height: 8px; background: #c8f135; border-radius: 50%; }
+.spin {
+  width: 40px; height: 40px;
+  border: 3px solid rgba(200,241,53,0.2);
+  border-top-color: #c8f135;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-txt { font-size: 14px; color: rgba(255,255,255,0.4); }
+#error-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 16px;
+  text-align: center;
+  padding: 32px;
+}
+.error-icon { font-size: 48px; }
+.error-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+.error-desc { font-size: 14px; color: rgba(255,255,255,0.4); max-width: 400px; line-height: 1.6; }
+.error-btn {
+  background: #c8f135; color: #0a0a0f;
+  border: none; border-radius: 10px;
+  padding: 12px 24px;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+  cursor: pointer; text-decoration: none; margin-top: 8px;
+}
+#activity-frame {
+  display: none;
+  width: 100%; height: 100vh;
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="logo"><span class="dot"></span>The Real Sum Shady</div>
+  <div class="spin"></div>
+  <div class="load-txt">Loading your activity...</div>
+</div>
+
+<div id="error-screen">
+  <div class="error-icon">😕</div>
+  <div class="error-title">Activity not found</div>
+  <div class="error-desc">This activity link may have expired or been deleted by the teacher. Ask your teacher for an updated link.</div>
+  <a href="index.html" class="error-btn">Go to home →</a>
+</div>
+
+<iframe id="activity-frame" title="Reveal Art Activity" allowfullscreen></iframe>
+
+<script>
+const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+
+async function loadActivity() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  if (!id) {
+    showError();
+    return;
+  }
+
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + id + '&select=html,title', {
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY
+      }
+    });
+
+    if (!r.ok) { showError(); return; }
+
+    const data = await r.json();
+    if (!Array.isArray(data) || !data[0] || !data[0].html) {
+      showError();
+      return;
+    }
+
+    const { html, title } = data[0];
+
+    // Update page title
+    if (title) document.title = title + ' — The Real Sum Shady';
+
+    // Render the activity HTML in the iframe using a blob URL
+    const blob = new Blob([html], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+
+    const frame = document.getElementById('activity-frame');
+    frame.src = blobUrl;
+    frame.onload = () => {
+      document.getElementById('loading-screen').style.display = 'none';
+      frame.style.display = 'block';
+    };
+
+  } catch(e) {
+    console.error('Failed to load activity', e);
+    showError();
+  }
+}
+
+function showError() {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('error-screen').style.display = 'flex';
+}
+
+loadActivity();
+</script>
+</body>
+</html>
