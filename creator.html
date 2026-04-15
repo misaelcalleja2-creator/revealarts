@@ -304,7 +304,17 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
 
   <div class="divider"></div>
 
-  <div class="sh"><div class="sn">5</div><div class="st">Differentiated versions <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(optional)</span></div></div>
+  <div id="calc-section" style="display:none;">
+    <div class="sh"><div class="sn">5</div><div class="st">Calculator <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(algebra only)</span></div></div>
+    <div class="toggle-row">
+      <span style="font-size:13px;color:rgba(255,255,255,0.6);">Include calculator for students</span>
+      <label class="toggle-switch"><input type="checkbox" id="calc-toggle" onchange="calcEnabled=this.checked"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px;line-height:1.5;">A floating calculator students can open while solving problems.</div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="sh"><div class="sn" id="diff-step-num">5</div><div class="st">Differentiated versions <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(optional)</span></div></div>
   <div class="toggle-row">
     <span style="font-size:13px;color:rgba(255,255,255,0.6);">Generate 3 versions (A, B, C)</span>
     <label class="toggle-switch"><input type="checkbox" id="diff-toggle" onchange="toggleDiff(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
@@ -339,7 +349,7 @@ const UK='ylROEYPBWlyNF_ugwFmefRyruAWfr6xUHlwISoXiJk4';
 const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 let selImgUrl=null,croppedDataUrl=null,curOp='addition',curLvl=1,curMode='random';
-let allProbs=[],selProbs=[],hintCount=0,hints=['','','','',''],timerEnabled=false,timerMins=5,diffEnabled=false;
+let allProbs=[],selProbs=[],hintCount=0,hints=['','','','',''],timerEnabled=false,timerMins=5,diffEnabled=false,calcEnabled=false;
 let editingActivityId=null;
 let generatedHTML='';
 let edAR={w:1,h:1},edZoom=100,edPanX=0,edPanY=0,edImg=null;
@@ -563,7 +573,7 @@ async function generate(){
   document.getElementById('lo').classList.add('active');
   const hintList=hints.slice(0,hintCount).filter(h=>h.trim());
   const preview20=selProbs.length>20?[...selProbs].sort(()=>Math.random()-0.5).slice(0,20):selProbs;
-  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR);
+  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR,calcEnabled);
   document.getElementById('pi').srcdoc=generatedHTML;
   document.getElementById('pe').style.display='none';
   document.getElementById('pc').style.display='flex';
@@ -598,7 +608,7 @@ function buildDLButtons(title,imgData,hintList){
   if(!diffEnabled){
     const b=document.createElement('button');b.className='dl-btn';
     b.innerHTML= editingActivityId ? '⬇️ Download Updated Copy' : '⬇️ Download Activity';
-    b.onclick=()=>{const p=selProbs.length>20?[...selProbs].sort(()=>Math.random()-0.5).slice(0,20):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR),title);};
+    b.onclick=()=>{const p=selProbs.length>20?[...selProbs].sort(()=>Math.random()-0.5).slice(0,20):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled),title);};
     c.appendChild(b);
   }else{
     ['A','B','C'].forEach(v=>{
@@ -607,7 +617,7 @@ function buildDLButtons(title,imgData,hintList){
         document.getElementById('lo-txt').textContent=`Building Version ${v}...`;
         document.getElementById('lo').classList.add('active');
         const praw=selProbs.length>20?[...selProbs].sort(()=>Math.random()-0.5).slice(0,20):[...selProbs].sort(()=>Math.random()-0.5);const p=praw.map(q=>({eq:q.eq,ans:q.ans,ansDisplay:q.ansDisplay||String(q.ans),isAlgebra:!!q.isAlgebra}));
-        doDownload(buildHTML(`${title} — Version ${v}`,p,imgData,hintList,timerEnabled?timerMins:0,edAR),`${title}_Version_${v}`);
+        doDownload(buildHTML(`${title} — Version ${v}`,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled),`${title}_Version_${v}`);
         document.getElementById('lo').classList.remove('active');
       };c.appendChild(b);
     });
@@ -628,6 +638,7 @@ function captureSettings() {
     hints: [...hints],
     timerEnabled: timerEnabled,
     timerMins: timerMins,
+    calcEnabled: calcEnabled,
     diffEnabled: diffEnabled,
     image: croppedDataUrl,
     imageAR: edAR
@@ -753,11 +764,11 @@ function doDownload(html, title) {
 }
 
 // ── BUILD ACTIVITY HTML ─────────────────────────────────────────────────────────
-function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar){
+function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc){
   const anchors=[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15]];
   const esc=imageData.replace(/\\/g,'\\\\').replace(/`/g,'\\`');
   const IW=500,IH=Math.round(500*(ar.h/ar.w));
-  const hasTimer=timerMinsVal>0,hasHints=hintList.length>0;
+  const hasTimer=timerMinsVal>0,hasHints=hintList.length>0,hasCalc=!!showCalc;
   const timerStart=String(Math.floor(timerMinsVal)).padStart(2,'0')+':00';
 
   return `<!DOCTYPE html>
@@ -830,6 +841,26 @@ body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff
 .saved-badge{font-size:9px;color:rgba(67,160,71,0.6);display:none;align-items:center;gap:3px;}
 .saved-badge.vis{display:flex;}
 .brand{text-align:center;font-size:9px;color:rgba(255,255,255,0.15);margin-top:3px;font-style:italic;}
+/* CALCULATOR */
+.calc-fab{position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:#c8f135;color:#0a0a0f;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;}
+.calc-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(200,241,53,0.4);}
+.calc-modal{display:none;position:fixed;bottom:82px;right:20px;z-index:501;background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:14px;box-shadow:0 12px 40px rgba(0,0,0,0.6);width:224px;}
+.calc-modal.open{display:block;}
+.calc-screen{background:#0a0a0f;border-radius:10px;padding:10px 14px;text-align:right;margin-bottom:10px;min-height:52px;}
+.calc-expr{font-size:11px;color:rgba(255,255,255,0.3);min-height:16px;word-break:break-all;font-family:'Nunito',sans-serif;}
+.calc-val{font-size:26px;font-weight:800;color:#fff;font-family:'Nunito',sans-serif;word-break:break-all;line-height:1.1;}
+.calc-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.cb{padding:11px 0;border-radius:9px;border:none;font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;transition:opacity .1s,transform .1s;}
+.cb:active{opacity:0.7;transform:scale(0.95);}
+.cb.num{background:rgba(255,255,255,0.09);color:#fff;}
+.cb.num:hover{background:rgba(255,255,255,0.14);}
+.cb.op{background:rgba(200,241,53,0.12);color:#c8f135;}
+.cb.op:hover{background:rgba(200,241,53,0.2);}
+.cb.eq{background:#c8f135;color:#0a0a0f;grid-column:span 2;}
+.cb.eq:hover{background:#d4f53f;}
+.cb.clr{background:rgba(255,92,58,0.15);color:#ff5c3a;}
+.cb.clr:hover{background:rgba(255,92,58,0.25);}
+.cb.zero{grid-column:span 2;}
 @media(max-width:680px){.layout{grid-template-columns:1fr;}.center-col{width:100%;}.prob-col{flex-direction:row;flex-wrap:wrap;}.card{width:calc(50% - 2px);}}
 </style>
 <style>
@@ -1035,6 +1066,79 @@ function resetAll(){
 }
 buildUI();drawAll();
 <\/script>
+${hasCalc ? `
+<button class="calc-fab" id="calc-fab" onclick="toggleCalc()" title="Open Calculator">🧮</button>
+<div class="calc-modal" id="calc-modal">
+  <div class="calc-screen">
+    <div class="calc-expr" id="calc-expr"></div>
+    <div class="calc-val" id="calc-val">0</div>
+  </div>
+  <div class="calc-btns">
+    <button class="cb clr" onclick="cClr()">C</button>
+    <button class="cb op" onclick="cOp('±')">±</button>
+    <button class="cb op" onclick="cOp('%')">%</button>
+    <button class="cb op" onclick="cOp('÷')">÷</button>
+    <button class="cb num" onclick="cNum('7')">7</button>
+    <button class="cb num" onclick="cNum('8')">8</button>
+    <button class="cb num" onclick="cNum('9')">9</button>
+    <button class="cb op" onclick="cOp('×')">×</button>
+    <button class="cb num" onclick="cNum('4')">4</button>
+    <button class="cb num" onclick="cNum('5')">5</button>
+    <button class="cb num" onclick="cNum('6')">6</button>
+    <button class="cb op" onclick="cOp('−')">−</button>
+    <button class="cb num" onclick="cNum('1')">1</button>
+    <button class="cb num" onclick="cNum('2')">2</button>
+    <button class="cb num" onclick="cNum('3')">3</button>
+    <button class="cb op" onclick="cOp('+')">+</button>
+    <button class="cb num zero" onclick="cNum('0')">0</button>
+    <button class="cb num" onclick="cNum('.')">.</button>
+    <button class="cb eq" onclick="cEq()">=</button>
+    <button class="cb op" onclick="cSqrt()" title="Square root">√</button>
+    <button class="cb op" onclick="cSq()" title="Square">x²</button>
+    <button class="cb op" onclick="cInv()" title="Inverse">1/x</button>
+    <button class="cb clr" onclick="cBack()">⌫</button>
+  </div>
+</div>
+<script>
+// CALCULATOR
+let cCurr='0',cPrev='',cOper=null,cFresh=false;
+function toggleCalc(){document.getElementById('calc-modal').classList.toggle('open');}
+function cRender(){document.getElementById('calc-val').textContent=cCurr;document.getElementById('calc-expr').textContent=cOper?cPrev+' '+cOper:'';}
+function cClr(){cCurr='0';cPrev='';cOper=null;cFresh=false;cRender();}
+function cBack(){if(cFresh)return;cCurr=cCurr.length>1?cCurr.slice(0,-1):'0';cRender();}
+function cNum(n){
+  if(cFresh){cCurr=n==='.'?'0.':n;cFresh=false;}
+  else{if(n==='.'&&cCurr.includes('.'))return;cCurr=cCurr==='0'&&n!=='.'?n:cCurr+n;}
+  cRender();
+}
+function cOp(op){
+  if(op==='±'){cCurr=String(-parseFloat(cCurr)||0);cRender();return;}
+  if(op==='%'){cCurr=String(parseFloat(cCurr)/100);cRender();return;}
+  if(cOper&&!cFresh)cEq();
+  cPrev=cCurr;cOper=op;cFresh=true;cRender();
+}
+function cSqrt(){const v=parseFloat(cCurr);cCurr=v>=0?String(Math.round(Math.sqrt(v)*1e10)/1e10):'Error';cOper=null;cPrev='';cFresh=true;cRender();}
+function cSq(){cCurr=String(Math.round(parseFloat(cCurr)**2*1e10)/1e10);cFresh=true;cRender();}
+function cInv(){const v=parseFloat(cCurr);cCurr=v!==0?String(Math.round((1/v)*1e10)/1e10):'Error';cFresh=true;cRender();}
+function cEq(){
+  if(!cOper||!cPrev)return;
+  const a=parseFloat(cPrev),b=parseFloat(cCurr);
+  let r;
+  if(cOper==='÷')r=b!==0?a/b:'Error';
+  else if(cOper==='×')r=a*b;
+  else if(cOper==='−')r=a-b;
+  else r=a+b;
+  cCurr=typeof r==='number'?String(Math.round(r*1e10)/1e10):r;
+  cOper=null;cPrev='';cFresh=true;cRender();
+}
+// Close calc when clicking outside
+document.addEventListener('click',e=>{
+  const modal=document.getElementById('calc-modal');
+  const fab=document.getElementById('calc-fab');
+  if(modal&&fab&&!modal.contains(e.target)&&!fab.contains(e.target)){modal.classList.remove('open');}
+});
+</script>
+` : ''}
 </body>
 </html>`;
 }
@@ -1055,6 +1159,8 @@ function setCat(cat) {
     algBtn.style.color = 'rgba(255,255,255,0.45)';
     document.getElementById('ops-section').style.display = 'block';
     document.getElementById('alg-section').style.display = 'none';
+    document.getElementById('calc-section').style.display = 'none';
+    calcEnabled = false; document.getElementById('calc-toggle').checked = false;
     renderProblems();
   } else {
     algBtn.style.borderColor = 'rgba(200,241,53,0.6)';
@@ -1065,6 +1171,7 @@ function setCat(cat) {
     opsBtn.style.color = 'rgba(255,255,255,0.45)';
     document.getElementById('ops-section').style.display = 'none';
     document.getElementById('alg-section').style.display = 'block';
+    document.getElementById('calc-section').style.display = 'block';
     buildAlgLvTabs();
     renderAlgProblems();
   }
@@ -1332,6 +1439,13 @@ async function initEditMode() {
       toggleDiff(true);
     }
 
+    // Restore calculator
+    if (s.calcEnabled) {
+      calcEnabled = true;
+      const ct = document.getElementById('calc-toggle');
+      if (ct) ct.checked = true;
+    }
+
   } catch(e) {
     console.log('Edit mode init failed', e);
   }
@@ -1342,7 +1456,7 @@ async function saveChanges() {
   if (!croppedDataUrl) { alert('Please set an image first.'); return; }
   const hintList = hints.slice(0, hintCount).filter(h => h.trim());
   const selToUse = selProbs.length > 20 ? [...selProbs].sort(() => Math.random() - 0.5).slice(0, 20) : [...selProbs];
-  const html = buildHTML(title, selToUse, croppedDataUrl, hintList, timerEnabled ? timerMins : 0, edAR);
+  const html = buildHTML(title, selToUse, croppedDataUrl, hintList, timerEnabled ? timerMins : 0, edAR, calcEnabled);
   const success = await saveActivity(html, title);
   if (success) window.location.href = 'dashboard.html';
 }
