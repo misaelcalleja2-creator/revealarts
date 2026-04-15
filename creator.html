@@ -130,6 +130,12 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
 .dl-btn-diff{background:rgba(159,93,229,0.2);color:var(--violet);border:1px solid rgba(159,93,229,0.4);}
 .dl-btn-diff:hover{background:rgba(159,93,229,0.3);}
 .dl-note{font-size:10px;color:rgba(255,255,255,0.2);text-align:center;}
+.dl-btn-save{width:100%;background:var(--lime);color:var(--ink);border:none;border-radius:10px;padding:13px;font-family:"Syne",sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.dl-btn-save:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.3);}
+.dl-btn-discard{width:100%;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);border-radius:10px;padding:13px;font-family:"Syne",sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;}
+.dl-btn-discard:hover{border-color:rgba(255,92,58,0.4);color:var(--coral);}
+.dl-divider{height:1px;background:var(--border);margin:4px 0;}
+.dl-edit-label{font-size:10px;color:rgba(200,241,53,0.5);text-align:center;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
 .loading-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.88);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
 .loading-overlay.active{display:flex;}
 .spin{width:44px;height:44px;border:3px solid rgba(200,241,53,0.2);border-top-color:var(--lime);border-radius:50%;animation:spin .8s linear infinite;}
@@ -568,8 +574,30 @@ async function generate(){
 
 function buildDLButtons(title,imgData,hintList){
   const c=document.getElementById('dl-btns');c.innerHTML='';
+  // Also check URL param in case initEditMode is still loading
+  if(!editingActivityId){const p=new URLSearchParams(window.location.search);const eid=p.get('edit');if(eid)editingActivityId=eid;}
+  console.log('buildDLButtons: editingActivityId =', editingActivityId);
+
+  // Edit mode — show Save Changes + Discard at top
+  if(editingActivityId){
+    const label=document.createElement('div');label.className='dl-edit-label';label.textContent='Editing saved activity';
+    c.appendChild(label);
+
+    const saveBtn=document.createElement('button');saveBtn.className='dl-btn-save';saveBtn.innerHTML='💾 Save Changes';
+    saveBtn.onclick=()=>saveChanges();
+    c.appendChild(saveBtn);
+
+    const discardBtn=document.createElement('button');discardBtn.className='dl-btn-discard';discardBtn.innerHTML='✕ Discard Changes';
+    discardBtn.onclick=()=>discardChanges();
+    c.appendChild(discardBtn);
+
+    const divider=document.createElement('div');divider.className='dl-divider';
+    c.appendChild(divider);
+  }
+
   if(!diffEnabled){
-    const b=document.createElement('button');b.className='dl-btn';b.innerHTML='⬇️ Download Activity';
+    const b=document.createElement('button');b.className='dl-btn';
+    b.innerHTML= editingActivityId ? '⬇️ Download Updated Copy' : '⬇️ Download Activity';
     b.onclick=()=>{const p=selProbs.length>20?[...selProbs].sort(()=>Math.random()-0.5).slice(0,20):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR),title);};
     c.appendChild(b);
   }else{
@@ -1134,39 +1162,72 @@ async function initEditMode() {
   if (!token) return;
 
   try {
+    console.log('🔧 initEditMode: fetching activity', actId);
     const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + actId + '&select=*', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
+    console.log('🔧 fetch status:', r.status);
     const data = await r.json();
-    if (!Array.isArray(data) || !data[0] || !data[0].settings) return;
+    console.log('🔧 data received:', data);
+    if (!Array.isArray(data) || !data[0]) {
+      console.log('❌ No activity found');
+      return;
+    }
+    if (!data[0].settings) {
+      console.log('❌ Activity has no settings — was it saved before settings tracking was added?');
+      return;
+    }
 
     const s = data[0].settings;
+    console.log('✅ Settings found:', s);
     editingActivityId = actId;
 
     // Show edit mode UI
     document.getElementById('edit-mode-btns').style.display = 'flex';
-    document.getElementById('nav-back-btn').textContent = '← Dashboard';
+    if (document.getElementById('nav-back-btn')) document.getElementById('nav-back-btn').textContent = '← Dashboard';
 
     // Restore title
     if (s.title) document.getElementById('act-title').value = s.title;
 
-    // Restore image
+    // Restore image — hide search/upload UI and show editor
     if (s.image) {
       croppedDataUrl = s.image;
       edAR = s.imageAR || {w:1,h:1};
-      // Show the cropped image in the editor
-      const ec = document.getElementById('ec');
-      if (ec) {
-        const img = new Image();
-        img.onload = () => {
-          edImg = img;
-          editorReady = true;
-          renderEditor();
-          document.getElementById('img-editor').classList.add('active');
-          document.querySelector('.upload-zone') && (document.querySelector('.upload-zone').style.display = 'none');
-        };
-        img.src = s.image;
-      }
+      const img = new Image();
+      img.onload = () => {
+        edImg = img;
+        editorReady = true;
+        // Hide the search and upload sections
+        const searchRow = document.querySelector('.search-row');
+        const photoGrid = document.getElementById('pg');
+        const orRow = document.querySelector('.or-row');
+        const uploadZone = document.querySelector('.upload-zone');
+        if (searchRow) searchRow.style.display = 'none';
+        if (photoGrid) photoGrid.style.display = 'none';
+        if (orRow) orRow.style.display = 'none';
+        if (uploadZone) uploadZone.style.display = 'none';
+        // Show the editor with the image
+        const imgEditor = document.getElementById('img-editor');
+        if (imgEditor) imgEditor.classList.add('active');
+        renderEditor();
+        // Add a "Change image" button if not already there
+        if (!document.getElementById('change-img-edit-btn')) {
+          const chBtn = document.createElement('button');
+          chBtn.id = 'change-img-edit-btn';
+          chBtn.className = 'change-img-btn';
+          chBtn.textContent = 'Change image';
+          chBtn.style.marginBottom = '10px';
+          chBtn.onclick = () => {
+            if (searchRow) searchRow.style.display = '';
+            if (photoGrid) photoGrid.style.display = '';
+            if (orRow) orRow.style.display = '';
+            if (uploadZone) uploadZone.style.display = '';
+            chBtn.remove();
+          };
+          imgEditor.parentNode.insertBefore(chBtn, imgEditor);
+        }
+      };
+      img.src = s.image;
     }
 
     // Restore category
@@ -1177,25 +1238,47 @@ async function initEditMode() {
 
     // Restore ops settings
     if (s.cat === 'ops' && s.op) {
-      const opBtn = document.querySelector('#op-tabs .tab.active');
       curOp = s.op; curLvl = s.lvl || 1;
+      // Click the right operation tab
       document.querySelectorAll('#op-tabs .tab').forEach(b => {
-        if (b.textContent.toLowerCase().includes(s.op.replace('addition','add').replace('subtraction','sub').replace('multiplication','mult').replace('division','div'))) b.classList.add('active');
-        else b.classList.remove('active');
+        const onclick = b.getAttribute('onclick') || '';
+        if (onclick.includes("'" + s.op + "'") || onclick.includes('"' + s.op + '"')) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
       });
-      renderProblems();
+      // Rebuild level tabs and select right level
+      buildLvTabs && buildLvTabs();
+      setTimeout(() => {
+        document.querySelectorAll('#lv-tabs .tab').forEach(b => {
+          const onclick = b.getAttribute('onclick') || '';
+          if (onclick.includes('curLvl=' + s.lvl) || (b.textContent.trim() === 'L' + s.lvl)) {
+            b.classList.add('active');
+          }
+        });
+        renderProblems();
+      }, 50);
     }
 
     // Restore alg settings
     if (s.cat === 'alg' && s.algType) {
       curAlgType = s.algType; curAlgLv = s.algLv || 1;
       document.querySelectorAll('#alg-type-tabs .tab').forEach(b => {
-        if ((s.algType === 'one' && b.textContent.includes('One')) ||
-            (s.algType === 'two' && b.textContent.includes('Two'))) b.classList.add('active');
-        else b.classList.remove('active');
+        const onclick = b.getAttribute('onclick') || '';
+        if (onclick.includes("'" + s.algType + "'") || onclick.includes('"' + s.algType + '"')) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
       });
       buildAlgLvTabs();
-      renderAlgProblems();
+      setTimeout(() => {
+        document.querySelectorAll('#alg-lv-tabs .tab').forEach(b => {
+          if (b.textContent.trim() === 'L' + s.algLv) b.classList.add('active');
+        });
+        renderAlgProblems();
+      }, 50);
     }
 
     // Restore mode
