@@ -46,14 +46,18 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
 .upload-text{font-size:11px;color:rgba(255,255,255,0.3);}
 /* image editor */
 .img-editor{display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
-.img-editor.active{display:block;}
-.epw{position:relative;border-radius:8px;overflow:hidden;background:#1a1a1a;margin-bottom:12px;cursor:grab;user-select:none;min-height:200px;display:flex;align-items:center;justify-content:center;}
+.img-editor.active{display:block;border:2px solid rgba(200,241,53,0.5);background:rgba(200,241,53,0.03);}
+.epw{position:relative;border-radius:8px;overflow:hidden;background:#1a1a1a;margin-bottom:12px;cursor:grab;user-select:none;min-height:200px;display:flex;align-items:center;justify-content:center;border:2px solid rgba(200,241,53,0.3);}
 .epw:active{cursor:grabbing;}
 .epw .loading-msg{color:rgba(255,255,255,0.3);font-size:12px;position:absolute;}
 #ec{display:block;width:100%;position:relative;z-index:1;}
 .ctrl-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
 .ctrl-label{font-size:11px;color:rgba(255,255,255,0.4);min-width:46px;}
-.ctrl-row input[type=range]{flex:1;}
+.ctrl-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:4px;background:rgba(255,255,255,0.15);outline:none;cursor:pointer;}
+.ctrl-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#c8f135;cursor:pointer;border:3px solid #0a0a0f;box-shadow:0 0 0 3px rgba(200,241,53,0.5),0 2px 8px rgba(0,0,0,0.4);}
+.ctrl-row input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#c8f135;cursor:pointer;border:3px solid #0a0a0f;box-shadow:0 0 0 3px rgba(200,241,53,0.5);}
+.ctrl-row input[type=range]::-webkit-slider-runnable-track{background:rgba(255,255,255,0.15);border-radius:4px;height:6px;}
+.ctrl-row input[type=range]::-moz-range-track{background:rgba(255,255,255,0.15);border-radius:4px;height:6px;}
 .aspect-btns{display:flex;gap:6px;flex-wrap:wrap;}
 .aspect-btn{padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2;}
 .aspect-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
@@ -228,9 +232,9 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
       </div>
     </div>
     <div class="ctrl-row">
-      <span class="ctrl-label">Zoom</span>
-      <input type="range" id="zoom-sl" min="1" max="500" step="1" value="100" oninput="onZoomSlider(this.value)">
-      <span style="font-size:11px;color:rgba(255,255,255,0.3);min-width:36px;" id="zoom-val">100%</span>
+      <span class="ctrl-label" style="color:rgba(200,241,53,0.7);">Zoom</span>
+      <input type="range" id="zoom-sl" min="1" max="500" step="1" value="100" oninput="onZoomSlider(this.value)" style="accent-color:#c8f135;">
+      <span style="font-size:11px;color:rgba(200,241,53,0.7);min-width:36px;font-weight:700;" id="zoom-val">100%</span>
     </div>
     <div class="ctrl-row">
       <button class="fit-btn" onclick="fitImage()">⊡ Fit to canvas</button>
@@ -351,7 +355,7 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
   <div id="pc" style="display:none;flex-direction:column;gap:14px;">
     <div class="prev-frame"><iframe id="pi" title="Preview"></iframe></div>
     <div class="dl-btns" id="dl-btns"></div>
-    <div class="dl-note">Downloads as HTML · Share via Google Classroom · Works on any Chromebook · Progress auto-saves</div>
+    <div class="dl-note">Activity saved to your dashboard · Share link via Google Classroom · Works on any Chromebook</div>
   </div>
 </div>
 </div>
@@ -627,8 +631,19 @@ function buildDLButtons(title,imgData,hintList){
 
   if(!diffEnabled){
     const b=document.createElement('button');b.className='dl-btn';
-    b.innerHTML= editingActivityId ? '⬇️ Download Updated Copy' : '⬇️ Download Activity';
-    b.onclick=()=>{const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs),title);};
+    b.innerHTML= editingActivityId ? '⬇️ Download Updated Copy' : '✅ Save & Go to Dashboard';
+    if(editingActivityId){
+      b.onclick=()=>{const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs),title);};
+    } else {
+      b.onclick=async()=>{
+        b.disabled=true;b.innerHTML='⏳ Saving...';
+        const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);
+        const html=buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs);
+        const success=await saveActivity(html,title);
+        if(success){window.location.href='dashboard.html';}
+        else{b.disabled=false;b.innerHTML='✅ Save & Go to Dashboard';}
+      };
+    }
     c.appendChild(b);
   }else{
     ['A','B','C'].forEach(v=>{
