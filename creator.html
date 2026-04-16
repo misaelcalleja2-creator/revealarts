@@ -91,6 +91,9 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
 .sel-ct span{color:var(--lime);font-weight:700;}
 .rand-btn{background:transparent;border:1px solid var(--border);color:rgba(255,255,255,0.4);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s;}
 .rand-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--white);}
+.prob-count-btn{background:transparent;border:1px solid var(--border);color:rgba(255,255,255,0.4);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:"Syne",sans-serif;transition:all .2s;}
+.prob-count-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--white);}
+.prob-count-btn.active{background:rgba(200,241,53,0.12);border-color:var(--lime);color:var(--lime);}
 /* hints */
 .hc-row{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;}
 .hc-btn{flex:1;min-width:60px;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;}
@@ -262,12 +265,21 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
     <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:10px;">L1–L2: integer answers · L3: includes fractions and decimals</div>
   </div>
   <div class="mode-row">
-    <button class="mode-btn active" onclick="setMode('random',this)">🎲 Random 20</button>
+    <button class="mode-btn active" id="random-mode-btn" onclick="setMode('random',this)">🎲 Random <span id="random-count">20</span></button>
     <button class="mode-btn" onclick="setMode('manual',this)">✋ Hand pick</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center;">
+    <span style="font-size:11px;color:rgba(255,255,255,0.4);min-width:80px;">Problems:</span>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+      <button class="prob-count-btn" onclick="setNumProbs(15,this)">15</button>
+      <button class="prob-count-btn active" onclick="setNumProbs(20,this)">20</button>
+      <button class="prob-count-btn" onclick="setNumProbs(25,this)">25</button>
+      <button class="prob-count-btn" onclick="setNumProbs(30,this)">30</button>
+    </div>
   </div>
   <div class="problem-pool" id="pp"></div>
   <div class="sel-status">
-    <div class="sel-ct"><span id="sc">20</span> of 20 selected</div>
+    <div class="sel-ct"><span id="sc">20</span> of <span id="sc-total">20</span> selected</div>
     <button class="rand-btn" onclick="rand20()">🎲 Re-randomize</button>
   </div>
 
@@ -349,7 +361,7 @@ const UK='ylROEYPBWlyNF_ugwFmefRyruAWfr6xUHlwISoXiJk4';
 const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 let selImgUrl=null,croppedDataUrl=null,curOp='addition',curLvl=1,curMode='random';
-let allProbs=[],selProbs=[],hintCount=0,hints=['','','','',''],timerEnabled=false,timerMins=5,diffEnabled=false,calcEnabled=false;
+let allProbs=[],selProbs=[],hintCount=0,hints=['','','','',''],timerEnabled=false,timerMins=5,diffEnabled=false,calcEnabled=false,numProbs=20;
 let editingActivityId=null;
 let generatedHTML='';
 let edAR={w:1,h:1},edZoom=100,edPanX=0,edPanY=0,edImg=null;
@@ -528,11 +540,19 @@ function toggleProb(p,row){
   else{selProbs.push(p);row.classList.add('selected');row.querySelector('.prob-chk').textContent='✓';}
   updSC();
 }
+function setNumProbs(n, btn) {
+  numProbs = n;
+  document.querySelectorAll('.prob-count-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('sc-total') && (document.getElementById('sc-total').textContent = n);
+  document.getElementById('random-count') && (document.getElementById('random-count').textContent = n);
+  rand20();
+}
 function rand20(){
-  const sh=[...allProbs].sort(()=>Math.random()-0.5);selProbs=sh.slice(0,20);
+  const sh=[...allProbs].sort(()=>Math.random()-0.5);selProbs=sh.slice(0,numProbs);
   renderProbList(curMode==='random'?selProbs:allProbs,selProbs.map(p=>p.eq));
 }
-function updSC(){document.getElementById('sc').textContent=selProbs.length;}
+function updSC(){document.getElementById('sc').textContent=selProbs.length;document.getElementById('sc-total')&&(document.getElementById('sc-total').textContent=numProbs);}
 function setOp(op,btn){curOp=op;document.querySelectorAll('#op-tabs .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderProblems();}
 function setMode(m,btn){curMode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(m==='random')rand20();else renderProbList(allProbs,selProbs.map(p=>p.eq));}
 function buildLvTabs(){
@@ -572,8 +592,8 @@ async function generate(){
   const title=document.getElementById('act-title').value.trim()||'Reveal Art Activity';
   document.getElementById('lo').classList.add('active');
   const hintList=hints.slice(0,hintCount).filter(h=>h.trim());
-  const preview20=selProbs.length>20?[...selProbs].sort(()=>Math.random()-0.5).slice(0,20):selProbs;
-  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR,calcEnabled);
+  const preview20=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):selProbs;
+  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs);
   document.getElementById('pi').srcdoc=generatedHTML;
   document.getElementById('pe').style.display='none';
   document.getElementById('pc').style.display='flex';
@@ -608,7 +628,7 @@ function buildDLButtons(title,imgData,hintList){
   if(!diffEnabled){
     const b=document.createElement('button');b.className='dl-btn';
     b.innerHTML= editingActivityId ? '⬇️ Download Updated Copy' : '⬇️ Download Activity';
-    b.onclick=()=>{const p=selProbs.length>20?[...selProbs].sort(()=>Math.random()-0.5).slice(0,20):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled),title);};
+    b.onclick=()=>{const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs),title);};
     c.appendChild(b);
   }else{
     ['A','B','C'].forEach(v=>{
@@ -616,8 +636,8 @@ function buildDLButtons(title,imgData,hintList){
       b.onclick=()=>{
         document.getElementById('lo-txt').textContent=`Building Version ${v}...`;
         document.getElementById('lo').classList.add('active');
-        const praw=selProbs.length>20?[...selProbs].sort(()=>Math.random()-0.5).slice(0,20):[...selProbs].sort(()=>Math.random()-0.5);const p=praw.map(q=>({eq:q.eq,ans:q.ans,ansDisplay:q.ansDisplay||String(q.ans),isAlgebra:!!q.isAlgebra}));
-        doDownload(buildHTML(`${title} — Version ${v}`,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled),`${title}_Version_${v}`);
+        const praw=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);const p=praw.map(q=>({eq:q.eq,ans:q.ans,ansDisplay:q.ansDisplay||String(q.ans),isAlgebra:!!q.isAlgebra}));
+        doDownload(buildHTML(`${title} — Version ${v}`,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs),`${title}_Version_${v}`);
         document.getElementById('lo').classList.remove('active');
       };c.appendChild(b);
     });
@@ -639,6 +659,7 @@ function captureSettings() {
     timerEnabled: timerEnabled,
     timerMins: timerMins,
     calcEnabled: calcEnabled,
+    numProbs: numProbs,
     diffEnabled: diffEnabled,
     image: croppedDataUrl,
     imageAR: edAR
@@ -764,8 +785,17 @@ function doDownload(html, title) {
 }
 
 // ── BUILD ACTIVITY HTML ─────────────────────────────────────────────────────────
-function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc){
-  const anchors=[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15]];
+function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,probCount){
+  const N=probCount||problems.length||20;
+  // Anchor sets for different problem counts
+  const ANCHOR_SETS={
+    15:[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10]],
+    20:[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15]],
+    25:[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15],[2,10],[18,10],[10,2],[10,18],[6,14]],
+    30:[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15],[2,10],[18,10],[10,2],[10,18],[6,14],[14,6],[2,5],[18,5],[2,15],[18,15]]
+  };
+  const anchors=ANCHOR_SETS[N]||ANCHOR_SETS[20];
+  const TOTAL=anchors.length;
   const esc=imageData.replace(/\\/g,'\\\\').replace(/`/g,'\\`');
   const IW=500,IH=Math.round(500*(ar.h/ar.w));
   const hasTimer=timerMinsVal>0,hasHints=hintList.length>0,hasCalc=!!showCalc;
@@ -890,22 +920,22 @@ body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff
 ${hasTimer||hasHints?`<div class="top-bar">${hasTimer?`<div class="timer-display" id="td">⏱ ${timerStart}</div>`:''}${hasHints?`<div class="hint-bar">${hintList.map((h,i)=>`<button class="hint-btn" id="hb${i}" onclick="openHint(${i})">💡 Hint ${i+1}</button>`).join('')}</div>`:''}</div>`:''}
 ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-title">💡 Hint</h3><p id="hmt"></p><button class="hint-close" onclick="closeHint()">Got it!</button></div></div>`:''}
 <div class="layout">
-  <div class="prob-col" id="lc"><div class="col-label">Problems 1–10</div></div>
+  <div class="prob-col" id="lc"><div class="col-label">Problems 1–${Math.ceil(N/2)}</div></div>
   <div class="center-col">
     <div class="canvas-outer"><canvas id="rc" width="${IW}" height="${IH}"></canvas></div>
-    <div class="prog-row"><div class="prog-top"><span class="prog-text" id="pt">0 of 20 solved</span><span class="prog-pct" id="pp">0%</span></div><div class="prog-track"><div class="prog-fill" id="pf"></div></div></div>
+    <div class="prog-row"><div class="prog-top"><span class="prog-text" id="pt">0 of ${N} solved</span><span class="prog-pct" id="pp">0%</span></div><div class="prog-track"><div class="prog-fill" id="pf"></div></div></div>
     <div class="btm-row"><button class="reset-btn" onclick="resetAll()">↺ Reset</button><div class="saved-badge" id="sb2">✓ Saved</div></div>
     <div class="brand">© The Real Sum Shady</div>
   </div>
-  <div class="prob-col" id="rc2"><div class="col-label">Problems 11–20</div></div>
+  <div class="prob-col" id="rc2"><div class="col-label">Problems ${Math.ceil(N/2)+1}–${N}</div></div>
 </div>
 <script>
 const PROBS=${JSON.stringify(problems.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra})))};
-const ANCHORS=${JSON.stringify(anchors)};
+const ANCHORS=${JSON.stringify(anchors)},TOTAL=${N};
 const HINTS=${JSON.stringify(hintList)};
 const TIMER_MINS=${timerMinsVal};
 const SAVE_KEY='ra3_'+encodeURIComponent('${title.replace(/'/g,"\'")}')+'_'+PROBS.length;
-const GN=20,IW=${IW},IH=${IH},TW=IW/GN,TH=IH/GN;
+const GN=${N},IW=${IW},IH=${IH},TW=IW/GN,TH=IH/GN;
 const hintUsed=new Array(HINTS.length).fill(false);
 
 function buildAssign(){
@@ -1013,7 +1043,7 @@ function buildUI(){
   const lc=document.getElementById('lc'),rc=document.getElementById('rc2');
   while(lc.children.length>1)lc.removeChild(lc.lastChild);while(rc.children.length>1)rc.removeChild(rc.lastChild);
   PROBS.forEach((p,i)=>{
-    const col=i<10?lc:rc;const card=document.createElement('div');card.className='card';card.id='card-'+i;
+    const col=i<Math.ceil(GN/2)?lc:rc;const card=document.createElement('div');card.className='card';card.id='card-'+i;
     const xlbl=p.isAlgebra?'x =':'= ?';
     let eqHtml;
     if(p.eq&&p.eq.startsWith('FRAC:')){
@@ -1057,7 +1087,7 @@ function chk(i){
   }
 }
 
-function updateProg(){const n=solved.size,pct=Math.round(n/20*100);document.getElementById('pt').textContent=n+' of 20 solved';document.getElementById('pp').textContent=pct+'%';document.getElementById('pf').style.width=pct+'%';}
+function updateProg(){const n=solved.size,pct=Math.round(n/GN*100);document.getElementById('pt').textContent=n+' of '+GN+' solved';document.getElementById('pp').textContent=pct+'%';document.getElementById('pf').style.width=pct+'%';}
 function resetAll(){
   if(!confirm('Reset all progress?'))return;
   solved.clear();for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)rev[r][c]=false;
@@ -1065,7 +1095,7 @@ function resetAll(){
   buildUI();updateProg();drawAll();
 }
 buildUI();drawAll();
-<\/script>
+</sc${''}ript>
 ${hasCalc ? `
 <button class="calc-fab" id="calc-fab" onclick="toggleCalc()" title="Open Calculator">🧮</button>
 <div class="calc-modal" id="calc-modal">
@@ -1446,6 +1476,15 @@ async function initEditMode() {
       if (ct) ct.checked = true;
     }
 
+    // Restore problem count
+    if (s.numProbs) {
+      numProbs = s.numProbs;
+      document.querySelectorAll('.prob-count-btn').forEach(b => {
+        b.classList.toggle('active', parseInt(b.textContent) === s.numProbs);
+      });
+      document.getElementById('sc-total') && (document.getElementById('sc-total').textContent = s.numProbs);
+    }
+
   } catch(e) {
     console.log('Edit mode init failed', e);
   }
@@ -1455,8 +1494,8 @@ async function saveChanges() {
   const title = document.getElementById('act-title').value.trim() || 'Untitled Activity';
   if (!croppedDataUrl) { alert('Please set an image first.'); return; }
   const hintList = hints.slice(0, hintCount).filter(h => h.trim());
-  const selToUse = selProbs.length > 20 ? [...selProbs].sort(() => Math.random() - 0.5).slice(0, 20) : [...selProbs];
-  const html = buildHTML(title, selToUse, croppedDataUrl, hintList, timerEnabled ? timerMins : 0, edAR, calcEnabled);
+  const selToUse = selProbs.length > numProbs ? [...selProbs].sort(() => Math.random() - 0.5).slice(0, numProbs) : [...selProbs];
+  const html = buildHTML(title, selToUse, croppedDataUrl, hintList, timerEnabled ? timerMins : 0, edAR, calcEnabled, numProbs);
   const success = await saveActivity(html, title);
   if (success) window.location.href = 'dashboard.html';
 }
