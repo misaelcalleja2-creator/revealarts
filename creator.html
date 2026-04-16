@@ -329,6 +329,29 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
     <div class="divider"></div>
   </div>
 
+  <div id="ai-tutor-section" style="display:none;">
+    <div class="sh"><div class="sn" id="ai-step-num">6</div><div class="st">AI Tutor <span style="font-size:11px;color:rgba(200,241,53,0.6);font-weight:600;">NEW ✨</span></div></div>
+    <div class="toggle-row">
+      <span style="font-size:13px;color:rgba(255,255,255,0.6);">Enable AI step-by-step tutor</span>
+      <label class="toggle-switch"><input type="checkbox" id="ai-tutor-toggle" onchange="toggleAiTutor(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+    </div>
+    <div class="ai-tutor-settings" id="ai-tutor-settings" style="display:none;flex-direction:column;gap:8px;margin-top:8px;">
+      <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Students click "AI Tutor" to get step-by-step help on any problem. You control how many times they can ask.</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+        <span style="font-size:12px;color:rgba(255,255,255,0.5);min-width:80px;">Max helps:</span>
+        <div style="display:flex;gap:5px;">
+          <button class="hc-btn active" id="ai-help-0" onclick="setAiLimit(0,this)">∞</button>
+          <button class="hc-btn" id="ai-help-1" onclick="setAiLimit(1,this)">1</button>
+          <button class="hc-btn" id="ai-help-2" onclick="setAiLimit(2,this)">2</button>
+          <button class="hc-btn" id="ai-help-3" onclick="setAiLimit(3,this)">3</button>
+          <button class="hc-btn" id="ai-help-5" onclick="setAiLimit(5,this)">5</button>
+        </div>
+      </div>
+      <div style="font-size:10px;color:rgba(200,241,53,0.4);line-height:1.5;">∞ = unlimited · AI shows vertical step-by-step algebra with explanations</div>
+    </div>
+    <div class="divider"></div>
+  </div>
+
   <div class="sh"><div class="sn" id="diff-step-num">5</div><div class="st">Differentiated versions <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(optional)</span></div></div>
   <div class="toggle-row">
     <span style="font-size:13px;color:rgba(255,255,255,0.6);">Generate 3 versions (A, B, C)</span>
@@ -365,6 +388,7 @@ const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 let selImgUrl=null,croppedDataUrl=null,curOp='addition',curLvl=1,curMode='random';
 let allProbs=[],selProbs=[],hintCount=0,hints=['','','','',''],timerEnabled=false,timerMins=5,diffEnabled=false,calcEnabled=false,numProbs=20;
+let aiTutorEnabled=false,aiHelpLimit=0;
 let editingActivityId=null;
 let generatedHTML='';
 let edAR={w:1,h:1},edZoom=100,edPanX=0,edPanY=0,edImg=null;
@@ -598,7 +622,7 @@ async function generate(){
   document.getElementById('lo').classList.add('active');
   const hintList=hints.slice(0,hintCount).filter(h=>h.trim());
   const preview20=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):selProbs;
-  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs);
+  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit);
   document.getElementById('pi').srcdoc=generatedHTML;
   document.getElementById('pe').style.display='none';
   document.getElementById('pc').style.display='flex';
@@ -634,12 +658,12 @@ function buildDLButtons(title,imgData,hintList){
     const b=document.createElement('button');b.className='dl-btn';
     b.innerHTML= editingActivityId ? '⬇️ Download Updated Copy' : '✅ Save & Go to Dashboard';
     if(editingActivityId){
-      b.onclick=()=>{const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs),title);};
+      b.onclick=()=>{const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit),title);};
     } else {
       b.onclick=async()=>{
         b.disabled=true;b.innerHTML='⏳ Saving...';
         const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);
-        const html=buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs);
+        const html=buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit);
         const success=await saveActivity(html,title);
         if(success){window.location.href='dashboard.html';}
         else{b.disabled=false;b.innerHTML='✅ Save & Go to Dashboard';}
@@ -653,11 +677,21 @@ function buildDLButtons(title,imgData,hintList){
         document.getElementById('lo-txt').textContent=`Building Version ${v}...`;
         document.getElementById('lo').classList.add('active');
         const praw=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);const p=praw.map(q=>({eq:q.eq,ans:q.ans,ansDisplay:q.ansDisplay||String(q.ans),isAlgebra:!!q.isAlgebra}));
-        doDownload(buildHTML(`${title} — Version ${v}`,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs),`${title}_Version_${v}`);
+        doDownload(buildHTML(`${title} — Version ${v}`,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit),`${title}_Version_${v}`);
         document.getElementById('lo').classList.remove('active');
       };c.appendChild(b);
     });
   }
+}
+
+function toggleAiTutor(on) {
+  aiTutorEnabled = on;
+  document.getElementById('ai-tutor-settings').style.display = on ? 'flex' : 'none';
+}
+function setAiLimit(n, btn) {
+  aiHelpLimit = n;
+  document.querySelectorAll('#ai-tutor-settings .hc-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 }
 
 function captureSettings() {
@@ -677,6 +711,8 @@ function captureSettings() {
     calcEnabled: calcEnabled,
     numProbs: numProbs,
     diffEnabled: diffEnabled,
+    aiTutorEnabled: aiTutorEnabled,
+    aiHelpLimit: aiHelpLimit,
     image: croppedDataUrl,
     imageAR: edAR
   };
@@ -801,7 +837,7 @@ function doDownload(html, title) {
 }
 
 // ── BUILD ACTIVITY HTML ─────────────────────────────────────────────────────────
-function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,probCount){
+function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,probCount,showAiTutor,aiLimit){
   const N=probCount||problems.length||20;
   // Anchor sets for different problem counts
   const ANCHOR_SETS={
@@ -814,7 +850,8 @@ function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,pr
   const TOTAL=anchors.length;
   const esc=imageData.replace(/\\/g,'\\\\').replace(/`/g,'\\`');
   const IW=500,IH=Math.round(500*(ar.h/ar.w));
-  const hasTimer=timerMinsVal>0,hasHints=hintList.length>0,hasCalc=!!showCalc;
+  const hasTimer=timerMinsVal>0,hasHints=hintList.length>0,hasCalc=!!showCalc,hasAiTutor=!!showAiTutor;
+  const aiHelpMax=aiLimit||0;
   const timerStart=String(Math.floor(timerMinsVal)).padStart(2,'0')+':00';
 
   return `<!DOCTYPE html>
@@ -1112,6 +1149,267 @@ function resetAll(){
 }
 buildUI();drawAll();
 </sc${''}ript>
+${hasAiTutor ? `
+<!-- AI TUTOR STYLES -->
+<style>
+.ai-fab{position:fixed;bottom:20px;left:20px;width:52px;height:52px;border-radius:50%;background:#9b5de5;color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;}
+.ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(155,93,229,0.5);}
+.ai-fab.pulse{animation:aipulse 2s infinite;}
+@keyframes aipulse{0%,100%{box-shadow:0 4px 20px rgba(155,93,229,0.4)}50%{box-shadow:0 4px 30px rgba(155,93,229,0.8)}}
+.ai-panel{display:none;position:fixed;bottom:82px;left:20px;z-index:501;background:#1a1a2e;border:1px solid rgba(155,93,229,0.35);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,0.7);width:340px;max-height:520px;flex-direction:column;overflow:hidden;}
+.ai-panel.open{display:flex;}
+.ai-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
+.ai-panel-title{font-family:'Fredoka One',cursive;font-size:16px;color:#9b5de5;display:flex;align-items:center;gap:7px;}
+.ai-limit-badge{font-size:10px;background:rgba(155,93,229,0.15);border:1px solid rgba(155,93,229,0.3);color:rgba(155,93,229,0.8);border-radius:100px;padding:2px 8px;font-family:'Nunito',sans-serif;font-weight:700;}
+.ai-close-btn{background:transparent;border:none;color:rgba(255,255,255,0.3);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1;}
+.ai-close-btn:hover{color:#fff;}
+.ai-messages{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+.ai-messages::-webkit-scrollbar{width:3px;}
+.ai-messages::-webkit-scrollbar-thumb{background:rgba(155,93,229,0.3);border-radius:99px;}
+.ai-msg{display:flex;flex-direction:column;gap:3px;}
+.ai-msg.bot .ai-bubble{background:rgba(155,93,229,0.12);border:1px solid rgba(155,93,229,0.2);border-radius:4px 14px 14px 14px;padding:10px 13px;font-size:13px;color:rgba(255,255,255,0.85);line-height:1.55;}
+.ai-msg.user .ai-bubble{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:14px 14px 4px 14px;padding:10px 13px;font-size:13px;color:rgba(255,255,255,0.7);align-self:flex-end;max-width:90%;}
+.ai-msg.bot{align-items:flex-start;}
+.ai-msg.user{align-items:flex-end;}
+.ai-label{font-size:9px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:rgba(155,93,229,0.5);margin-bottom:1px;}
+.ai-label.user-lbl{color:rgba(255,255,255,0.25);text-align:right;}
+/* STEP DISPLAY — vertical algebra like paper */
+.step-block{font-family:'Courier New',monospace;margin-top:8px;font-size:13px;line-height:1.9;color:#fff;background:rgba(0,0,0,0.25);border-radius:8px;padding:10px 12px;}
+.step-orig{color:#fff;font-weight:700;white-space:pre;}
+.step-ops-row{color:#c8f135;font-weight:700;white-space:pre;}
+.step-hline{border:none;border-top:1.5px solid rgba(255,255,255,0.35);margin:3px 0 4px;}
+.step-simp-row{display:flex;align-items:center;gap:4px;white-space:pre;flex-wrap:wrap;}
+.frac-term{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 1px;}
+.frac-num{border-bottom:1.5px solid #fff;padding:0 4px;color:#fff;font-weight:700;text-align:center;line-height:1.4;}
+.frac-den{padding:0 4px;color:#c8f135;font-weight:700;text-align:center;line-height:1.4;}
+.step-answer{color:#c8f135;font-weight:800;white-space:pre;font-size:14px;margin-top:4px;display:block;}
+.step-explain{font-size:10px;color:rgba(255,255,255,0.35);font-style:italic;margin-top:2px;font-family:'Nunito',sans-serif;display:block;}
+/* PROB PICKER */
+.prob-picker{display:flex;flex-wrap:wrap;gap:5px;padding:2px 0 6px;}
+.prob-pick-btn{background:rgba(155,93,229,0.1);border:1px solid rgba(155,93,229,0.25);color:rgba(255,255,255,0.7);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .15s;}
+.prob-pick-btn:hover{background:rgba(155,93,229,0.25);color:#fff;}
+.prob-pick-btn:disabled{opacity:0.35;cursor:not-allowed;}
+/* TYPING INDICATOR */
+.ai-typing{display:flex;gap:4px;align-items:center;padding:8px 4px;}
+.ai-typing span{width:7px;height:7px;background:rgba(155,93,229,0.6);border-radius:50%;animation:typing .9s infinite;}
+.ai-typing span:nth-child(2){animation-delay:.2s;}
+.ai-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes typing{0%,80%,100%{transform:scale(1);opacity:0.5}40%{transform:scale(1.3);opacity:1}}
+</style>
+<!-- AI TUTOR PANEL -->
+<button class="ai-fab pulse" id="ai-fab" onclick="toggleAiPanel()" title="AI Tutor">🤖</button>
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-panel-header">
+    <div class="ai-panel-title">🤖 AI Tutor<span class="ai-limit-badge" id="ai-limit-badge"></span></div>
+    <button class="ai-close-btn" onclick="toggleAiPanel()">✕</button>
+  </div>
+  <div class="ai-messages" id="ai-messages"></div>
+</div>
+<script>
+const AI_HELP_MAX=${aiHelpMax};
+let aiHelpUsed=0;
+let aiPanelOpen=false;
+let aiGreeted=false;
+
+function toggleAiPanel(){
+  aiPanelOpen=!aiPanelOpen;
+  document.getElementById('ai-panel').classList.toggle('open',aiPanelOpen);
+  document.getElementById('ai-fab').classList.remove('pulse');
+  if(aiPanelOpen&&!aiGreeted){aiGreeted=true;aiGreet();}
+  if(aiPanelOpen){setTimeout(()=>{const m=document.getElementById('ai-messages');m.scrollTop=m.scrollHeight;},100);}
+}
+
+function updateLimitBadge(){
+  const badge=document.getElementById('ai-limit-badge');
+  if(AI_HELP_MAX===0){badge.textContent='Unlimited helps';return;}
+  const left=AI_HELP_MAX-aiHelpUsed;
+  badge.textContent=left+' help'+(left!==1?'s':'')+' left';
+  badge.style.borderColor=left<=1?'rgba(255,92,58,0.4)':'rgba(155,93,229,0.3)';
+  badge.style.color=left<=1?'rgba(255,92,58,0.8)':'rgba(155,93,229,0.8)';
+}
+
+function addMsg(role,html){
+  const msgs=document.getElementById('ai-messages');
+  const wrap=document.createElement('div');wrap.className='ai-msg '+role;
+  const lbl=document.createElement('div');lbl.className='ai-label'+(role==='user'?' user-lbl':'');lbl.textContent=role==='bot'?'AI Tutor':'You';
+  const bubble=document.createElement('div');bubble.className='ai-bubble';bubble.innerHTML=html;
+  wrap.appendChild(lbl);wrap.appendChild(bubble);
+  msgs.appendChild(wrap);
+  msgs.scrollTop=msgs.scrollHeight;
+  return bubble;
+}
+
+function addTyping(){
+  const msgs=document.getElementById('ai-messages');
+  const wrap=document.createElement('div');wrap.className='ai-msg bot';wrap.id='ai-typing-wrap';
+  const bubble=document.createElement('div');bubble.className='ai-bubble';
+  bubble.innerHTML='<div class="ai-typing"><span></span><span></span><span></span></div>';
+  wrap.appendChild(bubble);msgs.appendChild(wrap);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function removeTyping(){const t=document.getElementById('ai-typing-wrap');if(t)t.remove();}
+
+function aiGreet(){
+  updateLimitBadge();
+  const unsolved=PROBS.map((p,i)=>({p,i})).filter(({i})=>!solved.has(i));
+  if(unsolved.length===0){addMsg('bot','🎉 You solved all the problems! Amazing work!');return;}
+  let html='Hey! I\'m your AI Tutor. I can walk you through any problem step by step.<br><br>Which problem do you want help with?<br><div class="prob-picker" id="prob-picker">';
+  unsolved.forEach(({p,i})=>{
+    const label=formatEqLabel(p.eq);
+    html+=\`<button class="prob-pick-btn" onclick="requestHelp(\${i})" id="ppb-\${i}">\${i+1}. \${label}</button>\`;
+  });
+  html+='</div>';
+  addMsg('bot',html);
+}
+
+function formatEqLabel(eq){
+  if(eq&&eq.startsWith('FRAC:')){const parts=eq.split(':');return parts[1]+'/'+parts[2].split(' = ')[0]+' = '+parts[2].split(' = ')[1];}
+  return eq;
+}
+
+async function requestHelp(idx){
+  if(AI_HELP_MAX>0&&aiHelpUsed>=AI_HELP_MAX){
+    addMsg('bot','You\\'ve used all your AI tutor helps for this activity. Give it your best shot! 💪');
+    return;
+  }
+  if(solved.has(idx)){addMsg('bot','You already solved that one! Pick a different problem.');return;}
+  aiHelpUsed++;
+  updateLimitBadge();
+
+  // disable all picker buttons
+  document.querySelectorAll('.prob-pick-btn').forEach(b=>b.disabled=true);
+
+  const prob=PROBS[idx];
+  const eq=formatEqLabel(prob.eq);
+  addMsg('user',\`Help me with #\${idx+1}: \${eq}\`);
+  addTyping();
+
+  try{
+    const steps=await getAiSteps(prob.eq,prob.ans,prob.ansDisplay);
+    removeTyping();
+    if(steps&&steps.orig){
+      renderSteps(idx,eq,steps);
+    } else {
+      addMsg('bot','Sorry, I had trouble with that one. Try again in a moment!');
+    }
+  }catch(e){
+    removeTyping();
+    addMsg('bot','Connection issue — check your internet and try again.');
+  }
+
+  // offer more help
+  const unsolved=PROBS.map((p,i)=>({p,i})).filter(({i})=>!solved.has(i)&&i!==idx);
+  const canHelp=AI_HELP_MAX===0||(AI_HELP_MAX-aiHelpUsed)>0;
+  if(unsolved.length>0&&canHelp){
+    let html='Need help with another problem?<br><div class="prob-picker">';
+    unsolved.forEach(({p,i})=>{
+      html+=\`<button class="prob-pick-btn" onclick="requestHelp(\${i})">\${i+1}. \${formatEqLabel(p.eq)}</button>\`;
+    });
+    html+='</div>';
+    setTimeout(()=>addMsg('bot',html),400);
+  }
+}
+
+function renderSteps(idx,eq,steps){
+  // steps = {orig, opsRow, simplified, divCoeff, answer, explain}
+  let html=\`<strong style="font-family:'Nunito',sans-serif;font-size:12px;color:rgba(255,255,255,0.4);">Problem \${idx+1}</strong><div class="step-block">\`;
+
+  // Row 1: original equation
+  html+=\`<div class="step-orig">\${steps.orig}</div>\`;
+
+  // Row 2: operation row (e.g. "      -4       -4")
+  if(steps.opsRow){
+    html+=\`<div class="step-ops-row">\${steps.opsRow}</div>\`;
+  }
+
+  // Horizontal line
+  html+='<hr class="step-hline">';
+
+  // Row 3: simplified — may include fractions (e.g. 2x/2 = 6/2)
+  if(steps.simplified){
+    // Build the simplified row with inline fraction rendering
+    html+=\`<div class="step-simp-row">\${buildFracRow(steps.simplified)}</div>\`;
+  }
+
+  // Row 4: answer
+  if(steps.answer){
+    html+=\`<span class="step-answer">\${steps.answer}</span>\`;
+  }
+
+  // Explain note
+  if(steps.explain){
+    html+=\`<span class="step-explain">\${steps.explain}</span>\`;
+  }
+
+  html+='</div>';
+  addMsg('bot',html);
+}
+
+// Parses a simplified row string like "2x/2 = 6/2" and renders fractions inline
+function buildFracRow(row){
+  // Split on = sign
+  const parts=row.split('=');
+  if(parts.length<2)return escHtml(row);
+  const left=parts[0].trim();
+  const right=parts.slice(1).join('=').trim();
+  return renderFracTerm(left)+' <span style="color:#fff;font-weight:700;padding:0 6px;">=</span> '+renderFracTerm(right);
+}
+
+function renderFracTerm(term){
+  term=term.trim();
+  // Check if it looks like a fraction: "2x/2" or "6/2"
+  const fracMatch=term.match(/^(.+)\/(\d+)$/);
+  if(fracMatch){
+    return \`<span class="frac-term"><span class="frac-num">\${escHtml(fracMatch[1])}</span><span class="frac-den">\${escHtml(fracMatch[2])}</span></span>\`;
+  }
+  return \`<span style="color:#fff;font-weight:700;">\${escHtml(term)}</span>\`;
+}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+async function getAiSteps(eq,ans,ansDisplay){
+  const cleanEq=eq.startsWith('FRAC:')?formatEqLabel(eq):eq;
+  const prompt=\`You are a middle school math tutor. Show how to solve this equation exactly like a teacher would write it on paper: \${cleanEq}
+
+The final answer is x = \${ansDisplay||ans}
+
+Return ONLY valid JSON with these exact fields (no markdown, no extra text):
+{
+  "orig": "the original equation as written, e.g. 2x + 4 = 10",
+  "opsRow": "the operation row aligned under the equation using spaces, e.g. '        -4       -4' (pad with spaces so -4 lines up under the 4 and under the 10)",
+  "simplified": "the simplified equation after the operation, using / for fractions e.g. '2x/2 = 6/2' — only include this if the equation still needs a division step, otherwise leave empty string",
+  "answer": "the final answer, e.g. 'x = 3'",
+  "explain": "one short friendly sentence explaining what you did, e.g. 'Subtract 4 from both sides to isolate the variable term.'"
+}
+
+Rules:
+- For one-step addition/subtraction like x + 4 = 8: opsRow shows the operation (-4 under the 4, -4 under the 8), simplified is empty, answer is x = 4
+- For one-step multiplication like 5x = 15: opsRow is empty, simplified is "5x/5 = 15/5", answer is x = 3
+- For one-step division like x/7 = 3: opsRow shows "×7" aligned under both sides, simplified is empty, answer is x = 21  
+- For two-step like 2x + 4 = 10: opsRow shows "-4" under the 4 and "-4" under the 10, simplified is "2x/2 = 6/2", answer is x = 3
+- Use spaces (not tabs) to align opsRow under the correct terms
+- Return ONLY the JSON object, nothing else\`;
+
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:600,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!resp.ok)return null;
+  const data=await resp.json();
+  const text=(data.content||[]).map(c=>c.text||'').join('');
+  try{
+    const clean=text.replace(/\`\`\`json|\`\`\`/g,'').trim();
+    return JSON.parse(clean);
+  }catch(e){return null;}
+}
+<\/script>
+` : ''}
 ${hasCalc ? `
 <button class="calc-fab" id="calc-fab" onclick="toggleCalc()" title="Open Calculator">🧮</button>
 <div class="calc-modal" id="calc-modal">
@@ -1206,6 +1504,7 @@ function setCat(cat) {
     document.getElementById('ops-section').style.display = 'block';
     document.getElementById('alg-section').style.display = 'none';
     document.getElementById('calc-section').style.display = 'none';
+    document.getElementById('ai-tutor-section').style.display = 'none';
     calcEnabled = false; document.getElementById('calc-toggle').checked = false;
     renderProblems();
   } else {
@@ -1218,6 +1517,7 @@ function setCat(cat) {
     document.getElementById('ops-section').style.display = 'none';
     document.getElementById('alg-section').style.display = 'block';
     document.getElementById('calc-section').style.display = 'block';
+    document.getElementById('ai-tutor-section').style.display = 'block';
     buildAlgLvTabs();
     renderAlgProblems();
   }
