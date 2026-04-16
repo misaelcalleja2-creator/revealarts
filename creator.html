@@ -1152,11 +1152,12 @@ buildUI();drawAll();
 ${hasAiTutor ? `
 <!-- AI TUTOR STYLES -->
 <style>
-.ai-fab{position:fixed;bottom:20px;left:20px;width:52px;height:52px;border-radius:50%;background:#9b5de5;color:#fff;border:3px solid rgba(255,255,255,0.2);font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;pointer-events:all;}
+.ai-fab-wrap{position:fixed;bottom:20px;left:20px;z-index:9999;}
+.ai-fab{width:52px;height:52px;border-radius:50%;background:#9b5de5;color:#fff;border:3px solid rgba(255,255,255,0.2);font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent;}
 .ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(155,93,229,0.5);}
 .ai-fab.pulse{animation:aipulse 2s infinite;}
 @keyframes aipulse{0%,100%{box-shadow:0 4px 20px rgba(155,93,229,0.4)}50%{box-shadow:0 4px 30px rgba(155,93,229,0.8)}}
-.ai-panel{display:none;position:fixed;bottom:82px;left:20px;z-index:9998;background:#1a1a2e;border:1px solid rgba(155,93,229,0.35);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,0.7);width:340px;max-height:520px;flex-direction:column;overflow:hidden;pointer-events:all;}
+.ai-panel{display:none;position:fixed;bottom:82px;left:20px;z-index:9998;background:#1a1a2e;border:1px solid rgba(155,93,229,0.35);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,0.7);width:340px;max-height:520px;flex-direction:column;overflow:hidden;}
 .ai-panel.open{display:flex;}
 .ai-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
 .ai-panel-title{font-family:'Fredoka One',cursive;font-size:16px;color:#9b5de5;display:flex;align-items:center;gap:7px;}
@@ -1197,7 +1198,7 @@ ${hasAiTutor ? `
 @keyframes typing{0%,80%,100%{transform:scale(1);opacity:0.5}40%{transform:scale(1.3);opacity:1}}
 </style>
 <!-- AI TUTOR PANEL -->
-<button class="ai-fab pulse" id="ai-fab" onclick="toggleAiPanel()" title="AI Tutor">🤖</button>
+<div class="ai-fab-wrap"><button class="ai-fab pulse" id="ai-fab" onclick="toggleAiPanel()" title="AI Tutor">🤖</button></div>
 <div class="ai-panel" id="ai-panel">
   <div class="ai-panel-header">
     <div class="ai-panel-title">🤖 AI Tutor<span class="ai-limit-badge" id="ai-limit-badge"></span></div>
@@ -1218,6 +1219,11 @@ function toggleAiPanel(){
   if(aiPanelOpen&&!aiGreeted){aiGreeted=true;aiGreet();}
   if(aiPanelOpen){setTimeout(()=>{const m=document.getElementById('ai-messages');m.scrollTop=m.scrollHeight;},100);}
 }
+// Safety net: attach click handler after DOM ready in case inline onclick didn't fire
+document.addEventListener('DOMContentLoaded',function(){
+  const fab=document.getElementById('ai-fab');
+  if(fab){fab.addEventListener('click',toggleAiPanel);}
+});
 
 function updateLimitBadge(){
   const badge=document.getElementById('ai-limit-badge');
