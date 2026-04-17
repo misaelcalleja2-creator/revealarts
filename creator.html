@@ -787,7 +787,7 @@ async function saveActivity(html, title) {
     if (count >= limit) {
       const limitMsg = isPaid
         ? 'You have reached your 20 activity limit. Delete some activities from your dashboard to save new ones.'
-        : 'You have reached the 20 activity limit. Delete some activities to save new ones.';
+        : 'You have reached the 20 activity limit. Delete some to save new ones.';
       showSaveToast(limitMsg, 'warn');
       return;
     }
@@ -1148,6 +1148,16 @@ function resetAll(){
   buildUI();updateProg();drawAll();
 }
 buildUI();drawAll();
+window.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='GET_PROBS'){
+    window.parent.postMessage({type:'PROBS_DATA',probs:PROBS,helpMax:0},'*');
+  }
+});
+var _origReveal=revealZone;
+revealZone=function(z){
+  _origReveal(z);
+  window.parent.postMessage({type:'SOLVED_UPDATE',solved:[...solved]},'*');
+};
 </sc${''}ript>
 ${hasAiTutor ? `
 <!-- AI TUTOR STYLES -->
