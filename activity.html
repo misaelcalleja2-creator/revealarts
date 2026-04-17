@@ -293,10 +293,8 @@ window.addEventListener('message', function(e) {
   if (e.data.type === 'PROBS_DATA') {
     aiProbs = e.data.probs || [];
     aiHelpMax = e.data.helpMax || 0;
-    if (e.data.hasAiTutor) {
-      document.getElementById('ai-fab').style.display = 'flex';
-      updateBadge();
-    }
+    document.getElementById('ai-fab').style.display = 'flex';
+    updateBadge();
   }
   if (e.data.type === 'SOLVED_UPDATE') {
     aiSolved = new Set(e.data.solved || []);
