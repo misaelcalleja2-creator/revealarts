@@ -1148,6 +1148,18 @@ function resetAll(){
   buildUI();updateProg();drawAll();
 }
 buildUI();drawAll();
+// Send problems to parent window (activity.html AI tutor)
+window.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='GET_PROBS'){
+    window.parent.postMessage({type:'PROBS_DATA',probs:PROBS,helpMax:0},'*');
+  }
+});
+// Also notify when problems are solved
+var _origReveal=revealZone;
+revealZone=function(z){
+  _origReveal(z);
+  window.parent.postMessage({type:'SOLVED_UPDATE',solved:[...solved]},'*');
+};
 </sc${''}ript>
 ${hasAiTutor ? `
 <!-- AI TUTOR STYLES -->
