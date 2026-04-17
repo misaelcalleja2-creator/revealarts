@@ -1151,7 +1151,7 @@ buildUI();drawAll();
 // Send problems to parent window (activity.html AI tutor)
 window.addEventListener('message',function(e){
   if(e.data&&e.data.type==='GET_PROBS'){
-    window.parent.postMessage({type:'PROBS_DATA',probs:PROBS,helpMax:0},'*');
+    window.parent.postMessage({type:'PROBS_DATA',probs:PROBS,helpMax:0,hasAiTutor:typeof AI_HELP_MAX!=='undefined'},'*');
   }
 });
 // Also notify when problems are solved
