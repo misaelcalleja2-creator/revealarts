@@ -220,7 +220,7 @@ async function loadActivities(token, userId, profile) {
     if (!Array.isArray(acts) || acts.length === 0) return;
 
     const isPaid = profile && profile.is_paid;
-    const limit = isPaid ? 20 : 3;
+    const limit = isPaid ? 20 : 10;
 
     document.getElementById('empty-state').style.display = 'none';
     const grid = document.getElementById('activities-grid');
