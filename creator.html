@@ -776,7 +776,7 @@ async function saveActivity(html, title) {
     const profiles = await pr.json();
     const profile = Array.isArray(profiles) ? profiles[0] : null;
     const isPaid = profile && profile.is_paid;
-    const limit = isPaid ? 20 : 10;
+    const limit = 20;
 
     const cr = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
@@ -787,7 +787,7 @@ async function saveActivity(html, title) {
     if (count >= limit) {
       const limitMsg = isPaid
         ? 'You have reached your 20 activity limit. Delete some activities from your dashboard to save new ones.'
-        : 'Free trial is limited to 10 saved activities. Upgrade to save up to 20!';
+        : 'You have reached the 20 activity limit. Delete some activities to save new ones.';
       showSaveToast(limitMsg, 'warn');
       return;
     }
