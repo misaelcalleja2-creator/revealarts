@@ -293,8 +293,10 @@ window.addEventListener('message', function(e) {
   if (e.data.type === 'PROBS_DATA') {
     aiProbs = e.data.probs || [];
     aiHelpMax = e.data.helpMax || 0;
-    document.getElementById('ai-fab').style.display = 'flex';
-    updateBadge();
+    if (e.data.hasAiTutor !== false) {
+      document.getElementById('ai-fab').style.display = 'flex';
+      updateBadge();
+    }
   }
   if (e.data.type === 'SOLVED_UPDATE') {
     aiSolved = new Set(e.data.solved || []);
@@ -437,7 +439,7 @@ async function sendMessage() {
     var resp = await fetch('/api/tutor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 300, messages: [{ role: 'user', content: 'You are a friendly middle school math tutor. Keep answers to 2-3 sentences. ' + ctx + ' Student question: ' + text }] })
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, messages: [{ role: 'user', content: 'You are a friendly middle school math tutor. Keep answers to 2-3 sentences. ' + ctx + ' Student question: ' + text }] })
     });
     removeTyping();
     if (!resp.ok) { addMsg('bot', 'Connection issue — try again!'); return; }
@@ -481,7 +483,7 @@ async function getSteps(eq, ans, ansDisplay) {
   var resp = await fetch('/api/tutor', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
+    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
   });
   var data = await resp.json();
   if (!resp.ok) {
