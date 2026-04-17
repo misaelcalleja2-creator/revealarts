@@ -1150,7 +1150,7 @@ function resetAll(){
 buildUI();drawAll();
 window.addEventListener('message',function(e){
   if(e.data&&e.data.type==='GET_PROBS'){
-    window.parent.postMessage({type:'PROBS_DATA',probs:PROBS,helpMax:typeof AI_HELP_MAX!=='undefined'?AI_HELP_MAX:0,hasAiTutor:typeof AI_HELP_MAX!=='undefined'},'*');
+    window.parent.postMessage({type:'PROBS_DATA',probs:PROBS,helpMax:0},'*');
   }
 });
 var _origReveal=revealZone;
