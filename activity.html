@@ -483,10 +483,17 @@ async function getSteps(eq, ans, ansDisplay) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
   });
-  if (!resp.ok) return null;
   var data = await resp.json();
+  if (!resp.ok) {
+    console.error('API error:', resp.status, JSON.stringify(data));
+    return null;
+  }
   var text = (data.content || []).map(function(c) { return c.text || ''; }).join('');
-  try { return JSON.parse(text.replace(/```json|```/g, '').trim()); } catch(e) { return null; }
+  console.log('AI raw response:', text);
+  try { return JSON.parse(text.replace(/```json|```/g, '').trim()); } catch(e) {
+    console.error('JSON parse failed:', text);
+    return null;
+  }
 }
 </script>
 </body>
