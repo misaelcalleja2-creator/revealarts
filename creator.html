@@ -776,7 +776,7 @@ async function saveActivity(html, title) {
     const profiles = await pr.json();
     const profile = Array.isArray(profiles) ? profiles[0] : null;
     const isPaid = profile && profile.is_paid;
-    const limit = isPaid ? 20 : 10;
+    const limit = isPaid ? 20 : 3;
 
     const cr = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
@@ -787,7 +787,7 @@ async function saveActivity(html, title) {
     if (count >= limit) {
       const limitMsg = isPaid
         ? 'You have reached your 20 activity limit. Delete some activities from your dashboard to save new ones.'
-        : 'Free trial is limited to 10 saved activities. Upgrade to save up to 20!';
+        : 'Free trial is limited to 3 saved activities. Upgrade to save up to 20!';
       showSaveToast(limitMsg, 'warn');
       return;
     }
@@ -1148,18 +1148,6 @@ function resetAll(){
   buildUI();updateProg();drawAll();
 }
 buildUI();drawAll();
-// Send problems to parent window (activity.html AI tutor)
-window.addEventListener('message',function(e){
-  if(e.data&&e.data.type==='GET_PROBS'){
-    window.parent.postMessage({type:'PROBS_DATA',probs:PROBS,helpMax:0,hasAiTutor:typeof AI_HELP_MAX!=='undefined'},'*');
-  }
-});
-// Also notify when problems are solved
-var _origReveal=revealZone;
-revealZone=function(z){
-  _origReveal(z);
-  window.parent.postMessage({type:'SOLVED_UPDATE',solved:[...solved]},'*');
-};
 </sc${''}ript>
 ${hasAiTutor ? `
 <!-- AI TUTOR STYLES -->
