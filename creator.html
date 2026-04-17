@@ -1157,7 +1157,7 @@ ${hasAiTutor ? `
 .ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(155,93,229,0.5);}
 .ai-fab.pulse{animation:aipulse 2s infinite;}
 @keyframes aipulse{0%,100%{box-shadow:0 4px 20px rgba(155,93,229,0.4)}50%{box-shadow:0 4px 30px rgba(155,93,229,0.8)}}
-.ai-panel{display:none;position:fixed;bottom:82px;left:20px;z-index:9998;background:#1a1a2e;border:1px solid rgba(155,93,229,0.35);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,0.7);width:340px;max-height:520px;flex-direction:column;overflow:hidden;}
+.ai-panel{display:none;position:fixed;bottom:82px;left:20px;z-index:9998;background:#1a1a2e;border:1px solid rgba(155,93,229,0.35);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,0.7);width:340px;height:480px;flex-direction:column;}
 .ai-panel.open{display:flex;}
 .ai-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
 .ai-panel-title{font-family:'Fredoka One',cursive;font-size:16px;color:#9b5de5;display:flex;align-items:center;gap:7px;}
@@ -1169,11 +1169,11 @@ ${hasAiTutor ? `
 .ai-input::placeholder{color:rgba(255,255,255,0.25);}
 .ai-send-btn{background:#9b5de5;border:none;border-radius:10px;color:#fff;font-size:15px;cursor:pointer;padding:0 12px;flex-shrink:0;transition:background .15s;}
 .ai-send-btn:hover{background:#b06af5;}
-.ai-messages{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+.ai-messages{flex:1;overflow-y:scroll;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-height:0;}
 .ai-messages::-webkit-scrollbar{width:3px;}
 .ai-messages::-webkit-scrollbar-thumb{background:rgba(155,93,229,0.3);border-radius:99px;}
 .ai-msg{display:flex;flex-direction:column;gap:3px;}
-.ai-msg.bot .ai-bubble{background:rgba(155,93,229,0.12);border:1px solid rgba(155,93,229,0.2);border-radius:4px 14px 14px 14px;padding:10px 13px;font-size:13px;color:rgba(255,255,255,0.85);line-height:1.55;}
+.ai-msg.bot .ai-bubble{background:rgba(155,93,229,0.12);border:1px solid rgba(155,93,229,0.2);border-radius:4px 14px 14px 14px;padding:10px 13px;font-size:13px;color:rgba(255,255,255,0.85);line-height:1.55;pointer-events:all;}
 .ai-msg.user .ai-bubble{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:14px 14px 4px 14px;padding:10px 13px;font-size:13px;color:rgba(255,255,255,0.7);align-self:flex-end;max-width:90%;}
 .ai-msg.bot{align-items:flex-start;}
 .ai-msg.user{align-items:flex-end;}
@@ -1192,7 +1192,7 @@ ${hasAiTutor ? `
 .step-explain{font-size:10px;color:rgba(255,255,255,0.35);font-style:italic;margin-top:2px;font-family:'Nunito',sans-serif;display:block;}
 /* PROB PICKER */
 .prob-picker{display:flex;flex-wrap:wrap;gap:5px;padding:2px 0 6px;}
-.prob-pick-btn{background:rgba(155,93,229,0.1);border:1px solid rgba(155,93,229,0.25);color:rgba(255,255,255,0.7);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .15s;}
+.prob-pick-btn{background:rgba(155,93,229,0.1);border:1px solid rgba(155,93,229,0.25);color:rgba(255,255,255,0.7);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .15s;position:relative;z-index:10000;pointer-events:all;}
 .prob-pick-btn:hover{background:rgba(155,93,229,0.25);color:#fff;}
 .prob-pick-btn:disabled{opacity:0.35;cursor:not-allowed;}
 /* TYPING INDICATOR */
