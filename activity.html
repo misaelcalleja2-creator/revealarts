@@ -434,7 +434,7 @@ async function sendMessage() {
     var ctx = aiCurrentProb !== null
       ? 'Student is on problem ' + (aiCurrentProb+1) + ': ' + fmtEq(aiProbs[aiCurrentProb].eq)
       : 'Student is doing algebra.';
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+    var resp = await fetch('/api/tutor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 300, messages: [{ role: 'user', content: 'You are a friendly middle school math tutor. Keep answers to 2-3 sentences. ' + ctx + ' Student question: ' + text }] })
@@ -478,7 +478,7 @@ async function getSteps(eq, ans, ansDisplay) {
   var cleanEq = eq.startsWith('FRAC:') ? fmtEq(eq) : eq;
   var finalAns = ansDisplay || String(ans);
   var prompt = 'You are a middle school math tutor. Solve: ' + cleanEq + '. Answer: x=' + finalAns + '. Return ONLY this JSON (no markdown): {"orig":"equation as written","opsRow":"operation row with spaces aligning ops under terms","simplified":"e.g. 2x/2 = 6/2 only if division needed else empty string","answer":"x = ' + finalAns + '","explain":"one short sentence"}. For x+4=8: put -4 under both sides in opsRow. For 5x=15: opsRow empty, put 5x/5 = 15/5 in simplified. For x/7=3: put x7 in opsRow. For 2x+4=10: subtract in opsRow, divide in simplified. Return ONLY the JSON.';
-  var resp = await fetch('https://api.anthropic.com/v1/messages', {
+  var resp = await fetch('/api/tutor', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
