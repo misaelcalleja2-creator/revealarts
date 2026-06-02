@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — Reveal Arts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0a0a0f; --bg: #f7f6f2; --bg2: #eeecea; --white: #ffffff;
+  --lime: #b8e030; --lime-dark: #7aaa00; --coral: #ff5c3a;
+  --text: #1a1a24; --text2: #555560; --text3: #888894; --border: rgba(0,0,0,0.09);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  min-height: 100vh; background: var(--bg); color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px 24px;
+}
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0; height: 64px;
+  background: rgba(247,246,242,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; z-index: 100;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-circle {
+  width: 36px; height: 36px; background: var(--ink); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 8px; font-weight: 800;
+  color: var(--lime); letter-spacing: 0.5px; text-align: center; line-height: 1.2;
+  flex-shrink: 0; position: relative; overflow: hidden;
+}
+.nav-logo-circle::before { content: ''; position: absolute; inset: 3px; border-radius: 50%; border: 1px solid rgba(184,224,48,0.3); }
+.nav-logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; color: var(--text); letter-spacing: -0.3px; }
+.nav-logo-sub { font-size: 11px; color: var(--text3); font-weight: 400; display: block; }
+.nav-login-link { font-size: 13px; color: var(--text2); text-decoration: none; font-weight: 500; }
+.nav-login-link:hover { color: var(--text); }
+
+.page-wrap {
+  margin-top: 64px; width: 100%; max-width: 440px;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px 0 32px;
+}
+.brand-block {
+  display: flex; flex-direction: column; align-items: center;
+  margin-bottom: 28px; text-align: center;
+}
+.brand-circle {
+  width: 64px; height: 64px; background: var(--ink); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 8px; font-weight: 800;
+  color: var(--lime); letter-spacing: 0.5px; text-align: center; line-height: 1.3;
+  margin-bottom: 12px; position: relative;
+}
+.brand-circle::before { content: ''; position: absolute; inset: 4px; border-radius: 50%; border: 1px solid rgba(184,224,48,0.3); }
+.brand-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); margin-bottom: 4px; }
+.brand-sub { font-size: 13px; color: var(--text3); }
+
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px 32px; width: 100%;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+.card h1 {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+  color: var(--text); margin-bottom: 24px; letter-spacing: -0.3px; text-align: center;
+}
+label {
+  display: block; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 6px; margin-top: 16px;
+}
+label:first-of-type { margin-top: 0; }
+.optional-tag {
+  font-size: 10px; font-weight: 400; letter-spacing: 0;
+  text-transform: none; color: var(--text3); margin-left: 6px; opacity: 0.7;
+}
+input[type=email], input[type=password], input[type=text],
+select, select[multiple] {
+  width: 100%; background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; font-size: 15px;
+  font-family: 'DM Sans', sans-serif; color: var(--text); outline: none;
+  transition: border-color 0.2s; appearance: none;
+}
+input:focus, select:focus { border-color: var(--lime-dark); background: var(--white); }
+input::placeholder { color: var(--text3); }
+select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888894' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+select option { color: var(--text); }
+
+.grade-select {
+  height: 120px; padding: 8px 14px;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text3) var(--bg2);
+}
+.grade-select::-webkit-scrollbar { width: 6px; }
+.grade-select::-webkit-scrollbar-track { background: var(--bg2); border-radius: 10px; }
+.grade-select::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 10px; }
+.grade-select option { padding: 6px 4px; }
+
+/* Custom grade picker replacing native select */
+.grade-picker {
+  width: 100%; background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 10px; height: 130px; overflow-y: scroll;
+  overflow-x: hidden;
+  /* Force scrollbar visible on webkit/Safari */
+  -webkit-overflow-scrolling: touch;
+}
+.grade-picker::-webkit-scrollbar { width: 5px; display: block; }
+.grade-picker::-webkit-scrollbar-track { background: var(--bg2); }
+.grade-picker::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 10px; }
+.grade-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px; cursor: pointer; transition: background 0.15s;
+  user-select: none;
+}
+.grade-item:hover { background: var(--bg2); }
+.grade-item.selected { background: rgba(122,170,0,0.08); }
+.grade-item input[type=checkbox] {
+  width: 15px; height: 15px; margin: 0; flex-shrink: 0;
+  accent-color: var(--lime-dark); cursor: pointer;
+}
+.grade-item span { font-size: 14px; color: var(--text2); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.pass-wrap { position: relative; }
+.pass-wrap input { padding-right: 44px; }
+.reveal-btn {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: var(--text3);
+  padding: 4px; line-height: 0; transition: color 0.2s; display: flex; align-items: center;
+}
+.reveal-btn:hover { color: var(--text); }
+.reveal-btn svg { width: 18px; height: 18px; }
+.check-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-top: 16px; cursor: pointer;
+}
+.check-row input[type=checkbox] {
+  width: 16px; height: 16px; margin-top: 2px;
+  accent-color: var(--lime-dark); flex-shrink: 0; cursor: pointer;
+}
+.check-row span {
+  font-size: 12px; color: var(--text3); line-height: 1.5;
+  text-transform: none; letter-spacing: 0; font-weight: 400;
+}
+.btn {
+  width: 100%; margin-top: 24px; padding: 15px; border: none; border-radius: 10px;
+  background: var(--ink); color: var(--lime);
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px;
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; letter-spacing: 0.2px;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(10,10,15,0.2); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.msg {
+  margin-top: 14px; padding: 11px 14px; border-radius: 9px;
+  font-size: 13px; line-height: 1.5; display: none;
+}
+.msg.error { background: rgba(255,92,58,0.08); border: 1px solid rgba(255,92,58,0.2); color: var(--coral); }
+.msg.success { background: rgba(122,170,0,0.08); border: 1px solid rgba(122,170,0,0.2); color: var(--lime-dark); }
+
+.terms-line {
+  text-align: center; margin-top: 16px; font-size: 12px; color: var(--text3); line-height: 1.6;
+}
+.terms-line a { color: var(--text2); text-decoration: underline; }
+.terms-line a:hover { color: var(--text); }
+
+.bottom-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text3); }
+.bottom-link a { color: var(--lime-dark); font-weight: 700; text-decoration: none; }
+.bottom-link a:hover { text-decoration: underline; }
+
+@media (max-width: 480px) {
+  .top-bar { padding: 0 20px; }
+  .card { padding: 28px 20px; }
+  .two-col { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-circle">THE<br>REAL<br>SUM<br>SHADY</div>
+    <div>
+      <span class="nav-logo-text">Reveal Arts</span>
+      <span class="nav-logo-sub">by The Real Sum Shady</span>
+    </div>
+  </a>
+  <a href="login.html" class="nav-login-link">Already have an account? Sign in</a>
+</div>
+
+<div class="page-wrap">
+  <div class="brand-block">
+    <div class="brand-circle">THE<br>REAL<br>SUM<br>SHADY</div>
+    <div class="brand-title">Reveal Arts</div>
+    <div class="brand-sub">by The Real Sum Shady</div>
+  </div>
+
+  <div class="card">
+    <h1>Create your account</h1>
+
+    <label>Email</label>
+    <input type="email" id="up-email" placeholder="you@school.edu" autocomplete="email" />
+
+    <label>Password</label>
+    <div class="pass-wrap">
+      <input type="password" id="up-pass" placeholder="At least 6 characters" autocomplete="new-password" />
+      <button class="reveal-btn" type="button" id="reveal-toggle" onclick="toggleReveal('up-pass', this)" aria-label="Show password">
+        <!-- eye open -->
+        <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+        <!-- eye slash (hidden by default) -->
+        <svg id="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="two-col" style="margin-top:16px;">
+      <div>
+        <label>State</label>
+        <select id="up-state" onchange="updateBtn()">
+          <option value="">Select state</option>
+          <option>Alabama</option><option>Alaska</option><option>Arizona</option>
+          <option>Arkansas</option><option>California</option><option>Colorado</option>
+          <option>Connecticut</option><option>Delaware</option><option>Florida</option>
+          <option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+          <option>Illinois</option><option>Indiana</option><option>Iowa</option>
+          <option>Kansas</option><option>Kentucky</option><option>Louisiana</option>
+          <option>Maine</option><option>Maryland</option><option>Massachusetts</option>
+          <option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+          <option>Missouri</option><option>Montana</option><option>Nebraska</option>
+          <option>Nevada</option><option>New Hampshire</option><option>New Jersey</option>
+          <option>New Mexico</option><option>New York</option><option>North Carolina</option>
+          <option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+          <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option>
+          <option>South Carolina</option><option>South Dakota</option><option>Tennessee</option>
+          <option>Texas</option><option>Utah</option><option>Vermont</option>
+          <option>Virginia</option><option>Washington</option><option>West Virginia</option>
+          <option>Wisconsin</option><option>Wyoming</option>
+        </select>
+      </div>
+      <div>
+        <label>Grade(s) taught</label>
+        <div class="grade-picker" id="grade-picker">
+          <div class="grade-item" onclick="toggleGrade(this, '4')"><input type="checkbox" value="4" /><span>4th Grade</span></div>
+          <div class="grade-item" onclick="toggleGrade(this, '5')"><input type="checkbox" value="5" /><span>5th Grade</span></div>
+          <div class="grade-item" onclick="toggleGrade(this, '6')"><input type="checkbox" value="6" /><span>6th Grade</span></div>
+          <div class="grade-item" onclick="toggleGrade(this, '7')"><input type="checkbox" value="7" /><span>7th Grade</span></div>
+          <div class="grade-item" onclick="toggleGrade(this, '8')"><input type="checkbox" value="8" /><span>8th Grade</span></div>
+          <div class="grade-item" onclick="toggleGrade(this, '9')"><input type="checkbox" value="9" /><span>9th Grade</span></div>
+          <div class="grade-item" onclick="toggleGrade(this, 'other')"><input type="checkbox" value="other" /><span>Other</span></div>
+        </div>
+      </div>
+    </div>
+    <label class="check-row">
+      <input type="checkbox" id="up-emails" checked />
+      <span>I'd like to receive occasional product updates and teaching tips from The Real Sum Shady. Unsubscribe anytime.</span>
+    </label>
+
+    <button class="btn" id="up-btn" onclick="doSignUp()">Create Account →</button>
+    <div class="msg" id="up-msg"></div>
+
+    <p class="terms-line">By creating an account you agree to our <a href="terms.html" target="_blank">Terms of Service</a> and <a href="terms.html#privacy" target="_blank">Privacy Policy</a>.</p>
+  </div>
+
+  <div class="bottom-link">
+    Already have an account? <a href="login.html">Sign in →</a>
+  </div>
+</div>
+
+<script>
+var SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+
+function toggleReveal(inputId, btn) {
+  var input = document.getElementById(inputId);
+  var eyeOpen = document.getElementById('icon-eye');
+  var eyeOff = document.getElementById('icon-eye-off');
+  if (input.type === 'password') {
+    input.type = 'text';
+    eyeOpen.style.display = 'none';
+    eyeOff.style.display = 'block';
+  } else {
+    input.type = 'password';
+    eyeOpen.style.display = 'block';
+    eyeOff.style.display = 'none';
+  }
+}
+
+function toggleGrade(el, val) {
+  var cb = el.querySelector('input[type=checkbox]');
+  cb.checked = !cb.checked;
+  el.classList.toggle('selected', cb.checked);
+}
+
+function updateBtn() {
+  var state = document.getElementById('up-state').value;
+  var btn = document.getElementById('up-btn');
+  btn.textContent = state ? 'Join teachers in ' + state + ' →' : 'Create Account →';
+}
+
+function showMsg(id, type, html) {
+  var el = document.getElementById(id);
+  el.className = 'msg ' + type;
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+
+async function doSignUp() {
+  var email = document.getElementById('up-email').value.trim();
+  var pass = document.getElementById('up-pass').value;
+  if (!email || !pass) { showMsg('up-msg', 'error', 'Please fill in both fields.'); return; }
+  if (pass.length < 6) { showMsg('up-msg', 'error', 'Password must be at least 6 characters.'); return; }
+
+  var btn = document.getElementById('up-btn');
+  btn.disabled = true;
+  var origText = btn.textContent;
+  btn.textContent = 'Creating account...';
+
+  var state = document.getElementById('up-state').value;
+  var grades = Array.from(document.querySelectorAll('#grade-picker input[type=checkbox]:checked')).map(cb => cb.value);
+  var emailsOk = document.getElementById('up-emails').checked;
+
+  try {
+    var r = await fetch(SB_URL + '/auth/v1/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({
+        email: email, password: pass,
+        data: { marketing_emails: emailsOk, state: state, grades: grades }
+      })
+    });
+    var data = await r.json();
+    if (!r.ok || data.error || data.error_description) {
+      showMsg('up-msg', 'error', data.error_description || data.error || 'Sign up failed. Please try again.');
+      btn.disabled = false; btn.textContent = origText;
+    } else {
+      if (data.access_token) {
+        localStorage.setItem('sb_access_token', data.access_token);
+        localStorage.setItem('sb_refresh_token', data.refresh_token);
+      }
+      window.location.href = 'plans.html';
+    }
+  } catch(e) {
+    showMsg('up-msg', 'error', 'Connection error. Please try again.');
+    btn.disabled = false; btn.textContent = origText;
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doSignUp();
+});
+</script>
+</body>
+</html>
