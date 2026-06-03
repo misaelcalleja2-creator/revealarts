@@ -999,7 +999,6 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 .prob-panel::-webkit-scrollbar{width:4px;}
 .prob-panel::-webkit-scrollbar-track{background:#f0efeb;}
 .prob-panel::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:99px;}
-.prob-label{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#bbb;margin-bottom:8px;padding:2px 2px 6px;border-bottom:1px solid rgba(0,0,0,0.06);}
 .prob-col-hidden{display:none;}
 .card{background:#f7f6f2;border:1.5px solid rgba(0,0,0,0.09);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:7px;transition:all .2s;margin-bottom:5px;}
 .card:hover{border-color:rgba(0,0,0,0.18);background:#fff;}
@@ -1070,7 +1069,6 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-title">💡 Hint</h3><p id="hmt"></p><button class="hint-close" onclick="closeHint()">Got it!</button></div></div>`:''}
 <div class="layout">
   <div class="prob-panel" id="lc">
-    <div class="prob-label">${N} Problems</div>
   </div>
   <div class="img-panel">
     <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;padding:0 2px;">
@@ -1205,7 +1203,7 @@ function revealZone(z){
 
 function buildUI(){
   const lc=document.getElementById('lc'),rc=document.getElementById('rc2');
-  while(lc.children.length>1)lc.removeChild(lc.lastChild);while(rc.children.length>1)rc.removeChild(rc.lastChild);
+  while(lc.children.length>0)lc.removeChild(lc.lastChild);while(rc.children.length>0)rc.removeChild(rc.lastChild);
   PROBS.forEach((p,i)=>{
     const col=lc;const card=document.createElement('div');card.className='card';card.id='card-'+i;
     const xlbl=p.isAlgebra?'x =':'= ?';
