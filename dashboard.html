@@ -195,13 +195,6 @@ nav {
 .tip-icon { font-size: 20px; margin-bottom: 8px; }
 .tip-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 4px; }
 .tip-desc { font-size: 12px; color: var(--text3); line-height: 1.55; }
-.tip-dismiss {
-  position: absolute; top: 10px; right: 10px;
-  background: none; border: none; cursor: pointer;
-  color: var(--text3); font-size: 14px; line-height: 1;
-  padding: 2px 5px; border-radius: 4px;
-}
-.tip-dismiss:hover { background: var(--bg2); color: var(--text); }
 
 footer {
   padding: 24px 48px; border-top: 1px solid var(--border);
@@ -600,26 +593,25 @@ const ALL_TIPS = [
   {
     id: 'differentiated',
     icon: '🎲',
-    title: 'Every student can get a different version.',
-    desc: 'Pick 25+ problems in Step 2 and you\'ll unlock differentiated versions in Step 3 — same image, different questions. No more copying off a neighbor.'
+    title: 'Create up to 3 unique versions.',
+    desc: 'Pick more problems than you need and each version pulls a different random set — some problems may overlap, but the mix will be different. Pick exactly what you need and the order gets scrambled instead.'
   },
   {
     id: 'timer',
     icon: '⏱️',
     title: 'Adds a sense of urgency.',
-    desc: 'Enable the timer in Step 3 to set a countdown. Students can still finish after time runs out — it just turns red to let them know.'
+    desc: 'Set a timer and students feel the pressure to keep moving. When time runs out the clock keeps counting up — so they can still finish, but they\'ll know exactly how far over they went.'
   }
 ];
 
 function renderTips() {
-  const dismissed = JSON.parse(localStorage.getItem('ra_dismissed_tips') || '[]');
   const open = JSON.parse(localStorage.getItem('ra_tips_open') || 'false');
-  const remaining = ALL_TIPS.filter(t => !dismissed.includes(t.id));
+  const remaining = ALL_TIPS;
   const container = document.getElementById('tips-cards');
   const section = document.getElementById('tips-section');
   const chevron = document.getElementById('tips-chevron');
 
-  if (remaining.length === 0) { section.style.display = 'none'; return; }
+  if (remaining.length === 0) return;
 
   container.innerHTML = '';
   container.style.display = open ? 'flex' : 'none';
@@ -630,7 +622,6 @@ function renderTips() {
     const card = document.createElement('div');
     card.className = 'tip-card';
     card.innerHTML = `
-      <button class="tip-dismiss" onclick="dismissTip('${tip.id}')" title="Dismiss">✕</button>
       <div class="tip-icon">${tip.icon}</div>
       <div class="tip-title">${tip.title}</div>
       <div class="tip-desc">${tip.desc}</div>
@@ -645,12 +636,7 @@ function toggleTips() {
   renderTips();
 }
 
-function dismissTip(id) {
-  const dismissed = JSON.parse(localStorage.getItem('ra_dismissed_tips') || '[]');
-  if (!dismissed.includes(id)) dismissed.push(id);
-  localStorage.setItem('ra_dismissed_tips', JSON.stringify(dismissed));
-  renderTips();
-}
+
 
 init();
 renderTips();
