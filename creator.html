@@ -1203,7 +1203,7 @@ function drawAll(){ctx.clearRect(0,0,IW,IH);if(img.complete&&img.naturalWidth>0)
 function revealZone(z){
   const tiles=[];for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)if(assign[r][c]===z&&!rev[r][c])tiles.push([r,c]);
   for(let i=tiles.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[tiles[i],tiles[j]]=[tiles[j],tiles[i]];}
-  tiles.forEach(([r,c],i)=>setTimeout(()=>{rev[r][c]=true;ctx.clearRect(c*TW,r*TH,TW,TH);if(img.complete&&img.naturalWidth>0)ctx.drawImage(img,c*TW,r*TH,TW,TH,c*TW,r*TH,TW,TH);drawCover();if(i===tiles.length-1)saveProgress();},i*35));
+  tiles.forEach(([r,c],i)=>setTimeout(()=>{rev[r][c]=true;drawAll();if(i===tiles.length-1)saveProgress();},i*35));
 }
 
 function buildUI(){
