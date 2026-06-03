@@ -145,10 +145,10 @@ async function doReset() {
   var btn = document.getElementById('reset-btn');
   btn.disabled = true; btn.textContent = 'Sending...';
   try {
-    var r = await fetch(SB_URL + '/auth/v1/recover', {
+    var r = await fetch(SB_URL + '/auth/v1/recover?redirect_to=' + encodeURIComponent('https://therealsumshady.com/reset.html'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
-      body: JSON.stringify({ email: email, redirect_to: 'https://therealsumshady.com/reset.html' })
+      body: JSON.stringify({ email: email })
     });
     if (r.ok || r.status === 200) {
       showMsg('reset-msg', 'success', 'Check your email — a reset link is on its way.');
