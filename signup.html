@@ -356,12 +356,14 @@ async function doSignUp() {
         localStorage.setItem('sb_access_token', data.access_token);
         localStorage.setItem('sb_refresh_token', data.refresh_token);
       }
-      // Send welcome email (fire and forget — don't block redirect)
-      fetch('/api/welcome', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, firstName: firstName })
-      }).catch(() => {});
+      // Send welcome email then redirect
+      try {
+        await fetch('/api/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, firstName: firstName })
+        });
+      } catch(e) {}
       window.location.href = 'plans.html';
     }
   } catch(e) {
