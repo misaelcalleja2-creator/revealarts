@@ -285,7 +285,7 @@ async function doSignIn() {
       if (errMsg.includes('email not confirmed')) {
         showMsg('in-msg', 'error', 'Please confirm your email first — check your inbox.');
       } else {
-        showMsg('in-msg', 'error', 'Incorrect email or password. <a href="signup.html">No account? Create one →</a>');
+        showMsg('in-msg', 'error', 'Incorrect email or password. <a href="forgot.html">Reset password</a> &nbsp;·&nbsp; <a href="signup.html">Create account</a>');
       }
       btn.disabled = false; btn.textContent = 'Sign In';
       return;
