@@ -6,26 +6,26 @@
 <title>Create — Reveal Arts</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0a0a0f;--white:#fafaf8;--lime:#c8f135;--coral:#ff5c3a;--sky:#4fc3f7;--violet:#9b5de5;--gold:#ffd60a;--border:rgba(255,255,255,0.08);}
+:root{--ink:#0a0a0f;--bg:#f7f6f2;--bg2:#eeecea;--white:#ffffff;--lime:#b8e030;--lime-dark:#7aaa00;--coral:#ff5c3a;--sky:#4fc3f7;--violet:#9b5de5;--gold:#ffd60a;--border:rgba(0,0,0,0.09);}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--ink);color:var(--white);font-family:"DM Sans",sans-serif;min-height:100vh;}
-nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:rgba(10,10,15,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);}
-.nav-logo{font-family:"Syne",sans-serif;font-weight:800;font-size:18px;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:8px;justify-self:center;}
+body{background:var(--bg);color:var(--ink);font-family:"DM Sans",sans-serif;min-height:100vh;}
+nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:rgba(247,246,242,0.92);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);}
+.nav-logo{font-family:"Syne",sans-serif;font-weight:800;font-size:18px;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:8px;justify-self:center;}
 .nav-logo-dot{width:7px;height:7px;background:var(--lime);border-radius:50%;}
-.nav-back{font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;}
-.nav-back:hover{color:var(--white);}
+.nav-back{font-size:13px;color:var(--text2,#555560);text-decoration:none;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;}
+.nav-back:hover{color:var(--ink);}
 .page{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 57px);}
-.form-panel{padding:28px;border-right:1px solid var(--border);overflow-y:auto;max-height:calc(100vh - 57px);}
+.form-panel{padding:28px;border-right:1px solid var(--border);overflow-y:auto;max-height:calc(100vh - 57px);background:var(--bg);}
 .form-panel::-webkit-scrollbar{width:3px;}
 .form-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px;}
-.preview-panel{padding:28px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;max-height:calc(100vh - 57px);background:#08080f;}
+.preview-panel{padding:28px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;max-height:calc(100vh - 57px);background:var(--bg2);}
 .sh{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.sn{width:22px;height:22px;background:var(--lime);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:10px;color:var(--ink);flex-shrink:0;}
-.st{font-family:"Syne",sans-serif;font-weight:700;font-size:14px;}
+.sn{width:22px;height:22px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:10px;color:var(--lime);flex-shrink:0;}
+.st{font-family:"Syne",sans-serif;font-weight:700;font-size:14px;color:var(--ink);}
 .divider{height:1px;background:var(--border);margin:20px 0;}
-.inp{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;font-family:"DM Sans",sans-serif;color:var(--white);outline:none;transition:border-color .2s;}
-.inp:focus{border-color:rgba(200,241,53,0.4);}
-.inp::placeholder{color:rgba(255,255,255,0.25);}
+.inp{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;font-family:"DM Sans",sans-serif;color:var(--ink);outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--lime-dark);}
+.inp::placeholder{color:#aaa;}
 .search-row{display:flex;gap:8px;margin-bottom:10px;}
 .search-btn{background:var(--lime);color:var(--ink);border:none;border-radius:10px;padding:9px 14px;font-family:"Syne",sans-serif;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;transition:transform .15s;}
 .search-btn:hover{transform:translateY(-1px);}
@@ -37,136 +37,219 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
 .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
 .photo-thumb .chk{position:absolute;top:3px;right:3px;width:18px;height:18px;background:var(--lime);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:var(--ink);}
 .photo-thumb.selected .chk{display:flex;}
-.photo-empty{grid-column:1/-1;text-align:center;padding:24px;color:rgba(255,255,255,0.2);font-size:12px;}
-.or-row{display:flex;align-items:center;gap:10px;margin:10px 0;color:rgba(255,255,255,0.2);font-size:11px;}
+.photo-empty{grid-column:1/-1;text-align:center;padding:24px;color:#aaa;font-size:12px;}
+.or-row{display:flex;align-items:center;gap:10px;margin:10px 0;color:#aaa;font-size:11px;}
 .or-line{flex:1;height:1px;background:var(--border);}
-.upload-zone{border:1.5px dashed rgba(255,255,255,0.12);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;}
-.upload-zone:hover{border-color:rgba(200,241,53,0.35);}
+.upload-zone{border:1.5px dashed rgba(0,0,0,0.15);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--white);}
+.upload-zone:hover{border-color:var(--lime-dark);}
 .upload-zone input{display:none;}
-.upload-text{font-size:11px;color:rgba(255,255,255,0.3);}
+.upload-text{font-size:11px;color:#888;}
 /* image editor */
-.img-editor{display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
-.img-editor.active{display:block;border:2px solid rgba(200,241,53,0.5);background:rgba(200,241,53,0.03);}
-.epw{position:relative;border-radius:8px;overflow:hidden;background:#1a1a1a;margin-bottom:12px;cursor:grab;user-select:none;min-height:200px;display:flex;align-items:center;justify-content:center;border:2px solid rgba(200,241,53,0.3);}
+.img-editor{display:none;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.img-editor.active{display:block;border:2px solid rgba(184,224,48,0.5);background:rgba(184,224,48,0.03);}
+.epw{position:relative;border-radius:8px;overflow:hidden;background:#1a1a1a;margin-bottom:12px;cursor:grab;user-select:none;min-height:200px;display:flex;align-items:center;justify-content:center;border:2px solid rgba(184,224,48,0.3);}
 .epw:active{cursor:grabbing;}
 .epw .loading-msg{color:rgba(255,255,255,0.3);font-size:12px;position:absolute;}
 #ec{display:block;width:100%;position:relative;z-index:1;}
 .ctrl-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.ctrl-label{font-size:11px;color:rgba(255,255,255,0.4);min-width:46px;}
-.ctrl-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:4px;background:rgba(255,255,255,0.15);outline:none;cursor:pointer;margin:7px 0;}
-.ctrl-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#c8f135;cursor:pointer;border:3px solid #0a0a0f;box-shadow:0 0 0 3px rgba(200,241,53,0.5);margin-top:-7px;}
-.ctrl-row input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#c8f135;cursor:pointer;border:3px solid #0a0a0f;box-shadow:0 0 0 3px rgba(200,241,53,0.5);}
-.ctrl-row input[type=range]::-webkit-slider-runnable-track{background:rgba(255,255,255,0.15);border-radius:4px;height:6px;}
-.ctrl-row input[type=range]::-moz-range-track{background:rgba(255,255,255,0.15);border-radius:4px;height:6px;}
+.ctrl-label{font-size:11px;color:#888;min-width:46px;}
+.ctrl-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:4px;background:rgba(0,0,0,0.12);outline:none;cursor:pointer;margin:7px 0;}
+.ctrl-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#b8e030;cursor:pointer;border:3px solid #0a0a0f;box-shadow:0 0 0 3px rgba(184,224,48,0.5);margin-top:-7px;}
+.ctrl-row input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#b8e030;cursor:pointer;border:3px solid #0a0a0f;box-shadow:0 0 0 3px rgba(184,224,48,0.5);}
+.ctrl-row input[type=range]::-webkit-slider-runnable-track{background:rgba(0,0,0,0.12);border-radius:4px;height:6px;}
+.ctrl-row input[type=range]::-moz-range-track{background:rgba(0,0,0,0.12);border-radius:4px;height:6px;}
 .aspect-btns{display:flex;gap:6px;flex-wrap:wrap;}
-.aspect-btn{padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2;}
-.aspect-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
-.aspect-btn.active{background:rgba(200,241,53,0.12);border-color:var(--lime);color:var(--lime);}
+.aspect-btn{padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--white);color:#888;font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2;}
+.aspect-btn:hover{border-color:var(--ink);color:var(--ink);}
+.aspect-btn.active{background:rgba(184,224,48,0.12);border-color:var(--lime);color:var(--lime);}
 .rec{font-size:8px;color:var(--lime);opacity:0.7;}
-.fit-btn{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s;}
-.fit-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.fit-btn{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--white);color:#888;font-size:11px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s;}
+.fit-btn:hover{border-color:var(--ink);color:var(--ink);}
 .crop-btn{background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:7px 16px;font-family:"Syne",sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
-.change-img-btn{font-size:11px;color:rgba(255,255,255,0.35);background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;font-family:"DM Sans",sans-serif;}
-.change-img-btn:hover{color:var(--white);}
+.change-img-btn{font-size:11px;color:#888;background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;font-family:"DM Sans",sans-serif;}
+.change-img-btn:hover{color:var(--ink);}
 /* tabs */
 .tabs{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap;}
-.tab{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;}
-.tab:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.tab{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--white);color:#888;font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;}
+.tab:hover{border-color:var(--ink);color:var(--ink);}
 .tab.active{background:var(--lime);border-color:var(--lime);color:var(--ink);}
 .tab.neg{border-color:rgba(255,92,58,0.3);color:rgba(255,92,58,0.5);}
 .tab.neg.active{background:rgba(255,92,58,0.15);border-color:var(--coral);color:var(--coral);}
 .neg-note{font-size:10px;color:var(--coral);margin-bottom:10px;display:none;}
 .mode-row{display:flex;gap:6px;margin-bottom:12px;}
-.mode-btn{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;}
+.mode-btn{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--white);color:#888;font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;}
 .mode-btn.active{background:rgba(79,195,247,0.15);border-color:var(--sky);color:var(--white);}
-.mode-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.mode-btn:hover{border-color:var(--ink);color:var(--ink);}
 .problem-pool{display:flex;flex-direction:column;gap:3px;max-height:240px;overflow-y:auto;padding-right:3px;}
 .problem-pool::-webkit-scrollbar{width:3px;}
 .problem-pool::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px;}
 .prob-row{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:7px;border:1px solid transparent;cursor:pointer;transition:background .15s;user-select:none;}
-.prob-row:hover{background:rgba(255,255,255,0.04);}
-.prob-row.selected{background:rgba(200,241,53,0.06);border-color:rgba(200,241,53,0.2);}
-.prob-chk{width:14px;height:14px;border:1.5px solid rgba(255,255,255,0.2);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.prob-row:hover{background:rgba(0,0,0,0.04);}
+.prob-row.selected{background:rgba(122,170,0,0.08);border-color:rgba(122,170,0,0.2);}
+.prob-chk{width:14px;height:14px;border:1.5px solid rgba(0,0,0,0.2);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;}
 .prob-row.selected .prob-chk{background:var(--lime);border-color:var(--lime);color:var(--ink);font-weight:900;}
-.prob-eq{font-size:12px;color:rgba(255,255,255,0.8);font-weight:500;}
-.prob-ans{font-size:11px;color:rgba(200,241,53,0.55);margin-left:auto;font-weight:700;background:rgba(200,241,53,0.07);padding:2px 7px;border-radius:4px;border:1px solid rgba(200,241,53,0.15);}
+.prob-eq{font-size:12px;color:var(--ink);font-weight:500;}
+.prob-ans{font-size:11px;color:var(--lime-dark);margin-left:auto;font-weight:700;background:rgba(122,170,0,0.08);padding:2px 7px;border-radius:4px;border:1px solid rgba(122,170,0,0.2);}
 .sel-status{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:11px;}
-.sel-ct{color:rgba(255,255,255,0.35);}
+.sel-ct{color:#888;}
 .sel-ct span{color:var(--lime);font-weight:700;}
-.rand-btn{background:transparent;border:1px solid var(--border);color:rgba(255,255,255,0.4);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s;}
-.rand-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--white);}
-.prob-count-btn{background:transparent;border:1px solid var(--border);color:rgba(255,255,255,0.4);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:"Syne",sans-serif;transition:all .2s;}
-.prob-count-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--white);}
-.prob-count-btn.active{background:rgba(200,241,53,0.12);border-color:var(--lime);color:var(--lime);}
+.rand-btn{background:var(--white);border:1px solid var(--border);color:#888;border-radius:5px;padding:3px 9px;font-size:10px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s;}
+.rand-btn:hover{border-color:var(--ink);color:var(--ink);}
+.prob-count-btn{background:var(--white);border:1px solid var(--border);color:#888;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:"Syne",sans-serif;transition:all .2s;}
+.prob-count-btn:hover{border-color:var(--ink);color:var(--ink);}
+.prob-count-btn.active{background:rgba(184,224,48,0.12);border-color:var(--lime);color:var(--lime);}
 /* hints */
 .hc-row{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;}
-.hc-btn{flex:1;min-width:60px;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;}
+.hc-btn{flex:1;min-width:60px;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--white);color:#888;font-family:"DM Sans",sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;}
 .hc-btn.active{background:rgba(255,214,10,0.12);border-color:var(--gold);color:var(--gold);}
-.hc-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
+.hc-btn:hover{border-color:var(--ink);color:var(--ink);}
 .hint-inputs{display:flex;flex-direction:column;gap:8px;}
 /* toggle */
 .toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .toggle-switch{position:relative;width:40px;height:22px;cursor:pointer;}
 .toggle-switch input{opacity:0;width:0;height:0;position:absolute;}
-.toggle-track{position:absolute;inset:0;background:rgba(255,255,255,0.1);border-radius:99px;transition:background .2s;}
+.toggle-track{position:absolute;inset:0;background:rgba(0,0,0,0.15);border-radius:99px;transition:background .2s;}
 .toggle-switch input:checked+.toggle-track{background:var(--lime);}
 .toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--white);border-radius:50%;transition:transform .2s;pointer-events:none;}
 .toggle-switch input:checked~.toggle-thumb{transform:translateX(18px);}
 .timer-settings{display:none;flex-direction:column;gap:8px;}
 .timer-settings.active{display:flex;}
 .timer-presets{display:flex;gap:6px;flex-wrap:wrap;}
-.timer-preset{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(255,255,255,0.4);font-family:"DM Sans",sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
-.timer-preset.active{background:rgba(79,195,247,0.15);border-color:var(--sky);color:var(--white);}
-.timer-preset:hover{border-color:rgba(255,255,255,0.2);color:var(--white);}
-.diff-note-box{background:rgba(159,93,229,0.08);border:1px solid rgba(159,93,229,0.2);border-radius:8px;padding:10px 12px;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin-top:6px;display:none;}
+.timer-preset{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--white);color:#666;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.timer-preset.active{background:var(--ink);border-color:var(--ink);color:var(--lime);}
+.timer-preset:hover{background:var(--ink);border-color:var(--ink);color:var(--lime);}
+.diff-note-box{background:rgba(159,93,229,0.06);border:1px solid rgba(159,93,229,0.2);border-radius:8px;padding:10px 12px;font-size:11px;color:#666;line-height:1.6;margin-top:6px;display:none;}
 .diff-note-box.active{display:block;}
 /* generate */
 .gen-btn{width:100%;background:var(--lime);color:var(--ink);border:none;border-radius:12px;padding:15px;font-family:"Syne",sans-serif;font-weight:800;font-size:14px;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;}
-.gen-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.35);}
+.gen-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(184,224,48,0.35);}
 .val-msg{font-size:11px;color:var(--coral);margin-top:6px;display:none;}
 /* preview */
-.prev-header{font-family:"Syne",sans-serif;font-weight:700;font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;}
-.prev-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,0.18);text-align:center;padding:40px;}
+.prev-header{font-family:"Syne",sans-serif;font-weight:700;font-size:13px;color:#888;letter-spacing:1px;text-transform:uppercase;}
+.prev-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(0,0,0,0.25);text-align:center;padding:40px;}
 .prev-empty-icon{font-size:44px;opacity:0.35;}
 .prev-empty-text{font-size:13px;line-height:1.6;}
-.prev-frame{background:#111;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.prev-frame{background:var(--bg2);border-radius:12px;overflow:hidden;border:1px solid var(--border);}
 .prev-frame iframe{width:100%;height:500px;border:none;display:block;}
 .dl-btns{display:flex;flex-direction:column;gap:8px;}
 .dl-btn{width:100%;background:var(--lime);color:var(--ink);border:none;border-radius:10px;padding:13px;font-family:"Syne",sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
-.dl-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.3);}
+.dl-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(184,224,48,0.3);}
 .dl-btn-diff{background:rgba(159,93,229,0.2);color:var(--violet);border:1px solid rgba(159,93,229,0.4);}
 .dl-btn-diff:hover{background:rgba(159,93,229,0.3);}
-.dl-note{font-size:10px;color:rgba(255,255,255,0.2);text-align:center;}
+.dl-note{font-size:10px;color:#aaa;text-align:center;}
 .dl-btn-save{width:100%;background:var(--lime);color:var(--ink);border:none;border-radius:10px;padding:13px;font-family:"Syne",sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
-.dl-btn-save:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,241,53,0.3);}
-.dl-btn-discard{width:100%;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);border-radius:10px;padding:13px;font-family:"Syne",sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;}
+.dl-btn-save:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(184,224,48,0.3);}
+.dl-btn-discard{width:100%;background:transparent;border:1px solid var(--border);color:#888;border-radius:10px;padding:13px;font-family:"Syne",sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;}
 .dl-btn-discard:hover{border-color:rgba(255,92,58,0.4);color:var(--coral);}
 .dl-divider{height:1px;background:var(--border);margin:4px 0;}
-.dl-edit-label{font-size:10px;color:rgba(200,241,53,0.5);text-align:center;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
-.loading-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.88);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.dl-edit-label{font-size:10px;color:rgba(184,224,48,0.5);text-align:center;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(247,246,242,0.92);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
 .loading-overlay.active{display:flex;}
-.spin{width:44px;height:44px;border:3px solid rgba(200,241,53,0.2);border-top-color:var(--lime);border-radius:50%;animation:spin .8s linear infinite;}
+.spin{width:44px;height:44px;border:3px solid rgba(184,224,48,0.2);border-top-color:var(--lime);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.load-txt{font-family:"Syne",sans-serif;font-size:15px;font-weight:700;}
-.load-sub{font-size:12px;color:rgba(255,255,255,0.35);}
+.load-txt{font-family:"Syne",sans-serif;font-size:15px;font-weight:700;color:var(--ink);}
+.load-sub{font-size:12px;color:#888;}
 @media(max-width:800px){.page{grid-template-columns:1fr;}.form-panel,.preview-panel{max-height:none;}}
+</style>
+
+<style>
+/* ── WIZARD ── */
+.wiz-bar {
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  padding: 14px 32px; display: flex; justify-content: center;
+}
+.wiz-steps {
+  display: flex; align-items: center; gap: 0; max-width: 480px; width: 100%;
+}
+.wiz-step {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; flex-shrink: 0;
+}
+.wiz-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg2); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 12px; color: #888;
+  transition: all .2s;
+}
+.wiz-label { font-size: 11px; color: #888; font-weight: 600; white-space: nowrap; }
+.wiz-active .wiz-num { background: var(--ink); border-color: var(--ink); color: var(--lime); }
+.wiz-active .wiz-label { color: var(--ink); }
+.wiz-done .wiz-num { background: var(--lime-dark); border-color: var(--lime-dark); color: #fff; }
+.wiz-done .wiz-label { color: var(--lime-dark); }
+.wiz-line {
+  flex: 1; height: 2px; background: var(--border); margin: 0 8px; margin-bottom: 18px; transition: background .3s;
+}
+.wiz-line.done { background: var(--lime-dark); }
+
+/* ── WIZARD PANES ── */
+.wiz-pane { animation: fadein .2s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Step nav buttons */
+.step-nav {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.step-next-btn {
+  margin-left: auto; background: var(--ink); color: var(--lime); border: none;
+  border-radius: 10px; padding: 12px 24px; font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 14px; cursor: pointer; transition: transform .15s, box-shadow .15s;
+}
+.step-next-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(10,10,15,0.2); }
+.step-back-btn {
+  background: transparent; border: 1.5px solid var(--border); color: #666;
+  border-radius: 10px; padding: 11px 20px; font-family: 'DM Sans', sans-serif;
+  font-weight: 600; font-size: 13px; cursor: pointer; transition: all .15s;
+}
+.step-back-btn:hover { border-color: var(--text); color: var(--ink); }
+.step-nav-hint { font-size: 12px; color: var(--coral); flex: 1; }
+
+/* Step 1 image grid improvements */
+.photo-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+.photo-thumb { aspect-ratio: 1; border-radius: 10px; }
+.upload-zone { padding: 28px 16px; }
+
+/* Step 2 - full width form */
+.page.step-full { grid-template-columns: 1fr; }
+.page.step-full #preview-panel { display: none; }
+
+/* Step 3 finish fields */
+.finish-field {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 10px;
+}
+.finish-label {
+  display: block; font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 14px; color: var(--ink); margin-bottom: 12px;
+}
+.finish-optional {
+  font-family: 'DM Sans', sans-serif; font-weight: 400;
+  font-size: 11px; color: #888; margin-left: 6px;
+}
+
+/* Page layout modes */
+.page { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 113px); }
+.form-panel { padding: 28px; border-right: 1px solid var(--border); overflow-y: auto; max-height: calc(100vh - 113px); background: var(--bg); }
+.form-panel.full-width { grid-column: 1 / -1; border-right: none; max-width: 700px; margin: 0 auto; width: 100%; }
 </style>
 <style>
 .auth-nav{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
-.trial-pill{font-size:11px;color:rgba(255,255,255,0.5);background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.2);border-radius:100px;padding:4px 10px;white-space:nowrap;}
-.trial-pill strong{color:#c8f135;}
+.trial-pill{font-size:11px;color:rgba(255,255,255,0.5);background:rgba(184,224,48,0.08);border:1px solid rgba(184,224,48,0.2);border-radius:100px;padding:4px 10px;white-space:nowrap;}
+.trial-pill strong{color:#b8e030;}
 .trial-pill.expired{background:rgba(255,92,58,0.08);border-color:rgba(255,92,58,0.2);}
 .trial-pill.expired strong{color:#ff5c3a;}
-.nav-upgrade{background:#c8f135;color:#0a0a0f;border:none;border-radius:100px;padding:6px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
-.nav-signout{background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;}
-.nav-signout:hover{color:var(--white);}
-.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.95);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:32px;text-align:center;}
+.nav-upgrade{background:#b8e030;color:#0a0a0f;border:none;border-radius:100px;padding:6px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+.nav-signout{background:transparent;border:1.5px solid var(--border);color:#555;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;}
+.nav-signout:hover{color:var(--ink);border-color:var(--ink);}
+.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(247,246,242,0.97);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:32px;text-align:center;}
 .paywall-overlay.active{display:flex;}
-.paywall-title{font-family:Syne,sans-serif;font-weight:800;font-size:28px;color:#c8f135;}
-.paywall-sub{font-size:15px;color:rgba(255,255,255,0.5);max-width:400px;line-height:1.6;}
-.paywall-btn{background:#c8f135;color:#0a0a0f;border:none;border-radius:12px;padding:16px 32px;font-family:Syne,sans-serif;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-block;}
-.paywall-signin{font-size:13px;color:rgba(255,255,255,0.35);margin-top:8px;}
-.paywall-signin a{color:rgba(255,255,255,0.6);text-decoration:none;}
+.paywall-title{font-family:Syne,sans-serif;font-weight:800;font-size:28px;color:#b8e030;}
+.paywall-sub{font-size:15px;color:#666;max-width:400px;line-height:1.6;}
+.paywall-btn{background:#b8e030;color:#0a0a0f;border:none;border-radius:12px;padding:16px 32px;font-family:Syne,sans-serif;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-block;}
+.paywall-signin{font-size:13px;color:#888;margin-top:8px;}
+.paywall-signin a{color:#555;text-decoration:none;}
 </style>
 </head>
 <body>
@@ -175,7 +258,7 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
   <div style="font-size:48px;">⏰</div>
   <div class="paywall-title">Your free trial has ended</div>
   <div class="paywall-sub">You've had 7 days of free access. Subscribe to keep creating Reveal Art activities for your students.</div>
-  <a href="pricing.html" class="paywall-btn">View Plans — from $2 per activity</a>
+  <a href="plans.html" class="paywall-btn">View Plans — from $2 per activity</a>
   <div class="paywall-signin">Already subscribed? <a href="login.html">Sign in</a></div>
 </div>
 
@@ -184,200 +267,206 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
 <div class="loading-overlay" id="lo"><div class="spin"></div><div class="load-txt" id="lo-txt">Building your Reveal Art...</div><div class="load-sub">This takes about 3 seconds</div></div>
 <nav>
   <div style="display:flex;align-items:center;gap:12px;">
-    <a href="dashboard.html" class="nav-back" id="nav-back-btn">← Back</a>
+    <button class="nav-back" id="nav-back-btn" onclick="confirmDashboard()">← Dashboard</button>
     <span id="trial-pill"></span>
   </div>
-  <a href="index.html" class="nav-logo"><span class="nav-logo-dot"></span>Reveal Arts</a>
+  <a href="index.html" class="nav-logo"><div style="width:32px;height:32px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-size:7px;font-weight:800;color:#b8e030;line-height:1.2;text-align:center;flex-shrink:0;">THE<br>REAL<br>SUM<br>SHADY</div><div><span style="font-family:Syne,sans-serif;font-weight:800;font-size:17px;color:var(--ink);letter-spacing:-0.3px;">Reveal Arts</span><span style="font-size:11px;color:#888;font-weight:400;display:block;">by The Real Sum Shady</span></div></a>
   <div class="auth-nav" id="auth-nav">
     <div id="edit-mode-btns" style="display:none;gap:8px;align-items:center;">
-      <span style="font-size:11px;color:rgba(255,255,255,0.35);">Editing saved activity</span>
-      <button onclick="discardChanges()" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;">Discard</button>
+      <span style="font-size:11px;color:#666;">Editing saved activity</span>
+      <button onclick="discardChanges()" style="background:transparent;border:1.5px solid var(--border);color:#666;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;">Discard</button>
       <button onclick="saveChanges()" style="background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:6px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer;">Save Changes</button>
     </div>
   </div>
 </nav>
-<div class="page">
-<div class="form-panel">
-
-  <div class="sh"><div class="sn">1</div><div class="st">Choose your image</div></div>
-  <div id="img-picker">
-    <div class="search-row">
-      <input type="text" class="inp" id="si" placeholder="Search photos... (Easter, space, animals...)">
-      <button class="search-btn" id="sb" onclick="searchPhotos()">Search</button>
+<!-- WIZARD PROGRESS BAR -->
+<div class="wiz-bar">
+  <div class="wiz-steps">
+    <div class="wiz-step wiz-active" id="wstep-1" onclick="goToStep(1)">
+      <div class="wiz-num">1</div>
+      <div class="wiz-label">Image</div>
     </div>
-    <div class="photo-grid" id="pg"><div class="photo-empty">Search above or upload your own below</div></div>
-    <div class="or-row"><div class="or-line"></div><span>or upload your own</span><div class="or-line"></div></div>
-    <div class="upload-zone" onclick="document.getElementById('fu').click()">
-      <input type="file" id="fu" accept="image/*" onchange="handleUpload(event)">
-      <div style="font-size:22px;margin-bottom:4px;">📁</div>
-      <div class="upload-text">Click to upload from your computer</div>
+    <div class="wiz-line" id="wline-1"></div>
+    <div class="wiz-step" id="wstep-2" onclick="goToStep(2)">
+      <div class="wiz-num">2</div>
+      <div class="wiz-label">Problems</div>
+    </div>
+    <div class="wiz-line" id="wline-2"></div>
+    <div class="wiz-step" id="wstep-3" onclick="goToStep(3)">
+      <div class="wiz-num">3</div>
+      <div class="wiz-label">Finish</div>
     </div>
   </div>
+</div>
 
-  <div class="img-editor" id="img-editor">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);">Adjust image</span>
-      <button class="change-img-btn" onclick="clearImage()">Change image</button>
-    </div>
-    <div class="epw" id="epw">
-      <div class="loading-msg" id="epw-msg">Loading image...</div>
-      <canvas id="ec"></canvas>
-    </div>
-    <div class="ctrl-row">
-      <span class="ctrl-label">Aspect</span>
-      <div class="aspect-btns">
-        <button class="aspect-btn active" id="asp-sq" onclick="setAspect(1,1,this)">■ Square<span class="rec">★ recommended</span></button>
-        <button class="aspect-btn" onclick="setAspect(16,9,this)">▬ 16:9</button>
-        <button class="aspect-btn" onclick="setAspect(9,16,this)">▮ Portrait</button>
+<div class="page" id="page-layout">
+<div class="form-panel" id="form-panel">
+
+  <!-- ═══ STEP 1: IMAGE ═══ -->
+  <div id="step-1" class="wiz-pane">
+    <div id="img-picker">
+      <div class="search-row">
+        <input type="text" class="inp" id="si" placeholder="Search photos... (Easter, space, animals...)">
+        <button class="search-btn" id="sb" onclick="searchPhotos()">Search</button>
+      </div>
+      <div class="photo-grid" id="pg"><div class="photo-empty">Search above or upload your own below</div></div>
+      <div class="or-row"><div class="or-line"></div><span>or upload your own</span><div class="or-line"></div></div>
+      <div class="upload-zone" onclick="document.getElementById('fu').click()">
+        <input type="file" id="fu" accept="image/*" onchange="handleUpload(event)">
+        <div style="font-size:32px;margin-bottom:8px;">📁</div>
+        <div class="upload-text">Click to upload from your computer</div>
       </div>
     </div>
-    <div class="ctrl-row">
-      <span class="ctrl-label" style="color:rgba(200,241,53,0.7);">Zoom</span>
-      <input type="range" id="zoom-sl" min="1" max="500" step="1" value="100" oninput="onZoomSlider(this.value)" style="accent-color:#c8f135;">
-      <span style="font-size:11px;color:rgba(200,241,53,0.7);min-width:36px;font-weight:700;" id="zoom-val">100%</span>
-    </div>
-    <div class="ctrl-row">
 
-      <button class="crop-btn" id="crop-btn" onclick="cropDone()">✓ Use this image</button>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="sh"><div class="sn">2</div><div class="st">Choose your problems</div></div>
-  <div style="display:flex;gap:8px;margin-bottom:14px;">
-    <button id="cat-ops" onclick="setCat('ops')" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(200,241,53,0.6);background:rgba(200,241,53,0.12);color:#c8f135;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🔢 Operations</button>
-    <button id="cat-alg" onclick="setCat('alg')" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.45);font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">📐 Algebra</button>
-  </div>
-  <div id="ops-section">
-    <div class="tabs" id="op-tabs">
-      <button class="tab active" onclick="setOp('addition',this)">➕ Addition</button>
-      <button class="tab" onclick="setOp('subtraction',this)">➖ Subtraction</button>
-      <button class="tab" onclick="setOp('multiplication',this)">✖️ Multiply</button>
-      <button class="tab" onclick="setOp('division',this)">➗ Division</button>
-    </div>
-    <div class="tabs" id="lv-tabs"></div>
-    <div class="neg-note" id="neg-note">⚠️ Levels 4–6 include negative numbers</div>
-  </div>
-  <div id="alg-section" style="display:none;">
-    <div class="tabs" id="alg-type-tabs">
-      <button class="tab active" onclick="setAlgType('one',this)">One-step equations (L1–L3)</button>
-      <button class="tab" style="border-color:rgba(159,93,229,0.3);color:rgba(159,93,229,0.6);" onclick="setAlgType('two',this)">Two-step equations (L4–L6)</button>
-    </div>
-    <div class="tabs" id="alg-lv-tabs"></div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:10px;">L1–L2: integer answers · L3: includes fractions and decimals</div>
-  </div>
-  <div class="mode-row">
-    <button class="mode-btn active" id="random-mode-btn" onclick="setMode('random',this)">🎲 Random <span id="random-count">20</span></button>
-    <button class="mode-btn" onclick="setMode('manual',this)">✋ Hand pick</button>
-  </div>
-  <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center;">
-    <span style="font-size:11px;color:rgba(255,255,255,0.4);min-width:80px;">Problems:</span>
-    <div style="display:flex;gap:4px;flex-wrap:wrap;">
-      <button class="prob-count-btn" onclick="setNumProbs(15,this)">15</button>
-      <button class="prob-count-btn active" onclick="setNumProbs(20,this)">20</button>
-      <button class="prob-count-btn" onclick="setNumProbs(25,this)">25</button>
-      <button class="prob-count-btn" onclick="setNumProbs(30,this)">30</button>
-    </div>
-  </div>
-  <div class="problem-pool" id="pp"></div>
-  <div class="sel-status">
-    <div class="sel-ct"><span id="sc">20</span> of <span id="sc-total">20</span> selected</div>
-    <button class="rand-btn" onclick="rand20()">🎲 Re-randomize</button>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="sh"><div class="sn">3</div><div class="st">Hints <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(optional — up to 5)</span></div></div>
-  <div class="hc-row">
-    <button class="hc-btn active" onclick="setHints(0,this)">0</button>
-    <button class="hc-btn" onclick="setHints(1,this)">1</button>
-    <button class="hc-btn" onclick="setHints(2,this)">2</button>
-    <button class="hc-btn" onclick="setHints(3,this)">3</button>
-    <button class="hc-btn" onclick="setHints(4,this)">4</button>
-    <button class="hc-btn" onclick="setHints(5,this)">5</button>
-  </div>
-  <div class="hint-inputs" id="hint-inputs"></div>
-
-  <div class="divider"></div>
-
-  <div class="sh"><div class="sn">4</div><div class="st">Timer <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(optional)</span></div></div>
-  <div class="toggle-row">
-    <span style="font-size:13px;color:rgba(255,255,255,0.6);">Enable countdown timer</span>
-    <label class="toggle-switch"><input type="checkbox" id="timer-toggle" onchange="toggleTimer(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
-  </div>
-  <div class="timer-settings" id="timer-settings">
-    <div class="timer-presets">
-      <button class="timer-preset active" onclick="setTimer(5,this)">5 min</button>
-      <button class="timer-preset" onclick="setTimer(10,this)">10 min</button>
-      <button class="timer-preset" onclick="setTimer(15,this)">15 min</button>
-      <button class="timer-preset" onclick="setTimer(20,this)">20 min</button>
-      <button class="timer-preset" onclick="setTimer(30,this)">30 min</button>
-    </div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.3);">Timer turns red and counts up when time runs out.</div>
-  </div>
-
-  <div class="divider"></div>
-
-  <div id="calc-section" style="display:none;">
-    <div class="sh"><div class="sn">5</div><div class="st">Calculator <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(algebra only)</span></div></div>
-    <div class="toggle-row">
-      <span style="font-size:13px;color:rgba(255,255,255,0.6);">Include calculator for students</span>
-      <label class="toggle-switch"><input type="checkbox" id="calc-toggle" onchange="calcEnabled=this.checked"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
-    </div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px;line-height:1.5;">A floating calculator students can open while solving problems.</div>
-    <div class="divider"></div>
-  </div>
-
-  <div id="ai-tutor-section" style="display:none;">
-    <div class="sh"><div class="sn" id="ai-step-num">6</div><div class="st">AI Tutor <span style="font-size:11px;color:rgba(200,241,53,0.6);font-weight:600;">NEW ✨</span></div></div>
-    <div class="toggle-row">
-      <span style="font-size:13px;color:rgba(255,255,255,0.6);">Enable AI step-by-step tutor</span>
-      <label class="toggle-switch"><input type="checkbox" id="ai-tutor-toggle" onchange="toggleAiTutor(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
-    </div>
-    <div class="ai-tutor-settings" id="ai-tutor-settings" style="display:none;flex-direction:column;gap:8px;margin-top:8px;">
-      <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Students click "AI Tutor" to get step-by-step help on any problem. You control how many times they can ask.</div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
-        <span style="font-size:12px;color:rgba(255,255,255,0.5);min-width:80px;">Max helps:</span>
-        <div style="display:flex;gap:5px;">
-          <button class="hc-btn active" id="ai-help-0" onclick="setAiLimit(0,this)">∞</button>
-          <button class="hc-btn" id="ai-help-1" onclick="setAiLimit(1,this)">1</button>
-          <button class="hc-btn" id="ai-help-2" onclick="setAiLimit(2,this)">2</button>
-          <button class="hc-btn" id="ai-help-3" onclick="setAiLimit(3,this)">3</button>
-          <button class="hc-btn" id="ai-help-5" onclick="setAiLimit(5,this)">5</button>
+    <div class="img-editor" id="img-editor">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:13px;font-weight:600;color:#444;">Adjust your image</span>
+        <button class="change-img-btn" onclick="clearImage()">← Choose different image</button>
+      </div>
+      <div class="epw" id="epw">
+        <div class="loading-msg" id="epw-msg">Loading image...</div>
+        <canvas id="ec"></canvas>
+      </div>
+      <div class="ctrl-row" style="margin-top:12px;">
+        <span class="ctrl-label">Aspect</span>
+        <div class="aspect-btns">
+          <button class="aspect-btn active" id="asp-sq" onclick="setAspect(1,1,this)">■ Square<span class="rec">★ recommended</span></button>
+          <button class="aspect-btn" onclick="setAspect(16,9,this)">▬ 16:9</button>
+          <button class="aspect-btn" onclick="setAspect(9,16,this)">▮ Portrait</button>
         </div>
       </div>
-      <div style="font-size:10px;color:rgba(200,241,53,0.4);line-height:1.5;">∞ = unlimited · AI shows vertical step-by-step algebra with explanations</div>
+      <div class="ctrl-row">
+        <span class="ctrl-label" style="color:var(--lime-dark);">Zoom</span>
+        <input type="range" id="zoom-sl" min="1" max="500" step="1" value="100" oninput="onZoomSlider(this.value)" style="accent-color:#b8e030;">
+        <span style="font-size:11px;color:var(--lime-dark);min-width:36px;font-weight:700;" id="zoom-val">100%</span>
+      </div>
+
+    </div>
+
+    <div class="step-nav">
+      <div class="step-nav-hint" id="step1-hint" style="display:none;"></div>
+      <button class="step-next-btn" onclick="wizNext(1)">Choose problems →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 2: PROBLEMS ═══ -->
+  <div id="step-2" class="wiz-pane" style="display:none;">
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button id="cat-ops" onclick="setCat('ops')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--lime-dark);background:rgba(122,170,0,0.08);color:var(--lime-dark);font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Operations</button>
+      <button id="cat-alg" onclick="setCat('alg')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Algebra</button>
+    </div>
+    <div id="ops-section">
+      <div class="tabs" id="op-tabs">
+        <button class="tab active" onclick="setOp('addition',this)">+ Addition</button>
+        <button class="tab" onclick="setOp('subtraction',this)">− Subtraction</button>
+        <button class="tab" onclick="setOp('multiplication',this)">× Multiply</button>
+        <button class="tab" onclick="setOp('division',this)">÷ Division</button>
+      </div>
+      <div class="tabs" id="lv-tabs"></div>
+      <div class="neg-note" id="neg-note">⚠️ Levels 4–6 include negative numbers</div>
+    </div>
+    <div id="alg-section" style="display:none;">
+      <div class="tabs" id="alg-type-tabs">
+        <button class="tab active" onclick="setAlgType('one',this)">One-step equations (L1–L3)</button>
+        <button class="tab" style="border-color:rgba(159,93,229,0.3);color:rgba(159,93,229,0.7);" onclick="setAlgType('two',this)">Two-step equations (L4–L6)</button>
+      </div>
+      <div class="tabs" id="alg-lv-tabs"></div>
+      <div style="font-size:11px;color:#888;margin-bottom:10px;">L1–L2: integer answers · L3: includes fractions and decimals</div>
     </div>
     <div class="divider"></div>
+    <div class="mode-row">
+      <button class="mode-btn active" id="random-mode-btn" onclick="setMode('random',this)">Random <span id="random-count">20</span></button>
+      <button class="mode-btn" onclick="setMode('manual',this)">Hand pick</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:12px;align-items:center;">
+      <span style="font-size:12px;color:#666;min-width:80px;">Problems:</span>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <button class="prob-count-btn" onclick="setNumProbs(15,this)">15</button>
+        <button class="prob-count-btn active" onclick="setNumProbs(20,this)">20</button>
+        <button class="prob-count-btn" onclick="setNumProbs(25,this)">25</button>
+        <button class="prob-count-btn" onclick="setNumProbs(30,this)">30</button>
+      </div>
+    </div>
+    <div class="problem-pool" id="pp"></div>
+    <div class="sel-status">
+      <div class="sel-ct"><span id="sc">20</span> of <span id="sc-total">20</span> selected</div>
+      <button class="rand-btn" onclick="rand20()">Re-randomize</button>
+    </div>
+
+    <div class="step-nav">
+      <button class="step-back-btn" onclick="goToStep(1)">← Back</button>
+      <div class="step-nav-hint" id="step2-hint" style="display:none;"></div>
+      <button class="step-next-btn" onclick="wizNext(2)">Finish & generate →</button>
+    </div>
   </div>
 
-  <div class="sh"><div class="sn" id="diff-step-num">5</div><div class="st">Differentiated versions <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;">(optional)</span></div></div>
-  <div class="toggle-row">
-    <span style="font-size:13px;color:rgba(255,255,255,0.6);">Generate 3 versions (A, B, C)</span>
-    <label class="toggle-switch"><input type="checkbox" id="diff-toggle" onchange="toggleDiff(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+  <!-- ═══ STEP 3: FINISH ═══ -->
+  <div id="step-3" class="wiz-pane" style="display:none;">
+
+    <div class="finish-field">
+      <label class="finish-label">Name your activity</label>
+      <input type="text" class="inp" id="act-title" placeholder="e.g. Spring Addition Practice" maxlength="60">
+      <div class="val-msg" id="vm"></div>
+    </div>
+
+    <div class="finish-field">
+      <label class="finish-label">Timer <span class="finish-optional">optional</span></label>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:#444;">Enable countdown timer</span>
+        <label class="toggle-switch"><input type="checkbox" id="timer-toggle" onchange="toggleTimer(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+      <div class="timer-settings" id="timer-settings">
+        <div class="timer-presets">
+          <button class="timer-preset active" onclick="setTimer(5,this)">5 min</button>
+          <button class="timer-preset" onclick="setTimer(10,this)">10 min</button>
+          <button class="timer-preset" onclick="setTimer(15,this)">15 min</button>
+          <button class="timer-preset" onclick="setTimer(20,this)">20 min</button>
+          <button class="timer-preset" onclick="setTimer(30,this)">30 min</button>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:4px;">Timer turns red and counts up when time runs out.</div>
+      </div>
+    </div>
+    <div id="hint-inputs" style="display:none;"></div>
+    <div id="ai-tutor-section" style="display:none;"></div>
+    <div id="ai-tutor-settings" style="display:none;"></div>
+
+    <div id="calc-section" style="display:none;" class="finish-field">
+      <label class="finish-label">Calculator <span class="finish-optional">algebra only</span></label>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:#444;">Include calculator for students</span>
+        <label class="toggle-switch"><input type="checkbox" id="calc-toggle" onchange="calcEnabled=this.checked"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+      <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.5;">A floating calculator students can open while solving problems.</div>
+    </div>
+
+    <div class="finish-field">
+      <label class="finish-label">Differentiated versions <span class="finish-optional">optional</span></label>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:#444;">Generate 3 versions (A, B, C)</span>
+        <label class="toggle-switch"><input type="checkbox" id="diff-toggle" onchange="toggleDiff(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+      <div class="diff-note-box" id="diff-note-box">Students in the same class can each attempt different problems! Select more than 20 for truly unique sets.</div>
+    </div>
+
+    <button class="gen-btn" onclick="generate()" style="margin-top:8px;">Preview my Reveal Art →</button>
+
+    <div class="step-nav" style="margin-top:0;">
+      <button class="step-back-btn" onclick="goToStep(2)">← Back to problems</button>
+    </div>
   </div>
-  <div class="diff-note-box" id="diff-note-box">Students in the same class can each attempt different problems! Select more than 20 for truly unique sets. With only 20 selected, versions will use the same problems in a different order.</div>
-
-  <div class="divider"></div>
-
-  <div class="sh"><div class="sn">6</div><div class="st">Name your activity</div></div>
-  <input type="text" class="inp" id="act-title" placeholder="e.g. Spring Addition Practice" maxlength="60" style="margin-bottom:6px;">
-  <div class="val-msg" id="vm"></div>
-  <button class="gen-btn" onclick="generate()">✨ Preview my Reveal Art</button>
 
 </div>
 
-<div class="preview-panel">
+<div class="preview-panel" id="preview-panel" style="display:none;">
   <div class="prev-header">Preview</div>
   <div class="prev-empty" id="pe">
     <div class="prev-empty-icon">🎨</div>
-    <div class="prev-empty-text">Your Reveal Art preview will appear here after you click Generate.</div>
+    <div class="prev-empty-text">Click "Preview my Reveal Art" to see it here.</div>
   </div>
   <div id="pc" style="display:none;flex-direction:column;gap:14px;">
     <div class="prev-frame"><iframe id="pi" title="Preview"></iframe></div>
     <div class="dl-btns" id="dl-btns"></div>
-    <div class="dl-note">Activity saved to your dashboard · Share link via Google Classroom · Works on any Chromebook</div>
+    <div class="dl-note">Saved to dashboard · Share via Google Classroom · Works on any device</div>
   </div>
 </div>
 </div>
@@ -431,7 +520,7 @@ function loadEditorImage(url,thumb){
   document.getElementById('asp-sq').classList.add('active');
   // load image
   const i=new Image();i.crossOrigin='anonymous';
-  i.onload=()=>{edImg=i;editorReady=true;document.getElementById('epw-msg').style.display='none';document.getElementById('ec').style.display='block';fillImage();};
+  i.onload=()=>{edImg=i;editorReady=true;document.getElementById('epw-msg').style.display='none';document.getElementById('ec').style.display='block';requestAnimationFrame(()=>fillImage());};
   i.onerror=()=>{
     // retry without crossOrigin for data URLs
     const i2=new Image();
@@ -521,7 +610,7 @@ function cropDone(){
   croppedDataUrl=ec.toDataURL('image/jpeg',0.92);
   const btn=document.getElementById('crop-btn');
   const orig=btn.textContent;btn.textContent='✓ Saved!';
-  document.getElementById('img-editor').style.border='1px solid rgba(200,241,53,0.4)';
+  document.getElementById('img-editor').style.border='1px solid rgba(184,224,48,0.4)';
   setTimeout(()=>btn.textContent=orig,1500);
 }
 
@@ -614,9 +703,11 @@ function toggleDiff(on){diffEnabled=on;document.getElementById('diff-note-box').
 // ── GENERATE ──────────────────────────────────────────────────────────────────
 async function generate(){
   const vm=document.getElementById('vm');vm.style.display='none';
+  if(!selImgUrl){vm.textContent='Please go back and choose an image first.';vm.style.display='block';return;}
+  if(!croppedDataUrl&&editorReady)cropDone();
   const imgToUse=croppedDataUrl||selImgUrl;
-  if(!imgToUse){vm.textContent='Please choose an image and click "Use this image" first.';vm.style.display='block';return;}
-  if(!croppedDataUrl){vm.textContent='Please click "✓ Use this image" to confirm your image adjustment.';vm.style.display='block';return;}
+  // auto-crop if needed
+  if(!croppedDataUrl&&editorReady)cropDone();
   if(selProbs.length<20){vm.textContent=`Please select at least 20 problems. You have ${selProbs.length}.`;vm.style.display='block';return;}
   const title=document.getElementById('act-title').value.trim()||'Reveal Art Activity';
   document.getElementById('lo').classList.add('active');
@@ -684,15 +775,8 @@ function buildDLButtons(title,imgData,hintList){
   }
 }
 
-function toggleAiTutor(on) {
-  aiTutorEnabled = on;
-  document.getElementById('ai-tutor-settings').style.display = on ? 'flex' : 'none';
-}
-function setAiLimit(n, btn) {
-  aiHelpLimit = n;
-  document.querySelectorAll('#ai-tutor-settings .hc-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
+function toggleAiTutor(on) { aiTutorEnabled = false; }
+function setAiLimit(n, btn) { aiHelpLimit = 0; }
 
 function captureSettings() {
   return {
@@ -820,7 +904,7 @@ function showSaveToast(msg, type) {
     document.body.appendChild(t);
   }
   t.textContent = msg;
-  t.style.background = type === 'ok' ? '#c8f135' : '#ff5c3a';
+  t.style.background = type === 'ok' ? '#b8e030' : '#ff5c3a';
   t.style.color = type === 'ok' ? '#0a0a0f' : '#fff';
   t.style.opacity = '1';
   clearTimeout(t._timeout);
@@ -864,7 +948,7 @@ function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,pr
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff;padding:10px;}
 .header{text-align:center;margin-bottom:8px;}
-.act-title{font-family:'Fredoka One',cursive;font-size:clamp(16px,3vw,26px);color:#c8f135;}
+.act-title{font-family:'Fredoka One',cursive;font-size:clamp(16px,3vw,26px);color:#b8e030;}
 .subtitle{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;}
 .rasta{display:flex;height:3px;border-radius:99px;overflow:hidden;max-width:960px;margin:6px auto;}
 .rasta div{flex:1;}
@@ -884,7 +968,7 @@ body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff
 .hint-box{background:#1a1a2e;border:1px solid rgba(255,214,10,0.3);border-radius:16px;padding:28px;max-width:400px;text-align:center;margin:16px;}
 .hint-box h3{font-family:'Fredoka One',cursive;color:#FFD600;margin-bottom:10px;font-size:22px;}
 .hint-box p{font-size:15px;color:rgba(255,255,255,0.85);line-height:1.65;margin-bottom:20px;}
-.hint-close{background:#c8f135;color:#0a0a0f;border:none;border-radius:8px;padding:9px 28px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;}
+.hint-close{background:#b8e030;color:#0a0a0f;border:none;border-radius:8px;padding:9px 28px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;}
 /* LAYOUT — wider problem columns */
 .layout{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;max-width:960px;margin:0 auto;align-items:start;}
 .prob-col{display:flex;flex-direction:column;gap:4px;min-width:220px;}
@@ -925,8 +1009,8 @@ body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff
 .saved-badge.vis{display:flex;}
 .brand{text-align:center;font-size:9px;color:rgba(255,255,255,0.15);margin-top:3px;font-style:italic;}
 /* CALCULATOR */
-.calc-fab{position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:#c8f135;color:#0a0a0f;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;}
-.calc-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(200,241,53,0.4);}
+.calc-fab{position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:#b8e030;color:#0a0a0f;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;}
+.calc-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(184,224,48,0.4);}
 .calc-modal{display:none;position:fixed;bottom:82px;right:20px;z-index:501;background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:14px;box-shadow:0 12px 40px rgba(0,0,0,0.6);width:224px;}
 .calc-modal.open{display:block;}
 .calc-screen{background:#0a0a0f;border-radius:10px;padding:10px 14px;text-align:right;margin-bottom:10px;min-height:52px;}
@@ -937,9 +1021,9 @@ body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff
 .cb:active{opacity:0.7;transform:scale(0.95);}
 .cb.num{background:rgba(255,255,255,0.09);color:#fff;}
 .cb.num:hover{background:rgba(255,255,255,0.14);}
-.cb.op{background:rgba(200,241,53,0.12);color:#c8f135;}
-.cb.op:hover{background:rgba(200,241,53,0.2);}
-.cb.eq{background:#c8f135;color:#0a0a0f;grid-column:span 2;}
+.cb.op{background:rgba(184,224,48,0.12);color:#b8e030;}
+.cb.op:hover{background:rgba(184,224,48,0.2);}
+.cb.eq{background:#b8e030;color:#0a0a0f;grid-column:span 2;}
 .cb.eq:hover{background:#d4f53f;}
 .cb.clr{background:rgba(255,92,58,0.15);color:#ff5c3a;}
 .cb.clr:hover{background:rgba(255,92,58,0.25);}
@@ -948,20 +1032,20 @@ body{background:#111;min-height:100vh;font-family:'Nunito',sans-serif;color:#fff
 </style>
 <style>
 .auth-nav{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
-.trial-pill{font-size:11px;color:rgba(255,255,255,0.5);background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.2);border-radius:100px;padding:4px 10px;white-space:nowrap;}
-.trial-pill strong{color:#c8f135;}
+.trial-pill{font-size:11px;color:rgba(255,255,255,0.5);background:rgba(184,224,48,0.08);border:1px solid rgba(184,224,48,0.2);border-radius:100px;padding:4px 10px;white-space:nowrap;}
+.trial-pill strong{color:#b8e030;}
 .trial-pill.expired{background:rgba(255,92,58,0.08);border-color:rgba(255,92,58,0.2);}
 .trial-pill.expired strong{color:#ff5c3a;}
-.nav-upgrade{background:#c8f135;color:#0a0a0f;border:none;border-radius:100px;padding:6px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
-.nav-signout{background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;}
-.nav-signout:hover{color:var(--white);}
-.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,15,0.95);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:32px;text-align:center;}
+.nav-upgrade{background:#b8e030;color:#0a0a0f;border:none;border-radius:100px;padding:6px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+.nav-signout{background:transparent;border:1.5px solid var(--border);color:#555;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;}
+.nav-signout:hover{color:var(--ink);border-color:var(--ink);}
+.paywall-overlay{display:none;position:fixed;inset:0;background:rgba(247,246,242,0.97);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:32px;text-align:center;}
 .paywall-overlay.active{display:flex;}
-.paywall-title{font-family:Syne,sans-serif;font-weight:800;font-size:28px;color:#c8f135;}
-.paywall-sub{font-size:15px;color:rgba(255,255,255,0.5);max-width:400px;line-height:1.6;}
-.paywall-btn{background:#c8f135;color:#0a0a0f;border:none;border-radius:12px;padding:16px 32px;font-family:Syne,sans-serif;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-block;}
-.paywall-signin{font-size:13px;color:rgba(255,255,255,0.35);margin-top:8px;}
-.paywall-signin a{color:rgba(255,255,255,0.6);text-decoration:none;}
+.paywall-title{font-family:Syne,sans-serif;font-weight:800;font-size:28px;color:#b8e030;}
+.paywall-sub{font-size:15px;color:#666;max-width:400px;line-height:1.6;}
+.paywall-btn{background:#b8e030;color:#0a0a0f;border:none;border-radius:12px;padding:16px 32px;font-family:Syne,sans-serif;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-block;}
+.paywall-signin{font-size:13px;color:#888;margin-top:8px;}
+.paywall-signin a{color:#555;text-decoration:none;}
 </style>
 </head>
 <body>
@@ -1187,9 +1271,9 @@ ${hasAiTutor ? `
 .step-block{font-family:'Nunito',sans-serif;margin-top:6px;}
 .step-row{display:flex;align-items:center;gap:0;font-size:14px;font-weight:700;line-height:1.8;}
 .step-eq{min-width:130px;color:#fff;}
-.step-op{min-width:90px;color:#c8f135;font-size:12px;font-weight:800;}
+.step-op{min-width:90px;color:#b8e030;font-size:12px;font-weight:800;}
 .step-line{height:1.5px;background:rgba(255,255,255,0.15);margin:2px 0 4px;width:220px;}
-.step-result{min-width:130px;color:#c8f135;font-size:15px;}
+.step-result{min-width:130px;color:#b8e030;font-size:15px;}
 .step-explain{font-size:11px;color:rgba(255,255,255,0.4);font-style:italic;margin-top:2px;line-height:1.4;}
 /* PROB PICKER */
 .prob-picker{display:flex;flex-wrap:wrap;gap:5px;padding:2px 0 6px;}
@@ -1458,29 +1542,27 @@ function setCat(cat) {
   const opsBtn = document.getElementById('cat-ops');
   const algBtn = document.getElementById('cat-alg');
   if (cat === 'ops') {
-    opsBtn.style.borderColor = 'rgba(200,241,53,0.6)';
-    opsBtn.style.background = 'rgba(200,241,53,0.12)';
-    opsBtn.style.color = '#c8f135';
-    algBtn.style.borderColor = 'rgba(255,255,255,0.08)';
-    algBtn.style.background = 'transparent';
-    algBtn.style.color = 'rgba(255,255,255,0.45)';
+    opsBtn.style.borderColor = 'rgba(184,224,48,0.6)';
+    opsBtn.style.background = 'rgba(184,224,48,0.12)';
+    opsBtn.style.color = '#b8e030';
+    algBtn.style.borderColor = 'rgba(0,0,0,0.09)';
+    algBtn.style.background = '#fff';
+    algBtn.style.color = '#555';
     document.getElementById('ops-section').style.display = 'block';
     document.getElementById('alg-section').style.display = 'none';
     document.getElementById('calc-section').style.display = 'none';
-    document.getElementById('ai-tutor-section').style.display = 'none';
     calcEnabled = false; document.getElementById('calc-toggle').checked = false;
     renderProblems();
   } else {
-    algBtn.style.borderColor = 'rgba(200,241,53,0.6)';
-    algBtn.style.background = 'rgba(200,241,53,0.12)';
-    algBtn.style.color = '#c8f135';
-    opsBtn.style.borderColor = 'rgba(255,255,255,0.08)';
-    opsBtn.style.background = 'transparent';
-    opsBtn.style.color = 'rgba(255,255,255,0.45)';
+    algBtn.style.borderColor = 'rgba(184,224,48,0.6)';
+    algBtn.style.background = 'rgba(184,224,48,0.12)';
+    algBtn.style.color = '#b8e030';
+    opsBtn.style.borderColor = 'rgba(0,0,0,0.09)';
+    opsBtn.style.background = '#fff';
+    opsBtn.style.color = '#555';
     document.getElementById('ops-section').style.display = 'none';
     document.getElementById('alg-section').style.display = 'block';
     document.getElementById('calc-section').style.display = 'block';
-    document.getElementById('ai-tutor-section').style.display = 'block';
     buildAlgLvTabs();
     renderAlgProblems();
   }
@@ -1894,7 +1976,7 @@ function showTrialBanner(daysLeft, isPaid, expiryDate) {
   nav.style.alignItems = 'center';
   nav.style.justifyContent = 'flex-end';
   nav.style.gap = '8px';
-  nav.innerHTML = '<a href="pricing.html" class="nav-upgrade">Manage Membership</a><button class="nav-signout" onclick="signOut()">Sign out</button>';
+  nav.innerHTML = '';
 
   // Left side pill - countdown timer
   if (!pill) return;
@@ -1936,6 +2018,79 @@ function signOut() {
   localStorage.removeItem('sb_refresh_token');
   window.location.href = 'login.html';
 }
+
+function confirmDashboard() {
+  if (confirm("Leave the creator? Your current activity won't be saved.")) {
+    window.location.href = 'dashboard.html';
+  }
+}
+
+// ── WIZARD NAVIGATION ────────────────────────────────────────────────────────
+let currentWizStep = 1;
+
+function goToStep(n) {
+  // hide all panes
+  document.querySelectorAll('.wiz-pane').forEach(p => p.style.display = 'none');
+  document.getElementById('step-' + n).style.display = 'block';
+  currentWizStep = n;
+
+  // update progress indicators
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('wstep-' + i);
+    el.classList.remove('wiz-active', 'wiz-done');
+    if (i < n) el.classList.add('wiz-done');
+    else if (i === n) el.classList.add('wiz-active');
+  }
+  for (let i = 1; i <= 2; i++) {
+    const line = document.getElementById('wline-' + i);
+    if (line) line.classList.toggle('done', i < n);
+  }
+
+  // layout: steps 1 and 2 are full-width; step 3 shows preview
+  const formPanel = document.getElementById('form-panel');
+  const previewPanel = document.getElementById('preview-panel');
+  if (n === 3) {
+    formPanel.classList.remove('full-width');
+    previewPanel.style.display = 'flex';
+    document.getElementById('page-layout').style.gridTemplateColumns = '1fr 1fr';
+  } else {
+    formPanel.classList.add('full-width');
+    previewPanel.style.display = 'none';
+    document.getElementById('page-layout').style.gridTemplateColumns = '1fr';
+  }
+
+  // scroll form panel to top
+  formPanel.scrollTop = 0;
+}
+
+function wizNext(fromStep) {
+  if (fromStep === 1) {
+    if (!selImgUrl) {
+      const hint = document.getElementById('step1-hint');
+      hint.textContent = 'Please choose or upload an image first.';
+      hint.style.display = 'block';
+      setTimeout(() => { hint.style.display = 'none'; }, 3000);
+      return;
+    }
+    // Auto-crop if not already done
+    if (!croppedDataUrl && editorReady) cropDone();
+    goToStep(2);
+  } else if (fromStep === 2) {
+    if (selProbs.length < numProbs) {
+      const hint = document.getElementById('step2-hint');
+      hint.textContent = `Please select at least ${numProbs} problems. You have ${selProbs.length}.`;
+      hint.style.display = 'block';
+      setTimeout(() => { hint.style.display = 'none'; }, 3000);
+      return;
+    }
+    goToStep(3);
+  }
+}
+
+// Init wizard on load
+document.addEventListener('DOMContentLoaded', function() {
+  goToStep(1);
+});
 
 checkAuth();
 initEditMode();
