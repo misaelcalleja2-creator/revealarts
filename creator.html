@@ -1187,22 +1187,16 @@ function drawCover(){
   for(let r=0;r<GN;r++)for(let c=0;c<GN;c++){
     if(!rev[r][c]){ctx.fillStyle='#232323';ctx.fillRect(c*TW,r*TH,TW,TH);ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;ctx.strokeRect(c*TW,r*TH,TW,TH);}
   }
-  // watermark badge — always visible
+  // watermark — elegant text shadow, always readable
   ctx.save();
-  const _txt='Reveal Arts';
-  const _fh=Math.floor(IW*0.042);
-  ctx.font='700 '+_fh+'px Nunito,sans-serif';
-  const _tw=ctx.measureText(_txt).width;
-  const _pad=6;
-  const _bx=IW-_tw-_pad*2-8;
-  const _by=IH-_fh-_pad*2-8;
-  ctx.fillStyle='rgba(0,0,0,0.52)';
-  ctx.beginPath();
-  if(ctx.roundRect){ctx.roundRect(_bx,_by,_tw+_pad*2,_fh+_pad*2,4);ctx.fill();}
-  else{ctx.fillRect(_bx,_by,_tw+_pad*2,_fh+_pad*2);}
-  ctx.fillStyle='rgba(255,255,255,0.92)';
-  ctx.textAlign='left';ctx.textBaseline='top';
-  ctx.fillText(_txt,_bx+_pad,_by+_pad);
+  ctx.font='700 '+Math.floor(IW*0.045)+'px Nunito,sans-serif';
+  ctx.shadowColor='rgba(0,0,0,0.75)';
+  ctx.shadowBlur=10;
+  ctx.shadowOffsetX=1;
+  ctx.shadowOffsetY=1;
+  ctx.fillStyle='rgba(255,255,255,0.82)';
+  ctx.textAlign='right';ctx.textBaseline='bottom';
+  ctx.fillText('Reveal Arts',IW-10,IH-10);
   ctx.restore();
 }
 function drawAll(){ctx.clearRect(0,0,IW,IH);if(img.complete&&img.naturalWidth>0)ctx.drawImage(img,0,0,IW,IH);drawCover();}
