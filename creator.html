@@ -995,7 +995,7 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 .hint-box p{font-size:15px;color:#444;line-height:1.65;margin-bottom:20px;}
 .hint-close{background:#0a0a0f;color:#b8e030;border:none;border-radius:8px;padding:9px 28px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;}
 .layout{display:grid;grid-template-columns:310px 1fr;height:calc(100vh - 57px);overflow:hidden;}
-.prob-panel{background:#fff;border-right:1px solid rgba(0,0,0,0.09);overflow-y:auto;padding:10px 12px;}
+.prob-panel{background:#fff;border-right:1px solid rgba(0,0,0,0.09);overflow-y:auto;padding:10px 12px 60px;}
 .prob-panel::-webkit-scrollbar{width:4px;}
 .prob-panel::-webkit-scrollbar-track{background:#f0efeb;}
 .prob-panel::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:99px;}
@@ -1089,10 +1089,7 @@ ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-tit
         <div class="brand-circle"><span class="brand-text-inner">THE<br>REAL<br>SUM<br>SHADY</span></div>
         <span class="brand-name">Reveal Arts</span>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div class="saved-badge" id="sb2">✓ Saved</div>
-        <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
-      </div>
+      <div class="saved-badge" id="sb2">✓ Saved</div>
     </div>
   </div>
   <div class="prob-col-hidden" id="rc2"></div>
@@ -1274,7 +1271,7 @@ revealZone=function(z){
 };
 </sc${''}ript>
 ${hasCalc ? `
-<button class="calc-fab" id="calc-fab" onclick="toggleCalc()" title="Open Calculator"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg></button>
+<button class="calc-fab" id="calc-fab" title="Calculator" style="cursor:grab;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg></button>
 <div class="calc-modal" id="calc-modal">
   <div class="calc-screen">
     <div class="calc-expr" id="calc-expr"></div>
@@ -1344,6 +1341,40 @@ document.addEventListener('click',e=>{
   const fab=document.getElementById('calc-fab');
   if(modal&&fab&&!modal.contains(e.target)&&!fab.contains(e.target)){modal.classList.remove('open');}
 });
+// Draggable calculator — drag to move, tap to open
+(function(){
+  const fab=document.getElementById('calc-fab');
+  if(!fab)return;
+  let dragging=false,moved=false,startX=0,startY=0,origLeft=0,origTop=0;
+  function getPos(){const r=fab.getBoundingClientRect();return{left:r.left,top:r.top};}
+  function startDrag(cx,cy){
+    dragging=true;moved=false;
+    const p=getPos();origLeft=p.left;origTop=p.top;startX=cx;startY=cy;
+    fab.style.bottom='auto';fab.style.right='auto';
+    fab.style.left=origLeft+'px';fab.style.top=origTop+'px';
+  }
+  function doDrag(cx,cy){
+    if(!dragging)return;
+    const dx=cx-startX,dy=cy-startY;
+    if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
+    const nl=Math.max(0,Math.min(window.innerWidth-fab.offsetWidth,origLeft+dx));
+    const nt=Math.max(0,Math.min(window.innerHeight-fab.offsetHeight,origTop+dy));
+    fab.style.left=nl+'px';fab.style.top=nt+'px';
+    const modal=document.getElementById('calc-modal');
+    if(modal&&modal.classList.contains('open')){
+      modal.style.left=nl+'px';modal.style.bottom='auto';modal.style.right='auto';
+      modal.style.top=Math.max(0,nt-modal.offsetHeight-8)+'px';
+    }
+  }
+  function endDrag(){if(!dragging)return;dragging=false;if(!moved)toggleCalc();}
+  fab.addEventListener('mousedown',e=>{startDrag(e.clientX,e.clientY);e.preventDefault();});
+  document.addEventListener('mousemove',e=>{doDrag(e.clientX,e.clientY);});
+  document.addEventListener('mouseup',()=>endDrag());
+  fab.addEventListener('touchstart',e=>{const t=e.touches[0];startDrag(t.clientX,t.clientY);},{passive:true});
+  document.addEventListener('touchmove',e=>{if(!dragging)return;e.preventDefault();const t=e.touches[0];doDrag(t.clientX,t.clientY);},{passive:false});
+  document.addEventListener('touchend',()=>endDrag());
+  fab.onclick=null;
+})();
 <\/script>
 ` : ''}
 </body>
