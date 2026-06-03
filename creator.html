@@ -387,6 +387,7 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
         <button class="prob-count-btn" onclick="setNumProbs(30,this)">30</button>
       </div>
     </div>
+    <p style="font-size:11px;color:#aaa;margin-top:6px;">Tip: pick 25+ for truly unique differentiated versions in Step 3.</p>
     <div class="problem-pool" id="pp"></div>
     <div class="sel-status">
       <div class="sel-ct"><span id="sc">20</span> of <span id="sc-total">20</span> selected</div>
@@ -705,7 +706,7 @@ async function generate(){
   const imgToUse=croppedDataUrl||selImgUrl;
   // auto-crop if needed
   if(!croppedDataUrl&&editorReady)cropDone();
-  if(selProbs.length<20){vm.textContent=`Please select at least 20 problems. You have ${selProbs.length}.`;vm.style.display='block';return;}
+  if(selProbs.length<numProbs){vm.textContent='Please select at least '+numProbs+' problems. You have '+selProbs.length+'.';vm.style.display='block';return;}
   const title=document.getElementById('act-title').value.trim()||'Reveal Art Activity';
   document.getElementById('lo').classList.add('active');
   const hintList=hints.slice(0,hintCount).filter(h=>h.trim());
@@ -1268,71 +1269,12 @@ function launchFireworks(){
   const particles=[];
   let running=true;
 
-  // ── AUDIO ──
-  let audioCtx;
-  try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
 
-  function playBoom(x){
-    if(!audioCtx)return;
-    try{
-      const pan=Math.max(-1,Math.min(1,(x/window.innerWidth)*2-1));
-      // Whistle (40% of bursts)
-      if(Math.random()>0.6){
-        const osc=audioCtx.createOscillator();
-        const wg=audioCtx.createGain();
-        const wp=audioCtx.createStereoPanner?audioCtx.createStereoPanner():null;
-        osc.type='sine';
-        osc.frequency.setValueAtTime(250+Math.random()*150,audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1800+Math.random()*800,audioCtx.currentTime+0.35);
-        wg.gain.setValueAtTime(0.07,audioCtx.currentTime);
-        wg.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.35);
-        osc.connect(wg);
-        if(wp){wp.pan.value=pan;wg.connect(wp);wp.connect(audioCtx.destination);}
-        else wg.connect(audioCtx.destination);
-        osc.start();osc.stop(audioCtx.currentTime+0.35);
-      }
-      // Boom
-      const t=audioCtx.currentTime+0.33;
-      const bsz=Math.floor(audioCtx.sampleRate*0.35);
-      const buf=audioCtx.createBuffer(1,bsz,audioCtx.sampleRate);
-      const d=buf.getChannelData(0);
-      for(let i=0;i<bsz;i++)d[i]=Math.random()*2-1;
-      const src=audioCtx.createBufferSource();src.buffer=buf;
-      const lpf=audioCtx.createBiquadFilter();lpf.type='lowpass';lpf.frequency.value=350+Math.random()*150;
-      const bg=audioCtx.createGain();
-      bg.gain.setValueAtTime(0.35,t);bg.gain.exponentialRampToValueAtTime(0.001,t+0.35);
-      const bp=audioCtx.createStereoPanner?audioCtx.createStereoPanner():null;
-      src.connect(lpf);lpf.connect(bg);
-      if(bp){bp.pan.value=pan;bg.connect(bp);bp.connect(audioCtx.destination);}
-      else bg.connect(audioCtx.destination);
-      src.start(t);src.stop(t+0.35);
-      // Crackle pops
-      for(let i=0;i<6;i++){
-        setTimeout(()=>{
-          if(!audioCtx)return;
-          try{
-            const csz=Math.floor(audioCtx.sampleRate*0.04);
-            const cb=audioCtx.createBuffer(1,csz,audioCtx.sampleRate);
-            const cd=cb.getChannelData(0);
-            for(let j=0;j<csz;j++)cd[j]=Math.random()*2-1;
-            const cs=audioCtx.createBufferSource();cs.buffer=cb;
-            const hpf=audioCtx.createBiquadFilter();hpf.type='highpass';hpf.frequency.value=2500+Math.random()*2500;
-            const cg=audioCtx.createGain();
-            cg.gain.setValueAtTime(0.12,audioCtx.currentTime);cg.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.04);
-            cs.connect(hpf);hpf.connect(cg);cg.connect(audioCtx.destination);
-            cs.start();
-          }catch(e){}
-        },320+Math.random()*600);
-      }
-    }catch(e){}
-  }
-
-  function Particle(x,y,vx,vy,color,life){
+    function Particle(x,y,vx,vy,color,life){
     return{x,y,vx,vy,color,life,maxLife:life,size:Math.random()*3+1.5};
   }
 
   function burst(x,y){
-    playBoom(x);
     const count=25+Math.floor(Math.random()*20);
     const color=COLORS[Math.floor(Math.random()*COLORS.length)];
     const color2=COLORS[Math.floor(Math.random()*COLORS.length)];
@@ -1364,8 +1306,7 @@ function launchFireworks(){
 
   function animate(){
     if(!running)return;
-    ctx.fillStyle='rgba(0,0,0,0.22)';
-    ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.clearRect(0,0,cv.width,cv.height);
     for(let i=particles.length-1;i>=0;i--){
       const p=particles[i];
       p.x+=p.vx;p.y+=p.vy;p.vy+=0.12;p.vx*=0.99;p.life--;
