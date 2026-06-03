@@ -1,4 +1,5 @@
-const nodemailer = require('nodemailer');
+const https = require('https');
+const querystring = require('querystring');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', 'https://therealsumshady.com');
@@ -12,8 +13,7 @@ module.exports = async function handler(req, res) {
 
   const name = firstName || 'there';
 
-  const html = `
-<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#f7f6f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
@@ -21,7 +21,6 @@ module.exports = async function handler(req, res) {
   <tr>
     <td align="center" style="padding:40px 24px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;margin:0 auto;">
-
         <tr>
           <td align="center" style="padding-bottom:24px;">
             <table cellpadding="0" cellspacing="0" border="0">
@@ -36,7 +35,6 @@ module.exports = async function handler(req, res) {
             <span style="font-size:12px;color:#888888;display:block;margin-top:2px;">by The Real Sum Shady</span>
           </td>
         </tr>
-
         <tr>
           <td>
             <div style="background:#ffffff;border-radius:16px;padding:32px;border:1px solid rgba(0,0,0,0.08);">
@@ -54,14 +52,12 @@ module.exports = async function handler(req, res) {
             </div>
           </td>
         </tr>
-
         <tr>
           <td style="padding-top:24px;" align="center">
             <p style="font-size:13px;color:#aaaaaa;margin:0;line-height:1.6;">— Misael &amp; Brittany<br>The Real Sum Shady</p>
             <p style="font-size:11px;color:#cccccc;margin-top:12px;">© The Real Sum Shady LLC · therealsumshady.com</p>
           </td>
         </tr>
-
       </table>
     </td>
   </tr>
@@ -69,7 +65,9 @@ module.exports = async function handler(req, res) {
 </body>
 </html>`;
 
+  // Send via Namecheap SMTP using nodemailer loaded dynamically
   try {
+    const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
       host: 'mail.privateemail.com',
       port: 465,
@@ -82,6 +80,7 @@ module.exports = async function handler(req, res) {
 
     await transporter.sendMail({
       from: '"The Real Sum Shady" <team@therealsumshady.com>',
+      replyTo: 'team@therealsumshady.com',
       to: email,
       subject: "You're in. Let's build something your students will actually want to do.",
       html
@@ -89,7 +88,7 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({ ok: true });
   } catch (e) {
-    console.error('Welcome email failed:', e.message);
-    return res.status(500).json({ error: 'Email failed' });
+    console.error('Welcome email error:', e.message);
+    return res.status(500).json({ error: e.message });
   }
 };
