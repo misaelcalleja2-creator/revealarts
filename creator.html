@@ -1042,7 +1042,7 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 .reset-btn:hover{color:#555;border-color:#555;}
 .saved-badge{font-size:10px;color:#7aaa00;display:none;align-items:center;gap:3px;font-weight:700;}
 .saved-badge.vis{display:flex;}
-.calc-fab{position:fixed;bottom:20px;right:20px;width:46px;height:46px;border-radius:50%;background:#0a0a0f;color:#b8e030;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:500;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+.calc-fab{position:fixed;bottom:20px;right:20px;width:44px;height:44px;border-radius:12px;background:#0a0a0f;color:#b8e030;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:500;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
 .calc-fab:hover{transform:scale(1.08);}
 .calc-modal{display:none;position:fixed;bottom:76px;right:20px;z-index:501;background:#fff;border:1px solid rgba(0,0,0,0.1);border-radius:18px;padding:14px;box-shadow:0 12px 40px rgba(0,0,0,0.15);width:224px;}
 .calc-modal.open{display:block;}
@@ -1070,9 +1070,13 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-title">💡 Hint</h3><p id="hmt"></p><button class="hint-close" onclick="closeHint()">Got it!</button></div></div>`:''}
 <div class="layout">
   <div class="prob-panel" id="lc">
-    <div class="prob-label">Problems</div>
+    <div class="prob-label">${N} Problems</div>
   </div>
   <div class="img-panel">
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;padding:0 2px;">
+      <img src="https://therealsumshady.com/avatar.png" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid rgba(0,0,0,0.08);flex-shrink:0;">
+      <div style="font-family:'Fredoka One',cursive;font-size:13px;color:#888;line-height:1.2;">by The Real<br>Sum Shady</div>
+    </div>
     <div class="canvas-wrap">
       <div class="canvas-outer"><canvas id="rc" width="${IW}" height="${IH}"></canvas></div>
     </div>
@@ -1187,13 +1191,12 @@ function drawCover(){
   for(let r=0;r<GN;r++)for(let c=0;c<GN;c++){
     if(!rev[r][c]){ctx.fillStyle='#232323';ctx.fillRect(c*TW,r*TH,TW,TH);ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;ctx.strokeRect(c*TW,r*TH,TW,TH);}
   }
-  ctx.save();ctx.beginPath();
-  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)if(!rev[r][c])ctx.rect(c*TW,r*TH,TW,TH);
-  ctx.clip();ctx.translate(IW/2,IH/2);ctx.rotate(-0.08);
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.font='900 '+Math.floor(IW*0.11)+'px Fredoka One,cursive';
-  ctx.fillStyle='rgba(255,255,255,0.22)';ctx.fillText('The Real',0,-Math.floor(IW*0.07));
-  ctx.fillStyle='rgba(255,214,0,0.18)';ctx.fillText('Sum Shady',0,Math.floor(IW*0.07));
+  // sleek corner watermark
+  ctx.save();
+  ctx.font='700 '+Math.floor(IW*0.045)+'px Nunito,sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.28)';
+  ctx.textAlign='right';ctx.textBaseline='bottom';
+  ctx.fillText('Reveal Arts',IW-8,IH-8);
   ctx.restore();
 }
 function drawAll(){ctx.clearRect(0,0,IW,IH);if(img.complete&&img.naturalWidth>0)ctx.drawImage(img,0,0,IW,IH);drawCover();}
@@ -1271,7 +1274,7 @@ revealZone=function(z){
 };
 </sc${''}ript>
 ${hasCalc ? `
-<button class="calc-fab" id="calc-fab" onclick="toggleCalc()" title="Open Calculator">🧮</button>
+<button class="calc-fab" id="calc-fab" onclick="toggleCalc()" title="Open Calculator"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg></button>
 <div class="calc-modal" id="calc-modal">
   <div class="calc-screen">
     <div class="calc-expr" id="calc-expr"></div>
