@@ -70,10 +70,11 @@ function wizNext(fromStep) {
         if (document.getElementById('sc-total')) document.getElementById('sc-total').textContent = numProbs;
         if (document.getElementById('random-count')) document.getElementById('random-count').textContent = numProbs;
       } else {
+        const needed = 15 - selProbs.length;
         const hint = document.getElementById('step2-hint');
-        hint.textContent = `Need at least 15 problems total. You have ${selProbs.length} — add more custom problems or switch to Operations/Algebra to fill the rest.`;
+        hint.textContent = `You need ${needed} more problem${needed === 1 ? '' : 's'}.`;
         hint.style.display = 'block';
-        setTimeout(() => { hint.style.display = 'none'; }, 5000);
+        setTimeout(() => { hint.style.display = 'none'; }, 3000);
         return;
       }
     }

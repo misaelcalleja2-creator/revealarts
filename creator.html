@@ -134,22 +134,17 @@
     <!-- ═══ CUSTOM PROBLEMS SECTION ═══ -->
     <div id="custom-section" style="display:none;">
       <div style="font-size:12px;color:#888;line-height:1.65;margin-bottom:12px;">
-        Add any problem you want — arithmetic, word problems, algebra, anything. Teachers type the problem and the correct answer.
-      </div>
-      <!-- Type toggle -->
-      <div class="tabs" id="custom-type-tabs" style="margin-bottom:10px;">
-        <button class="tab active" id="custom-type-ops" onclick="setCustomType('ops',this)">Operations</button>
-        <button class="tab" id="custom-type-alg" onclick="setCustomType('alg',this)">Algebra (solve for x)</button>
+        Add any problem — arithmetic, algebra, word problems, anything. Equations with letters are automatically treated as "solve for x".
       </div>
       <!-- Input row -->
       <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-end;">
         <div style="flex:1;">
           <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">Problem</div>
-          <input type="text" class="inp" id="custom-eq-input" placeholder="e.g. 12 × 7  or  145 − 68" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
+          <input type="text" class="inp" id="custom-eq-input" placeholder="e.g. 12 × 7  or  3x + 5 = 17  or  145 − 68" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
         </div>
         <div style="width:76px;flex-shrink:0;">
-          <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;" id="custom-ans-label">Answer</div>
-          <input type="text" class="inp" id="custom-ans-input" placeholder="84" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">Answer</div>
+          <input type="text" class="inp" id="custom-ans-input" placeholder="84 or 3/4" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
         </div>
         <button onclick="addCustomProb()" style="background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:9px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ Add</button>
       </div>

@@ -1,6 +1,16 @@
 // ── CUSTOM PROBLEMS ───────────────────────────────────────────────────────────
 var customProbs = [];
-var curCustomType = 'ops';
+
+
+// ── FRACTION HELPER ───────────────────────────────────────────────────────────
+function fmtFrac(s){
+  if(typeof s==='string'&&s.includes('/')&&!s.startsWith('FRAC:')){
+    const p=s.split('/');
+    if(p.length===2&&p[0].trim()&&p[1].trim())
+      return '<span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;line-height:1.1;font-size:0.88em;"><span style="border-bottom:1.5px solid currentColor;padding:0 3px;text-align:center;">'+p[0].trim()+'</span><span style="padding:0 3px;text-align:center;">'+p[1].trim()+'</span></span>';
+  }
+  return String(s===undefined||s===null?'':s);
+}
 
 // ── PROBLEM BANK ──────────────────────────────────────────────────────────────
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
@@ -25,8 +35,8 @@ function renderProbList(pool,selEqs=[]){
   pool.forEach(p=>{
     const sel=selEqs.includes(p.eq);
     const row=document.createElement('div');row.className='prob-row'+(sel?' selected':'');
-    const badge=p.isCustom?'<span style="font-size:9px;background:rgba(122,170,0,0.15);color:#5a8000;border-radius:3px;padding:1px 5px;margin-right:5px;font-weight:700;">✏️ custom</span>':'';
-    row.innerHTML=`<div class="prob-chk">${sel?'✓':''}</div><div class="prob-eq">${badge}${p.eq&&p.eq.startsWith('FRAC:')?p.eq.replace(/FRAC:(.*?):(\d+)/,'$1 ÷ $2'):p.eq} ${p.isAlgebra?', x = ?':' = ?'}</div><div class="prob-ans">= ${p.ansDisplay||p.ans}</div>`;
+    const badge=p.isCustom?'<span style="font-size:9px;background:rgba(122,170,0,0.15);color:#5a8000;border-radius:3px;padding:1px 5px;margin-right:5px;font-weight:700;">custom</span>':'';
+    row.innerHTML=`<div class="prob-chk">${sel?'✓':''}</div><div class="prob-eq">${badge}${p.eq&&p.eq.startsWith('FRAC:')?p.eq.replace(/FRAC:(.*?):(\d+)/,'$1 ÷ $2'):p.eq} ${p.isAlgebra?', x = ?':' = ?'}</div><div class="prob-ans">= ${fmtFrac(p.ansDisplay||String(p.ans))}</div>`;
     row.onclick=()=>toggleProb(p,row);c.appendChild(row);
   });
   updSC();
@@ -219,16 +229,6 @@ function genAlgBank(type, lv) {
 }
 
 // ── CUSTOM PROBLEM FUNCTIONS ──────────────────────────────────────────────────
-function setCustomType(type, btn) {
-  curCustomType = type;
-  document.querySelectorAll('#custom-type-tabs .tab').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  const lbl = document.getElementById('custom-ans-label');
-  if (lbl) lbl.textContent = type === 'alg' ? 'x =' : 'Answer';
-  const ph = document.getElementById('custom-eq-input');
-  if (ph) ph.placeholder = type === 'alg' ? 'e.g. 3x + 5 = 17  or  2x − 4 = 10' : 'e.g. 12 × 7  or  145 − 68';
-}
-
 function addCustomProb() {
   const eqInput = document.getElementById('custom-eq-input');
   const ansInput = document.getElementById('custom-ans-input');
@@ -256,12 +256,9 @@ function addCustomProb() {
     err.textContent = 'That problem is already in your list.';
     err.style.display = 'block'; return;
   }
-  // Type conflict check — don't mix ops and algebra
-  if (customProbs.length > 0 && customProbs[0].isAlgebra !== (curCustomType === 'alg')) {
-    err.textContent = 'Your problems are all ' + (customProbs[0].isAlgebra ? 'algebra' : 'operations') + ' type. Delete them to switch types.';
-    err.style.display = 'block'; return;
-  }
-  customProbs.push({ eq, ans, ansDisplay, isAlgebra: curCustomType === 'alg', isCustom: true });
+  // Auto-detect: if equation contains a letter variable → algebra (x = ?)
+  const isAlg = /[a-zA-Z]/.test(eq);
+  customProbs.push({ eq, ans, ansDisplay, isAlgebra: isAlg, isCustom: true });
   eqInput.value = ''; ansInput.value = ''; eqInput.focus();
   allProbs = [...customProbs];
   selProbs = [...customProbs];
@@ -289,7 +286,7 @@ function renderCustomList() {
       '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.05);">' +
       '<button onclick="removeCustomProb(' + i + ')" title="Remove" style="background:rgba(229,57,53,0.08);border:none;border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:12px;color:#e53935;flex-shrink:0;padding:0;line-height:1;">✕</button>' +
       '<span style="font-size:13px;font-weight:700;flex:1;color:#1a1a24;">' + p.eq + '</span>' +
-      '<span style="font-size:11px;color:#888;white-space:nowrap;">' + (p.isAlgebra ? 'x = ' : '= ') + p.ansDisplay + '</span>' +
+      '<span style="font-size:11px;color:#888;white-space:nowrap;">' + (p.isAlgebra ? 'x = ' : '= ') + fmtFrac(p.ansDisplay) + '</span>' +
       '</div>'
     ).join('');
 }
