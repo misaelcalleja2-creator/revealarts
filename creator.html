@@ -101,6 +101,7 @@
     <div class="step-nav">
       <div class="step-nav-hint" id="step1-hint" style="display:none;"></div>
       <button class="step-next-btn" onclick="wizNext(1)">Choose problems →</button>
+      <button onclick="discardChanges()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1.5px solid #ddd;color:#999;border-radius:10px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;"  id="discard-s1">Discard changes → Dashboard</button>
     </div>
   </div>
 
@@ -153,6 +154,7 @@
       <button class="step-back-btn" onclick="goToStep(1)">← Back</button>
       <div class="step-nav-hint" id="step2-hint" style="display:none;"></div>
       <button class="step-next-btn" onclick="wizNext(2)">Finish & generate →</button>
+      <button onclick="discardChanges()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1.5px solid #ddd;color:#999;border-radius:10px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;"  id="discard-s2">Discard changes → Dashboard</button>
     </div>
   </div>
 
@@ -180,6 +182,7 @@
           <button class="timer-preset" onclick="setTimer(30,this)">30 min</button>
         </div>
         <div style="font-size:11px;color:#888;margin-top:4px;">Timer turns red and counts up when time runs out.</div>
+        <div style="font-size:11px;color:#888;margin-top:8px;line-height:1.6;padding:8px 10px;background:rgba(0,0,0,0.03);border-radius:8px;">⚠️ Timer starts as soon as a student opens the page / clicks on the link. Each student's timer runs independently in their browser and cannot be restarted.</div>
       </div>
     </div>
     <div id="hint-inputs" style="display:none;"></div>
@@ -205,6 +208,7 @@
     </div>
 
     <button class="gen-btn" onclick="generate()" style="margin-top:8px;">Preview my Reveal Art →</button>
+      <button onclick="discardChanges()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1.5px solid #ddd;color:#999;border-radius:10px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;"  id="discard-s3">Discard changes → Dashboard</button>
 
     <div class="step-nav" style="margin-top:0;">
       <button class="step-back-btn" onclick="goToStep(2)">← Back to problems</button>

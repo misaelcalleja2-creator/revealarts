@@ -74,23 +74,26 @@ async function initEditMode() {
   if (!token) return;
 
   try {
-    console.log('🔧 initEditMode: fetching activity', actId);
-    const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + actId + '&select=*', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
-    });
-    console.log('🔧 fetch status:', r.status);
-    const data = await r.json();
-    console.log('🔧 data received:', data);
-    if (!Array.isArray(data) || !data[0]) {
-      console.log('❌ No activity found');
-      return;
+    // Retry up to 3 times — handles brief Supabase read-after-write lag on first edit
+    let activityData = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await new Promise(res => setTimeout(res, 700));
+      const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + actId + '&select=*', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+      });
+      if (!r.ok) break;
+      const data = await r.json();
+      if (Array.isArray(data) && data[0] && data[0].settings) {
+        activityData = data[0];
+        break;
+      }
     }
-    if (!data[0].settings) {
-      console.log('❌ Activity has no settings — was it saved before settings tracking was added?');
+    if (!activityData) {
+      console.log('❌ Activity not found or settings not yet available');
       return;
     }
 
-    const s = data[0].settings;
+    const s = activityData.settings;
     console.log('✅ Settings found:', s);
     editingActivityId = actId;
 
@@ -98,11 +101,19 @@ async function initEditMode() {
     document.getElementById('edit-mode-btns').style.display = 'flex';
     if (document.getElementById('nav-back-btn')) document.getElementById('nav-back-btn').textContent = '← Dashboard';
 
+    // Show per-step discard buttons
+    ['discard-s1', 'discard-s2', 'discard-s3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'block';
+    });
+
     // Restore title
     if (s.title) document.getElementById('act-title').value = s.title;
 
     // Restore image — hide search/upload UI and show editor
     if (s.image) {
+      selImgUrl = s.image;          // fixes "please choose image" error on step advance
+      originalEditImage = s.image;  // safety net: prevents accidental null-image save
       croppedDataUrl = s.image;
       edAR = s.imageAR || {w:1,h:1};
       const img = new Image();
@@ -121,7 +132,14 @@ async function initEditMode() {
         // Show the editor with the image
         const imgEditor = document.getElementById('img-editor');
         if (imgEditor) imgEditor.classList.add('active');
-        renderEditor();
+        // Mirror loadEditorImage: reveal canvas, then size/draw after layout settles.
+        // renderEditor reads epw.clientWidth, which is 0 on a cold (uncached) first load
+        // unless we wait for layout — hence the double requestAnimationFrame + fillImage.
+        const epwMsg = document.getElementById('epw-msg');
+        const ec = document.getElementById('ec');
+        if (epwMsg) epwMsg.style.display = 'none';
+        if (ec) ec.style.display = 'block';
+        requestAnimationFrame(() => requestAnimationFrame(() => fillImage()));
         // Add a "Change image" button if not already there
         if (!document.getElementById('change-img-edit-btn')) {
           const chBtn = document.createElement('button');
@@ -201,12 +219,19 @@ async function initEditMode() {
       });
     }
 
-    // Restore selected problems in manual mode
-    if (s.mode === 'manual' && s.selectedEqs && s.selectedEqs.length) {
+    // Restore selected problems — use full saved objects so exact problems are restored
+    if (s.selectedProbs && s.selectedProbs.length) {
+      setTimeout(() => {
+        selProbs = [...s.selectedProbs];
+        allProbs = [...s.selectedProbs]; // use saved problems as the display pool
+        renderProbList(allProbs, allProbs.map(p => p.eq));
+      }, 150);
+    } else if (s.mode === 'manual' && s.selectedEqs && s.selectedEqs.length) {
+      // fallback for older activities saved before selectedProbs was added
       setTimeout(() => {
         selProbs = allProbs.filter(p => s.selectedEqs.includes(p.eq));
         renderProbList(allProbs, s.selectedEqs);
-      }, 100);
+      }, 150);
     }
 
     // Restore hints

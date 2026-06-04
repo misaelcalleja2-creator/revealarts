@@ -1,3 +1,6 @@
+let originalEditImage = null;
+function genTimerKey(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
 async function generate(){
   const vm=document.getElementById('vm');vm.style.display='none';
   if(!selImgUrl){vm.textContent='Please go back and choose an image first.';vm.style.display='block';return;}
@@ -10,7 +13,7 @@ async function generate(){
   document.getElementById('lo').classList.add('active');
   const hintList=hints.slice(0,hintCount).filter(h=>h.trim());
   const preview20=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):selProbs;
-  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit);
+  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit,'preview');
   document.getElementById('pi').srcdoc=generatedHTML;
   document.getElementById('pe').style.display='none';
   document.getElementById('pc').style.display='flex';
@@ -30,11 +33,11 @@ function buildDLButtons(title,imgData,hintList){
     const label=document.createElement('div');label.className='dl-edit-label';label.textContent='Editing saved activity';
     c.appendChild(label);
 
-    const saveBtn=document.createElement('button');saveBtn.className='dl-btn-save';saveBtn.innerHTML='💾 Save Changes';
+    const saveBtn=document.createElement('button');saveBtn.className='dl-btn-save';saveBtn.innerHTML='Save Changes';
     saveBtn.onclick=()=>saveChanges();
     c.appendChild(saveBtn);
 
-    const discardBtn=document.createElement('button');discardBtn.className='dl-btn-discard';discardBtn.innerHTML='✕ Discard Changes';
+    const discardBtn=document.createElement('button');discardBtn.className='dl-btn-discard';discardBtn.innerHTML='Discard Changes';
     discardBtn.onclick=()=>discardChanges();
     c.appendChild(discardBtn);
 
@@ -43,21 +46,20 @@ function buildDLButtons(title,imgData,hintList){
   }
 
   if(!diffEnabled){
-    const b=document.createElement('button');b.className='dl-btn';
-    b.innerHTML= editingActivityId ? 'Save Changes' : 'Save & Go to Dashboard';
-    if(editingActivityId){
-      b.onclick=()=>{const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit),title);};
-    } else {
+    if(!editingActivityId){
+      const b=document.createElement('button');b.className='dl-btn';
+      b.innerHTML='Save & Go to Dashboard';
       b.onclick=async()=>{
         b.disabled=true;b.innerHTML='Saving...';
         const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);
-        const html=buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit);
+        const tk=genTimerKey();
+        const html=buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit,tk);
         const success=await saveActivity(html,title);
         if(success){window.location.href='dashboard.html';}
         else{b.disabled=false;b.innerHTML='Save & Go to Dashboard';}
       };
+      c.appendChild(b);
     }
-    c.appendChild(b);
   }else{
     // Diff mode — preview switcher buttons + one save button
     const previewLabel=document.createElement('div');
@@ -87,21 +89,20 @@ function buildDLButtons(title,imgData,hintList){
     });
     c.appendChild(switcher);
 
-    const saveBtn=document.createElement('button');saveBtn.className='dl-btn';
-    saveBtn.innerHTML= editingActivityId ? 'Save Changes' : 'Save & Go to Dashboard';
-    if(editingActivityId){
-      saveBtn.onclick=()=>saveChanges();
-    } else {
+    if(!editingActivityId){
+      const saveBtn=document.createElement('button');saveBtn.className='dl-btn';
+      saveBtn.innerHTML='Save & Go to Dashboard';
       saveBtn.onclick=async()=>{
         saveBtn.disabled=true;saveBtn.innerHTML='Saving...';
         const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);
-        const html=buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit);
+        const tk=genTimerKey();
+        const html=buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit,tk);
         const success=await saveActivity(html,title);
         if(success){window.location.href='dashboard.html';}
         else{saveBtn.disabled=false;saveBtn.innerHTML='Save & Go to Dashboard';}
       };
+      c.appendChild(saveBtn);
     }
-    c.appendChild(saveBtn);
   }
 }
 
@@ -118,6 +119,7 @@ function captureSettings() {
     algLv: curAlgLv,
     mode: curMode,
     selectedEqs: selProbs.map(p => p.eq),
+    selectedProbs: selProbs.map(p => ({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra})),
     hintCount: hintCount,
     hints: [...hints],
     timerEnabled: timerEnabled,
@@ -169,6 +171,8 @@ async function saveActivity(html, title) {
 
     // If editing existing activity — UPDATE instead of INSERT
     if (editingActivityId) {
+      const safeSettings = Object.assign({}, settings);
+      if (!safeSettings.image && originalEditImage) safeSettings.image = originalEditImage;
       const res = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + editingActivityId, {
         method: 'PATCH',
         headers: {
@@ -177,7 +181,7 @@ async function saveActivity(html, title) {
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({ title, html, subject, thumbnail, settings })
+        body: JSON.stringify({ title, html, subject, thumbnail, settings: safeSettings })
       });
       if (res.ok) { showSaveToast('✓ Changes saved!', 'ok'); return true; }
       return false;
@@ -255,7 +259,8 @@ async function saveChanges() {
   if (!croppedDataUrl) { alert('Please set an image first.'); return; }
   const hintList = hints.slice(0, hintCount).filter(h => h.trim());
   const selToUse = selProbs.length > numProbs ? [...selProbs].sort(() => Math.random() - 0.5).slice(0, numProbs) : [...selProbs];
-  const html = buildHTML(title, selToUse, croppedDataUrl, hintList, timerEnabled ? timerMins : 0, edAR, calcEnabled, numProbs);
+  const tk = genTimerKey();
+  const html = buildHTML(title, selToUse, croppedDataUrl, hintList, timerEnabled ? timerMins : 0, edAR, calcEnabled, numProbs, aiTutorEnabled, aiHelpLimit, tk);
   const success = await saveActivity(html, title);
   if (success) window.location.href = 'dashboard.html';
 }
