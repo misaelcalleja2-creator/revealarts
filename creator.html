@@ -101,6 +101,7 @@
     <div class="step-nav">
       <div class="step-nav-hint" id="step1-hint" style="display:none;"></div>
       <button class="step-next-btn" onclick="wizNext(1)">Choose problems →</button>
+      <button id="discard-s1" onclick="discardChanges()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1.5px solid #ddd;color:#999;border-radius:10px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Discard changes → Dashboard</button>
     </div>
   </div>
 
@@ -153,6 +154,7 @@
       <button class="step-back-btn" onclick="goToStep(1)">← Back</button>
       <div class="step-nav-hint" id="step2-hint" style="display:none;"></div>
       <button class="step-next-btn" onclick="wizNext(2)">Finish & generate →</button>
+      <button id="discard-s2" onclick="discardChanges()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1.5px solid #ddd;color:#999;border-radius:10px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Discard changes → Dashboard</button>
     </div>
   </div>
 
@@ -205,6 +207,7 @@
     </div>
 
     <button class="gen-btn" onclick="generate()" style="margin-top:8px;">Preview my Reveal Art →</button>
+    <button id="discard-s3" onclick="discardChanges()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1.5px solid #ddd;color:#999;border-radius:10px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Discard changes → Dashboard</button>
 
     <div class="step-nav" style="margin-top:0;">
       <button class="step-back-btn" onclick="goToStep(2)">← Back to problems</button>

@@ -98,11 +98,19 @@ async function initEditMode() {
     document.getElementById('edit-mode-btns').style.display = 'flex';
     if (document.getElementById('nav-back-btn')) document.getElementById('nav-back-btn').textContent = '← Dashboard';
 
+    // Show per-step discard buttons
+    ['discard-s1', 'discard-s2', 'discard-s3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'block';
+    });
+
     // Restore title
     if (s.title) document.getElementById('act-title').value = s.title;
 
     // Restore image — hide search/upload UI and show editor
     if (s.image) {
+      selImgUrl = s.image;          // ← fixes "please choose image" error on step advance
+      originalEditImage = s.image;  // ← safety net: prevents accidental null-image save
       croppedDataUrl = s.image;
       edAR = s.imageAR || {w:1,h:1};
       const img = new Image();

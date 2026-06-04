@@ -1,3 +1,5 @@
+let originalEditImage = null; // stores the image from Supabase when edit mode loads — prevents accidental null saves
+
 async function generate(){
   const vm=document.getElementById('vm');vm.style.display='none';
   if(!selImgUrl){vm.textContent='Please go back and choose an image first.';vm.style.display='block';return;}
@@ -46,7 +48,7 @@ function buildDLButtons(title,imgData,hintList){
     const b=document.createElement('button');b.className='dl-btn';
     b.innerHTML= editingActivityId ? 'Save Changes' : 'Save & Go to Dashboard';
     if(editingActivityId){
-      b.onclick=()=>{const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);doDownload(buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit),title);};
+      b.onclick=()=>saveChanges();
     } else {
       b.onclick=async()=>{
         b.disabled=true;b.innerHTML='Saving...';
@@ -169,6 +171,8 @@ async function saveActivity(html, title) {
 
     // If editing existing activity — UPDATE instead of INSERT
     if (editingActivityId) {
+      const safeSettings = Object.assign({}, settings);
+      if (!safeSettings.image && originalEditImage) safeSettings.image = originalEditImage;
       const res = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + editingActivityId, {
         method: 'PATCH',
         headers: {
@@ -177,7 +181,7 @@ async function saveActivity(html, title) {
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({ title, html, subject, thumbnail, settings })
+        body: JSON.stringify({ title, html, subject, thumbnail, settings: safeSettings })
       });
       if (res.ok) { showSaveToast('✓ Changes saved!', 'ok'); return true; }
       return false;
