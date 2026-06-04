@@ -167,6 +167,7 @@ function buildAssign(){
 const assign=buildAssign();
 const rev=Array.from({length:GN},()=>new Array(GN).fill(false));
 const solved=new Set();
+const wrongAttempts=new Set();
 const canvas=document.getElementById('rc');
 const ctx=canvas.getContext('2d');
 const img=new Image();
@@ -314,6 +315,7 @@ function chk(i){
     }
   }else{
     card.classList.remove('wrong');void card.offsetWidth;card.classList.add('wrong');
+    wrongAttempts.add(i);
     inp.value='';setTimeout(()=>card.classList.remove('wrong'),900);
   }
 }
@@ -414,7 +416,8 @@ function doDownload(){
     var em=Math.floor(el/60),es=el%60;
     timeLabel='Elapsed: '+(em<10?'0'+em:em)+':'+(es<10?'0'+es:es);
   }
-  var sc=solved.size+' / '+GN+' correct ('+Math.round(solved.size/GN*100)+'%)';
+  var wrongCount=wrongAttempts.size;
+  var sc=solved.size+' / '+GN+' correct'+(wrongCount>0?' ('+wrongCount+' question'+(wrongCount===1?'':'s')+' answered wrong at least once)':'');
   var now=new Date();
   var ts=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
   if(typeof html2canvas==='undefined'){alert('Download loading, please try again.');return;}
