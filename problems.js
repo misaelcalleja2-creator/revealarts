@@ -1,5 +1,6 @@
 // ── CUSTOM PROBLEMS ───────────────────────────────────────────────────────────
 var customProbs = [];
+var curCustomSubCat = 'ops';
 
 
 // ── FRACTION HELPER ───────────────────────────────────────────────────────────
@@ -57,6 +58,13 @@ function setNumProbs(n, btn) {
   rand20();
 }
 function rand20(){
+  if(curCat==='custom'){
+    // Custom mode: never auto-randomize — teacher hand-picks from the pool
+    const kept=selProbs.filter(p=>p.isCustom);
+    renderProbList([...kept,...allProbs],selProbs.map(p=>p.eq));
+    updSC();
+    return;
+  }
   // Preserve problems from other categories (custom or previously selected)
   const kept=selProbs.filter(p=>!allProbs.find(ap=>ap.eq===p.eq));
   const fill=Math.max(0,numProbs-kept.length);
@@ -110,7 +118,8 @@ function setCat(cat) {
   const opsBtn = document.getElementById('cat-ops');
   const algBtn = document.getElementById('cat-alg');
   const cusBtn = document.getElementById('cat-custom');
-  // Reset all buttons
+  const modeRow = document.getElementById('mode-row');
+  // Reset all category buttons
   [opsBtn, algBtn, cusBtn].forEach(b => {
     if (!b) return;
     b.style.borderColor = 'rgba(0,0,0,0.09)';
@@ -129,6 +138,8 @@ function setCat(cat) {
   document.getElementById('alg-section').style.display = cat === 'alg' ? 'block' : 'none';
   document.getElementById('custom-section').style.display = cat === 'custom' ? 'block' : 'none';
   document.getElementById('calc-section').style.display = cat === 'alg' ? 'block' : 'none';
+  // Show/hide Random/Hand pick toggle — hidden in custom (always hand-pick)
+  if (modeRow) modeRow.style.display = cat === 'custom' ? 'none' : '';
   if (cat === 'ops') {
     calcEnabled = false;
     const ct = document.getElementById('calc-toggle'); if (ct) ct.checked = false;
@@ -137,14 +148,44 @@ function setCat(cat) {
     buildAlgLvTabs();
     renderAlgProblems();
   } else {
-    // custom
+    // custom — always hand-pick, show generated bank for picking
     calcEnabled = false;
     const ct = document.getElementById('calc-toggle'); if (ct) ct.checked = false;
-    allProbs = [...customProbs];
+    curMode = 'manual';
+    // Boot with ops bank by default
+    curCustomSubCat = 'ops';
+    _styleSubBtns('ops');
+    allProbs = genBank(curOp || 'addition', curLvl || 1);
+    // Start with only custom probs selected; teacher picks rest from pool
     selProbs = [...customProbs];
     renderCustomList();
-    renderProbList(allProbs, selProbs.map(p => p.eq));
+    renderProbList([...customProbs, ...allProbs], selProbs.map(p => p.eq));
   }
+}
+
+// Style the custom sub-category buttons
+function _styleSubBtns(active) {
+  const ops = document.getElementById('custom-sub-ops');
+  const alg = document.getElementById('custom-sub-alg');
+  [ops, alg].forEach((b, i) => {
+    if (!b) return;
+    const isActive = (active === 'ops' && i === 0) || (active === 'alg' && i === 1);
+    b.style.borderColor = isActive ? 'rgba(184,224,48,0.6)' : 'rgba(0,0,0,0.09)';
+    b.style.background = isActive ? 'rgba(184,224,48,0.12)' : 'var(--white)';
+    b.style.color = isActive ? '#b8e030' : '#666';
+  });
+}
+
+// Switch the generated bank shown in custom mode
+function setCustomSubCat(cat, btn) {
+  curCustomSubCat = cat;
+  _styleSubBtns(cat);
+  allProbs = cat === 'ops'
+    ? genBank(curOp || 'addition', curLvl || 1)
+    : genAlgBank(curAlgType || 'one', curAlgLv || 1);
+  // Keep custom probs selected; drop previously hand-picked generated (new bank)
+  selProbs = selProbs.filter(p => p.isCustom);
+  renderProbList([...customProbs, ...allProbs], selProbs.map(p => p.eq));
 }
 
 function setAlgType(t, btn) {

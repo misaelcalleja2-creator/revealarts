@@ -72,9 +72,9 @@ function wizNext(fromStep) {
       } else {
         const needed = 15 - selProbs.length;
         const hint = document.getElementById('step2-hint');
-        hint.textContent = `You need ${needed} more problem${needed === 1 ? '' : 's'}.`;
+        hint.textContent = 'You need ' + needed + ' more problem' + (needed === 1 ? '' : 's') + '. Select from the list below.';
         hint.style.display = 'block';
-        setTimeout(() => { hint.style.display = 'none'; }, 3000);
+        setTimeout(() => { hint.style.display = 'none'; }, 3500);
         return;
       }
     }
