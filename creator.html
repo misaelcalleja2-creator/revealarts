@@ -176,7 +176,10 @@
     <div class="problem-pool" id="pp"></div>
     <div class="sel-status">
       <div class="sel-ct"><span id="sc">20</span> of <span id="sc-total">20</span> selected</div>
-      <button class="rand-btn" onclick="rand20()">Re-randomize</button>
+      <div style="display:flex;gap:8px;">
+        <button class="rand-btn" style="background:rgba(122,170,0,0.12);color:var(--lime-dark);border-color:rgba(122,170,0,0.25);" onclick="addFromBank(10)">+ Add 10</button>
+        <button class="rand-btn" onclick="rand20()">Re-randomize</button>
+      </div>
     </div>
 
     <div class="step-nav">
