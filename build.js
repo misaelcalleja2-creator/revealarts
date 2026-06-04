@@ -166,8 +166,8 @@ const canvas=document.getElementById('rc');
 const ctx=canvas.getContext('2d');
 const img=new Image();
 img.src=\`${esc}\`;
-img.onload=()=>{loadProgress();drawAll();startTimer();};
-img.onerror=()=>{loadProgress();drawAll();startTimer();};
+img.onload=()=>{loadProgress();drawAll();startTimer();window.addEventListener('resize',drawAll);document.addEventListener('visibilitychange',()=>{if(!document.hidden)drawAll();});};
+img.onerror=()=>{loadProgress();drawAll();startTimer();window.addEventListener('resize',drawAll);};
 
 // TIMER
 function startTimer(){
