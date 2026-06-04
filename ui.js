@@ -109,8 +109,8 @@ async function initEditMode() {
 
     // Restore image — hide search/upload UI and show editor
     if (s.image) {
-      selImgUrl = s.image;          // ← fixes "please choose image" error on step advance
-      originalEditImage = s.image;  // ← safety net: prevents accidental null-image save
+      selImgUrl = s.image;          // fixes "please choose image" error on step advance
+      originalEditImage = s.image;  // safety net: prevents accidental null-image save
       croppedDataUrl = s.image;
       edAR = s.imageAR || {w:1,h:1};
       const img = new Image();
@@ -209,12 +209,19 @@ async function initEditMode() {
       });
     }
 
-    // Restore selected problems in manual mode
-    if (s.mode === 'manual' && s.selectedEqs && s.selectedEqs.length) {
+    // Restore selected problems — use full saved objects so exact problems are restored
+    if (s.selectedProbs && s.selectedProbs.length) {
+      setTimeout(() => {
+        selProbs = [...s.selectedProbs];
+        allProbs = [...s.selectedProbs]; // use saved problems as the display pool
+        renderProbList(allProbs, allProbs.map(p => p.eq));
+      }, 150);
+    } else if (s.mode === 'manual' && s.selectedEqs && s.selectedEqs.length) {
+      // fallback for older activities saved before selectedProbs was added
       setTimeout(() => {
         selProbs = allProbs.filter(p => s.selectedEqs.includes(p.eq));
         renderProbList(allProbs, s.selectedEqs);
-      }, 100);
+      }, 150);
     }
 
     // Restore hints

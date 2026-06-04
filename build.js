@@ -1,5 +1,5 @@
 // ── BUILD ACTIVITY HTML ─────────────────────────────────────────────────────────
-function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,probCount,showAiTutor,aiLimit){
+function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,probCount,showAiTutor,aiLimit,timerKey){
   const N=probCount||problems.length||20;
   // Anchor sets for different problem counts
   const ANCHOR_SETS={
@@ -145,7 +145,7 @@ const PROBS=${JSON.stringify(problems.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.an
 const ANCHORS=${JSON.stringify(anchors)},TOTAL=${N};
 const HINTS=${JSON.stringify(hintList)};
 const TIMER_MINS=${timerMinsVal};
-const SAVE_KEY='ra3_'+encodeURIComponent('${title.replace(/'/g,"\'")}')+'_'+PROBS.length;
+const SAVE_KEY='ra3_${timerKey||"0"}';
 const GN=${N},IW=${IW},IH=${IH},TW=IW/GN,TH=IH/GN;
 const hintUsed=new Array(HINTS.length).fill(false);
 
