@@ -273,7 +273,7 @@ function buildUI(){
     if(p.eq&&p.eq.startsWith('FRAC:')){
       const parts=p.eq.split(':');const num=parts[1];const rest=parts[2];const denParts=rest.split(' = ');const den=denParts[0];const rhs=denParts[1];
       eqHtml='<span class="frac" style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;font-size:1em;"><span class="fn" style="border-bottom:1.5px solid currentColor;padding:0 4px;text-align:center;">'+num+'</span><span class="fd" style="padding:0 4px;text-align:center;">'+den+'</span></span><span style="margin:0 4px;">=</span><span>'+rhs+'</span>';
-    }else{eqHtml=p.eq.replace(/\b(\d+)\/(\d+)\b/g,'<span class="frac" style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;line-height:1.1;font-size:0.85em;"><span style="border-bottom:1.5px solid currentColor;padding:0 4px;text-align:center;">$1</span><span style="padding:0 4px;text-align:center;">$2</span></span>');}
+    }else{eqHtml=p.eq.replace(/(\\d+)\\/(\\d+)/g,'<span class="frac" style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;line-height:1.1;font-size:0.85em;"><span style="border-bottom:1.5px solid currentColor;padding:0 4px;text-align:center;">$1</span><span style="padding:0 4px;text-align:center;">$2</span></span>');}
     card.innerHTML='<span class="num">'+(i+1)+'</span><span class="eq">'+eqHtml+'</span><span style="font-size:10px;color:#aaa;white-space:nowrap;flex-shrink:0;margin:0 3px;">'+xlbl+'</span><input class="ans" type="text" id="inp-'+i+'" placeholder=""><button class="go" onclick="chk('+i+')">Go</button><span class="tick">✓</span>';
     const inp=card.querySelector('input');
     inp.addEventListener('keydown',e=>{

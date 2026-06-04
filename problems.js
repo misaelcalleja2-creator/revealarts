@@ -353,3 +353,14 @@ function renderCustomList() {
       '</div>'
     ).join('');
 }
+
+// ── QUICK ADD FROM BANK ───────────────────────────────────────────────────────
+function addFromBank(n) {
+  const available = allProbs.filter(p => !selProbs.find(s => s.eq === p.eq));
+  if (available.length === 0) { updSC(); return; }
+  const toAdd = [...available].sort(() => Math.random() - 0.5).slice(0, n);
+  selProbs = [...selProbs, ...toAdd];
+  // Always show full pool so newly-added items are visible
+  const pool = curCat === 'custom' ? [...customProbs, ...allProbs] : allProbs;
+  renderProbList(pool, selProbs.map(p => p.eq));
+}
