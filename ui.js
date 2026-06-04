@@ -132,7 +132,14 @@ async function initEditMode() {
         // Show the editor with the image
         const imgEditor = document.getElementById('img-editor');
         if (imgEditor) imgEditor.classList.add('active');
-        renderEditor();
+        // Mirror loadEditorImage: reveal canvas, then size/draw after layout settles.
+        // renderEditor reads epw.clientWidth, which is 0 on a cold (uncached) first load
+        // unless we wait for layout — hence the double requestAnimationFrame + fillImage.
+        const epwMsg = document.getElementById('epw-msg');
+        const ec = document.getElementById('ec');
+        if (epwMsg) epwMsg.style.display = 'none';
+        if (ec) ec.style.display = 'block';
+        requestAnimationFrame(() => requestAnimationFrame(() => fillImage()));
         // Add a "Change image" button if not already there
         if (!document.getElementById('change-img-edit-btn')) {
           const chBtn = document.createElement('button');
