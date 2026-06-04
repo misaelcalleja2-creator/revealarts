@@ -140,6 +140,9 @@ function setCat(cat) {
   document.getElementById('calc-section').style.display = cat === 'alg' ? 'block' : 'none';
   // Show/hide Random/Hand pick toggle — hidden in custom (always hand-pick)
   if (modeRow) modeRow.style.display = cat === 'custom' ? 'none' : '';
+  // Re-randomize serves no purpose in custom mode (hand-pick only)
+  const reBtn = document.getElementById('rerandomize-btn');
+  if (reBtn) reBtn.style.display = cat === 'custom' ? 'none' : '';
   if (cat === 'ops') {
     calcEnabled = false;
     const ct = document.getElementById('calc-toggle'); if (ct) ct.checked = false;
