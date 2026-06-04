@@ -74,23 +74,26 @@ async function initEditMode() {
   if (!token) return;
 
   try {
-    console.log('🔧 initEditMode: fetching activity', actId);
-    const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + actId + '&select=*', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
-    });
-    console.log('🔧 fetch status:', r.status);
-    const data = await r.json();
-    console.log('🔧 data received:', data);
-    if (!Array.isArray(data) || !data[0]) {
-      console.log('❌ No activity found');
-      return;
+    // Retry up to 3 times — handles brief Supabase read-after-write lag on first edit
+    let activityData = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await new Promise(res => setTimeout(res, 700));
+      const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + actId + '&select=*', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+      });
+      if (!r.ok) break;
+      const data = await r.json();
+      if (Array.isArray(data) && data[0] && data[0].settings) {
+        activityData = data[0];
+        break;
+      }
     }
-    if (!data[0].settings) {
-      console.log('❌ Activity has no settings — was it saved before settings tracking was added?');
+    if (!activityData) {
+      console.log('❌ Activity not found or settings not yet available');
       return;
     }
 
-    const s = data[0].settings;
+    const s = activityData.settings;
     console.log('✅ Settings found:', s);
     editingActivityId = actId;
 
