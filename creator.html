@@ -108,8 +108,9 @@
   <!-- ═══ STEP 2: PROBLEMS ═══ -->
   <div id="step-2" class="wiz-pane" style="display:none;">
     <div style="display:flex;gap:8px;margin-bottom:20px;">
-      <button id="cat-ops" onclick="setCat('ops')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--lime-dark);background:rgba(122,170,0,0.08);color:var(--lime-dark);font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Operations</button>
-      <button id="cat-alg" onclick="setCat('alg')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Algebra</button>
+      <button id="cat-ops" onclick="setCat('ops')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--lime-dark);background:rgba(122,170,0,0.08);color:var(--lime-dark);font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Operations</button>
+      <button id="cat-alg" onclick="setCat('alg')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Algebra</button>
+      <button id="cat-custom" onclick="setCat('custom')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Custom ✏️</button>
     </div>
     <div id="ops-section">
       <div class="tabs" id="op-tabs">
@@ -128,6 +129,33 @@
       </div>
       <div class="tabs" id="alg-lv-tabs"></div>
       <div style="font-size:11px;color:#888;margin-bottom:10px;">L1–L2: integer answers · L3: includes fractions and decimals</div>
+    </div>
+
+    <!-- ═══ CUSTOM PROBLEMS SECTION ═══ -->
+    <div id="custom-section" style="display:none;">
+      <div style="font-size:12px;color:#888;line-height:1.65;margin-bottom:12px;">
+        Add any problem you want — arithmetic, word problems, algebra, anything. Teachers type the problem and the correct answer.
+      </div>
+      <!-- Type toggle -->
+      <div class="tabs" id="custom-type-tabs" style="margin-bottom:10px;">
+        <button class="tab active" id="custom-type-ops" onclick="setCustomType('ops',this)">Operations</button>
+        <button class="tab" id="custom-type-alg" onclick="setCustomType('alg',this)">Algebra (solve for x)</button>
+      </div>
+      <!-- Input row -->
+      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-end;">
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">Problem</div>
+          <input type="text" class="inp" id="custom-eq-input" placeholder="e.g. 12 × 7  or  145 − 68" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
+        </div>
+        <div style="width:76px;flex-shrink:0;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;" id="custom-ans-label">Answer</div>
+          <input type="text" class="inp" id="custom-ans-input" placeholder="84" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
+        </div>
+        <button onclick="addCustomProb()" style="background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:9px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ Add</button>
+      </div>
+      <div id="custom-err" style="display:none;font-size:11px;color:#e53935;margin-bottom:8px;"></div>
+      <!-- Added problems list -->
+      <div id="custom-list" style="border-top:1px solid rgba(0,0,0,0.07);padding-top:10px;margin-top:6px;margin-bottom:4px;"></div>
     </div>
     <div class="divider"></div>
     <div class="mode-row">
