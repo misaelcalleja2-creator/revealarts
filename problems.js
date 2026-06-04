@@ -1,3 +1,18 @@
+// ── CUSTOM PROBLEMS ───────────────────────────────────────────────────────────
+var customProbs = [];
+var curCustomSubCat = 'ops';
+
+
+// ── FRACTION HELPER ───────────────────────────────────────────────────────────
+function fmtFrac(s){
+  if(typeof s==='string'&&s.includes('/')&&!s.startsWith('FRAC:')){
+    const p=s.split('/');
+    if(p.length===2&&p[0].trim()&&p[1].trim())
+      return '<span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;line-height:1.1;font-size:0.88em;"><span style="border-bottom:1.5px solid currentColor;padding:0 3px;text-align:center;">'+p[0].trim()+'</span><span style="padding:0 3px;text-align:center;">'+p[1].trim()+'</span></span>';
+  }
+  return String(s===undefined||s===null?'':s);
+}
+
 // ── PROBLEM BANK ──────────────────────────────────────────────────────────────
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function rneg(a,b){const v=rnd(a,b);return Math.random()<0.45?-v:v;}
@@ -21,7 +36,8 @@ function renderProbList(pool,selEqs=[]){
   pool.forEach(p=>{
     const sel=selEqs.includes(p.eq);
     const row=document.createElement('div');row.className='prob-row'+(sel?' selected':'');
-    row.innerHTML=`<div class="prob-chk">${sel?'✓':''}</div><div class="prob-eq">${p.eq&&p.eq.startsWith('FRAC:')?p.eq.replace(/FRAC:(.*?):(\d+)/,'$1 ÷ $2'):p.eq} ${p.isAlgebra?', x = ?':' = ?'}</div><div class="prob-ans">= ${p.ansDisplay||p.ans}</div>`;
+    const badge=p.isCustom?'<span style="font-size:9px;background:rgba(122,170,0,0.15);color:#5a8000;border-radius:3px;padding:1px 5px;margin-right:5px;font-weight:700;">custom</span>':'';
+    row.innerHTML=`<div class="prob-chk">${sel?'✓':''}</div><div class="prob-eq">${badge}${p.eq&&p.eq.startsWith('FRAC:')?p.eq.replace(/FRAC:(.*?):(\d+)/,'$1 ÷ $2'):p.eq} ${p.isAlgebra?', x = ?':' = ?'}</div><div class="prob-ans">= ${fmtFrac(p.ansDisplay||String(p.ans))}</div>`;
     row.onclick=()=>toggleProb(p,row);c.appendChild(row);
   });
   updSC();
@@ -42,12 +58,33 @@ function setNumProbs(n, btn) {
   rand20();
 }
 function rand20(){
-  const sh=[...allProbs].sort(()=>Math.random()-0.5);selProbs=sh.slice(0,numProbs);
-  renderProbList(curMode==='random'?selProbs:allProbs,selProbs.map(p=>p.eq));
+  if(curCat==='custom'){
+    // Custom mode: never auto-randomize — teacher hand-picks from the pool
+    const kept=selProbs.filter(p=>p.isCustom);
+    renderProbList([...kept,...allProbs],selProbs.map(p=>p.eq));
+    updSC();
+    return;
+  }
+  // Preserve problems from other categories (custom or previously selected)
+  const kept=selProbs.filter(p=>!allProbs.find(ap=>ap.eq===p.eq));
+  const fill=Math.max(0,numProbs-kept.length);
+  const sh=[...allProbs].sort(()=>Math.random()-0.5);
+  selProbs=[...kept,...sh.slice(0,fill)];
+  const pool=curMode==='random'?selProbs:[...kept,...allProbs];
+  renderProbList(pool,selProbs.map(p=>p.eq));
 }
 function updSC(){document.getElementById('sc').textContent=selProbs.length;document.getElementById('sc-total')&&(document.getElementById('sc-total').textContent=numProbs);}
 function setOp(op,btn){curOp=op;document.querySelectorAll('#op-tabs .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderProblems();}
-function setMode(m,btn){curMode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(m==='random')rand20();else renderProbList(allProbs,selProbs.map(p=>p.eq));}
+function setMode(m,btn){
+  curMode=m;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(m==='random') rand20();
+  else {
+    const kept=selProbs.filter(p=>!allProbs.find(ap=>ap.eq===p.eq));
+    renderProbList([...kept,...allProbs],selProbs.map(p=>p.eq));
+  }
+}
 function buildLvTabs(){
   const c=document.getElementById('lv-tabs');c.innerHTML='';
   [{n:1,l:'L1',s:'Single'},{n:2,l:'L2',s:'Double'},{n:3,l:'L3',s:'Triple'},{n:4,l:'L4',s:'Single+neg',neg:true},{n:5,l:'L5',s:'Double+neg',neg:true},{n:6,l:'L6',s:'Triple+neg',neg:true}].forEach(lv=>{
@@ -80,31 +117,87 @@ function setCat(cat) {
   curCat = cat;
   const opsBtn = document.getElementById('cat-ops');
   const algBtn = document.getElementById('cat-alg');
+  const cusBtn = document.getElementById('cat-custom');
+  const modeRow = document.getElementById('mode-row');
+  // Reset all category buttons
+  [opsBtn, algBtn, cusBtn].forEach(b => {
+    if (!b) return;
+    b.style.borderColor = 'rgba(0,0,0,0.09)';
+    b.style.background = 'var(--white)';
+    b.style.color = '#666';
+  });
+  // Activate selected button
+  const activeBtn = cat === 'ops' ? opsBtn : cat === 'alg' ? algBtn : cusBtn;
+  if (activeBtn) {
+    activeBtn.style.borderColor = 'rgba(184,224,48,0.6)';
+    activeBtn.style.background = 'rgba(184,224,48,0.12)';
+    activeBtn.style.color = '#b8e030';
+  }
+  // Show/hide sections
+  document.getElementById('ops-section').style.display = cat === 'ops' ? 'block' : 'none';
+  document.getElementById('alg-section').style.display = cat === 'alg' ? 'block' : 'none';
+  document.getElementById('custom-section').style.display = cat === 'custom' ? 'block' : 'none';
+  document.getElementById('calc-section').style.display = cat === 'alg' ? 'block' : 'none';
+  // Show/hide Random/Hand pick toggle — hidden in custom (always hand-pick)
+  if (modeRow) modeRow.style.display = cat === 'custom' ? 'none' : '';
+  // Re-randomize serves no purpose in custom mode (hand-pick only)
+  const reBtn = document.getElementById('rerandomize-btn');
+  if (reBtn) reBtn.style.display = cat === 'custom' ? 'none' : '';
   if (cat === 'ops') {
-    opsBtn.style.borderColor = 'rgba(184,224,48,0.6)';
-    opsBtn.style.background = 'rgba(184,224,48,0.12)';
-    opsBtn.style.color = '#b8e030';
-    algBtn.style.borderColor = 'rgba(0,0,0,0.09)';
-    algBtn.style.background = '#fff';
-    algBtn.style.color = '#555';
-    document.getElementById('ops-section').style.display = 'block';
-    document.getElementById('alg-section').style.display = 'none';
-    document.getElementById('calc-section').style.display = 'none';
-    calcEnabled = false; document.getElementById('calc-toggle').checked = false;
+    calcEnabled = false;
+    const ct = document.getElementById('calc-toggle'); if (ct) ct.checked = false;
     renderProblems();
-  } else {
-    algBtn.style.borderColor = 'rgba(184,224,48,0.6)';
-    algBtn.style.background = 'rgba(184,224,48,0.12)';
-    algBtn.style.color = '#b8e030';
-    opsBtn.style.borderColor = 'rgba(0,0,0,0.09)';
-    opsBtn.style.background = '#fff';
-    opsBtn.style.color = '#555';
-    document.getElementById('ops-section').style.display = 'none';
-    document.getElementById('alg-section').style.display = 'block';
-    document.getElementById('calc-section').style.display = 'block';
+  } else if (cat === 'alg') {
     buildAlgLvTabs();
     renderAlgProblems();
+  } else {
+    // custom — always hand-pick, show generated bank for picking
+    calcEnabled = false;
+    const ct = document.getElementById('calc-toggle'); if (ct) ct.checked = false;
+    curMode = 'manual';
+    // Boot with ops bank by default — re-show ops-section so its tabs are accessible
+    curCustomSubCat = 'ops';
+    _styleSubBtns('ops');
+    document.getElementById('ops-section').style.display = 'block';  // override the hide above
+    document.getElementById('alg-section').style.display = 'none';
+    allProbs = genBank(curOp || 'addition', curLvl || 1);
+    // Start with only custom probs selected; teacher picks rest from pool
+    selProbs = [...customProbs];
+    renderCustomList();
+    renderProbList([...customProbs, ...allProbs], selProbs.map(p => p.eq));
   }
+}
+
+// Style the custom sub-category buttons
+function _styleSubBtns(active) {
+  const ops = document.getElementById('custom-sub-ops');
+  const alg = document.getElementById('custom-sub-alg');
+  [ops, alg].forEach((b, i) => {
+    if (!b) return;
+    const isActive = (active === 'ops' && i === 0) || (active === 'alg' && i === 1);
+    b.style.borderColor = isActive ? 'rgba(184,224,48,0.6)' : 'rgba(0,0,0,0.09)';
+    b.style.background = isActive ? 'rgba(184,224,48,0.12)' : 'var(--white)';
+    b.style.color = isActive ? '#b8e030' : '#666';
+  });
+}
+
+// Switch the generated bank shown in custom mode
+function setCustomSubCat(cat, btn) {
+  curCustomSubCat = cat;
+  _styleSubBtns(cat);
+  // Show the relevant section's tabs so teacher can filter the generated bank
+  document.getElementById('ops-section').style.display = cat === 'ops' ? 'block' : 'none';
+  document.getElementById('alg-section').style.display = cat === 'alg' ? 'block' : 'none';
+  document.getElementById('calc-section').style.display = cat === 'alg' ? 'block' : 'none';
+  if (cat === 'ops') {
+    allProbs = genBank(curOp || 'addition', curLvl || 1);
+  } else {
+    buildAlgLvTabs();
+    allProbs = genAlgBank(curAlgType || 'one', curAlgLv || 1);
+  }
+  // Clear generated selections when switching banks, keep custom
+  selProbs = selProbs.filter(p => p.isCustom);
+  renderProbList([...customProbs, ...allProbs], selProbs.map(p => p.eq));
 }
 
 function setAlgType(t, btn) {
@@ -186,4 +279,91 @@ function genAlgBank(type, lv) {
     if(!seen.has(eq)){seen.add(eq);probs.push({eq,ans,ansDisplay:ansDisplay||String(ans),isAlgebra:true});}
   }
   return probs;
+}
+
+// ── CUSTOM PROBLEM FUNCTIONS ──────────────────────────────────────────────────
+function addCustomProb() {
+  const eqInput = document.getElementById('custom-eq-input');
+  const ansInput = document.getElementById('custom-ans-input');
+  const err = document.getElementById('custom-err');
+  const eq = eqInput.value.trim();
+  const ansRaw = ansInput.value.trim();
+  err.style.display = 'none';
+  if (!eq) { err.textContent = 'Please enter a problem.'; err.style.display = 'block'; return; }
+  if (!ansRaw) { err.textContent = 'Please enter the answer.'; err.style.display = 'block'; return; }
+  // Parse answer — supports fractions like 3/4
+  let ans, ansDisplay;
+  if (ansRaw.includes('/')) {
+    const parts = ansRaw.split('/');
+    if (parts.length === 2 && !isNaN(parseFloat(parts[0])) && !isNaN(parseFloat(parts[1])) && parseFloat(parts[1]) !== 0) {
+      ans = parseFloat(parts[0]) / parseFloat(parts[1]);
+      ansDisplay = ansRaw;
+    } else { err.textContent = 'Invalid fraction. Use e.g. 3/4'; err.style.display = 'block'; return; }
+  } else {
+    ans = parseFloat(ansRaw);
+    if (isNaN(ans)) { err.textContent = 'Answer must be a number (e.g. 7, -3, or 1/2).'; err.style.display = 'block'; return; }
+    ansDisplay = String(ans);
+  }
+  // Duplicate check
+  if (customProbs.find(p => p.eq === eq)) {
+    err.textContent = 'That problem is already in your list.';
+    err.style.display = 'block'; return;
+  }
+  // Auto-detect: if equation contains a letter variable → algebra (x = ?)
+  const isAlg = /[a-zA-Z]/.test(eq);
+  customProbs.push({ eq, ans, ansDisplay, isAlgebra: isAlg, isCustom: true });
+  eqInput.value = ''; ansInput.value = ''; eqInput.focus();
+  if (curCat === 'custom') {
+    // Preserve the generated bank (allProbs) — just update custom selection
+    selProbs = [...customProbs, ...selProbs.filter(p => !p.isCustom)];
+    renderCustomList();
+    renderProbList([...customProbs, ...allProbs], selProbs.map(p => p.eq));
+  } else {
+    allProbs = [...customProbs];
+    selProbs = [...customProbs];
+    renderCustomList();
+    renderProbList(allProbs, selProbs.map(p => p.eq));
+  }
+}
+
+function removeCustomProb(idx) {
+  customProbs.splice(idx, 1);
+  if (curCat === 'custom') {
+    selProbs = [...customProbs, ...selProbs.filter(p => !p.isCustom)];
+    renderCustomList();
+    renderProbList([...customProbs, ...allProbs], selProbs.map(p => p.eq));
+  } else {
+    allProbs = [...customProbs];
+    selProbs = [...customProbs];
+    renderCustomList();
+    renderProbList(allProbs, selProbs.map(p => p.eq));
+  }
+}
+
+function renderCustomList() {
+  const c = document.getElementById('custom-list');
+  if (!c) return;
+  if (customProbs.length === 0) {
+    c.innerHTML = '<div style="font-size:12px;color:#bbb;padding:10px 0 4px;">No problems yet — add your first one above.</div>';
+    return;
+  }
+  c.innerHTML = '<div style="font-size:11px;color:#888;margin-bottom:8px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;">Your problems (' + customProbs.length + ')</div>' +
+    customProbs.map((p, i) =>
+      '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.05);">' +
+      '<button onclick="removeCustomProb(' + i + ')" title="Remove" style="background:rgba(229,57,53,0.08);border:none;border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:12px;color:#e53935;flex-shrink:0;padding:0;line-height:1;">✕</button>' +
+      '<span style="font-size:13px;font-weight:700;flex:1;color:#1a1a24;">' + p.eq + '</span>' +
+      '<span style="font-size:11px;color:#888;white-space:nowrap;">' + (p.isAlgebra ? 'x = ' : '= ') + fmtFrac(p.ansDisplay) + '</span>' +
+      '</div>'
+    ).join('');
+}
+
+// ── QUICK ADD FROM BANK ───────────────────────────────────────────────────────
+function addFromBank(n) {
+  const available = allProbs.filter(p => !selProbs.find(s => s.eq === p.eq));
+  if (available.length === 0) { updSC(); return; }
+  const toAdd = [...available].sort(() => Math.random() - 0.5).slice(0, n);
+  selProbs = [...selProbs, ...toAdd];
+  // Always show full pool so newly-added items are visible
+  const pool = curCat === 'custom' ? [...customProbs, ...allProbs] : allProbs;
+  renderProbList(pool, selProbs.map(p => p.eq));
 }

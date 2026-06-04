@@ -53,12 +53,30 @@ function wizNext(fromStep) {
     if (!croppedDataUrl && editorReady) cropDone();
     goToStep(2);
   } else if (fromStep === 2) {
-    if (selProbs.length < numProbs) {
+    if (selProbs.length < 1) {
       const hint = document.getElementById('step2-hint');
-      hint.textContent = `Please select at least ${numProbs} problems. You have ${selProbs.length}.`;
+      hint.textContent = 'Please select at least 1 problem.';
       hint.style.display = 'block';
       setTimeout(() => { hint.style.display = 'none'; }, 3000);
       return;
+    }
+    if (selProbs.length < numProbs) {
+      // Try to snap numProbs down to nearest valid count
+      const valid = [30, 25, 20, 15];
+      const snapped = valid.find(n => n <= selProbs.length);
+      if (snapped) {
+        numProbs = snapped;
+        document.querySelectorAll('.prob-count-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === numProbs));
+        if (document.getElementById('sc-total')) document.getElementById('sc-total').textContent = numProbs;
+        if (document.getElementById('random-count')) document.getElementById('random-count').textContent = numProbs;
+      } else {
+        const needed = 15 - selProbs.length;
+        const hint = document.getElementById('step2-hint');
+        hint.textContent = 'You need ' + needed + ' more problem' + (needed === 1 ? '' : 's') + '. Select from the list below.';
+        hint.style.display = 'block';
+        setTimeout(() => { hint.style.display = 'none'; }, 3500);
+        return;
+      }
     }
     goToStep(3);
   }
