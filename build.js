@@ -166,7 +166,7 @@ const canvas=document.getElementById('rc');
 const ctx=canvas.getContext('2d');
 const img=new Image();
 img.src=\`${esc}\`;
-img.onload=()=>{loadProgress();drawAll();startTimer();window.addEventListener('resize',drawAll);document.addEventListener('visibilitychange',()=>{if(!document.hidden)drawAll();});};
+img.onload=()=>{loadProgress();drawAll();startTimer();window.addEventListener('resize',drawAll);document.addEventListener('visibilitychange',()=>{if(!document.hidden)drawAll();});document.addEventListener('mousedown',()=>setTimeout(drawAll,50),{passive:true});document.addEventListener('touchend',()=>setTimeout(drawAll,50),{passive:true});};
 img.onerror=()=>{loadProgress();drawAll();startTimer();window.addEventListener('resize',drawAll);};
 
 // TIMER
@@ -224,7 +224,7 @@ function loadProgress(){
   try{
     const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;
     const d=JSON.parse(raw);
-    if(d.solved)d.solved.forEach(i=>{solved.add(i);const card=document.getElementById('card-'+i);if(card){card.classList.add('correct');const inp=card.querySelector('input');if(inp){inp.value=PROBS[i].ans;inp.disabled=true;}}});
+    if(d.solved)d.solved.forEach(i=>{solved.add(i);const card=document.getElementById('card-'+i);if(card){card.classList.add('correct');const inp=card.querySelector('input');if(inp){inp.value=PROBS[i].ansDisplay||String(PROBS[i].ans);}}});
     if(d.rev)d.rev.forEach((row,r)=>row.forEach((v,c)=>{rev[r][c]=v;}));
     updateProg();
   }catch(e){}
@@ -252,6 +252,10 @@ function revealZone(z){
   for(let i=tiles.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[tiles[i],tiles[j]]=[tiles[j],tiles[i]];}
   tiles.forEach(([r,c],i)=>setTimeout(()=>{rev[r][c]=true;drawAll();if(i===tiles.length-1)saveProgress();},i*35));
 }
+function coverZone(z){
+  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++){if(assign[r][c]===z)rev[r][c]=false;}
+  drawAll();saveProgress();
+}
 
 function buildUI(){
   const lc=document.getElementById('lc'),rc=document.getElementById('rc2');
@@ -274,6 +278,15 @@ function buildUI(){
     });
     // also submit on blur if value entered
     inp.addEventListener('change',()=>{if(inp.value!=='')chk(i);});
+    // erase: clearing a correct answer re-covers the image tiles
+    inp.addEventListener('input',()=>{
+      if(solved.has(i)&&inp.value===''){
+        solved.delete(i);
+        card.classList.remove('correct');
+        coverZone(i);
+        updateProg();
+      }
+    });
     col.appendChild(card);
   });
 }
@@ -286,14 +299,13 @@ function chk(i){
   const val=parseAns(inp.value);
   if(isNaN(val))return;
   if(Math.abs(val-PROBS[i].ans)<0.001){
-    solved.add(i);card.classList.add('correct');card.classList.remove('wrong');inp.disabled=true;
+    solved.add(i);card.classList.add('correct');card.classList.remove('wrong');
     const ad=PROBS[i].ansDisplay||String(PROBS[i].ans);
     if(ad.includes('/')){inp.style.display='none';const parts=ad.split('/');const sp=document.createElement('span');sp.className='ans-display';sp.innerHTML='<span class="frac"><span class="fn">'+parts[0]+'</span><span class="fd">'+parts[1]+'</span></span>';inp.parentNode.insertBefore(sp,inp);}else{inp.value=ad;}
     revealZone(i);updateProg();
-    // auto-focus next unanswered input
+    // auto-focus next unsolved input
     for(let next=i+1;next<PROBS.length;next++){
-      const ni=document.getElementById('inp-'+next);
-      if(ni&&!ni.disabled){ni.focus();break;}
+      if(!solved.has(next)){const ni=document.getElementById('inp-'+next);if(ni){ni.focus();break;}}
     }
   }else{
     card.classList.remove('wrong');void card.offsetWidth;card.classList.add('wrong');

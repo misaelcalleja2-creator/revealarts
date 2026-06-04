@@ -76,7 +76,7 @@ async function initEditMode() {
   try {
     console.log('🔧 initEditMode: fetching activity', actId);
     const r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + actId + '&select=*&_=' + Date.now(), {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token, 'Cache-Control': 'no-cache' }
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     console.log('🔧 fetch status:', r.status);
     const data = await r.json();
