@@ -25,7 +25,8 @@ function renderProbList(pool,selEqs=[]){
   pool.forEach(p=>{
     const sel=selEqs.includes(p.eq);
     const row=document.createElement('div');row.className='prob-row'+(sel?' selected':'');
-    row.innerHTML=`<div class="prob-chk">${sel?'✓':''}</div><div class="prob-eq">${p.eq&&p.eq.startsWith('FRAC:')?p.eq.replace(/FRAC:(.*?):(\d+)/,'$1 ÷ $2'):p.eq} ${p.isAlgebra?', x = ?':' = ?'}</div><div class="prob-ans">= ${p.ansDisplay||p.ans}</div>`;
+    const badge=p.isCustom?'<span style="font-size:9px;background:rgba(122,170,0,0.15);color:#5a8000;border-radius:3px;padding:1px 5px;margin-right:5px;font-weight:700;">✏️ custom</span>':'';
+    row.innerHTML=`<div class="prob-chk">${sel?'✓':''}</div><div class="prob-eq">${badge}${p.eq&&p.eq.startsWith('FRAC:')?p.eq.replace(/FRAC:(.*?):(\d+)/,'$1 ÷ $2'):p.eq} ${p.isAlgebra?', x = ?':' = ?'}</div><div class="prob-ans">= ${p.ansDisplay||p.ans}</div>`;
     row.onclick=()=>toggleProb(p,row);c.appendChild(row);
   });
   updSC();
@@ -46,12 +47,26 @@ function setNumProbs(n, btn) {
   rand20();
 }
 function rand20(){
-  const sh=[...allProbs].sort(()=>Math.random()-0.5);selProbs=sh.slice(0,numProbs);
-  renderProbList(curMode==='random'?selProbs:allProbs,selProbs.map(p=>p.eq));
+  // Preserve problems from other categories (custom or previously selected)
+  const kept=selProbs.filter(p=>!allProbs.find(ap=>ap.eq===p.eq));
+  const fill=Math.max(0,numProbs-kept.length);
+  const sh=[...allProbs].sort(()=>Math.random()-0.5);
+  selProbs=[...kept,...sh.slice(0,fill)];
+  const pool=curMode==='random'?selProbs:[...kept,...allProbs];
+  renderProbList(pool,selProbs.map(p=>p.eq));
 }
 function updSC(){document.getElementById('sc').textContent=selProbs.length;document.getElementById('sc-total')&&(document.getElementById('sc-total').textContent=numProbs);}
 function setOp(op,btn){curOp=op;document.querySelectorAll('#op-tabs .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderProblems();}
-function setMode(m,btn){curMode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(m==='random')rand20();else renderProbList(allProbs,selProbs.map(p=>p.eq));}
+function setMode(m,btn){
+  curMode=m;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(m==='random') rand20();
+  else {
+    const kept=selProbs.filter(p=>!allProbs.find(ap=>ap.eq===p.eq));
+    renderProbList([...kept,...allProbs],selProbs.map(p=>p.eq));
+  }
+}
 function buildLvTabs(){
   const c=document.getElementById('lv-tabs');c.innerHTML='';
   [{n:1,l:'L1',s:'Single'},{n:2,l:'L2',s:'Double'},{n:3,l:'L3',s:'Triple'},{n:4,l:'L4',s:'Single+neg',neg:true},{n:5,l:'L5',s:'Double+neg',neg:true},{n:6,l:'L6',s:'Triple+neg',neg:true}].forEach(lv=>{
@@ -241,7 +256,12 @@ function addCustomProb() {
     err.textContent = 'That problem is already in your list.';
     err.style.display = 'block'; return;
   }
-  customProbs.push({ eq, ans, ansDisplay, isAlgebra: curCustomType === 'alg' });
+  // Type conflict check — don't mix ops and algebra
+  if (customProbs.length > 0 && customProbs[0].isAlgebra !== (curCustomType === 'alg')) {
+    err.textContent = 'Your problems are all ' + (customProbs[0].isAlgebra ? 'algebra' : 'operations') + ' type. Delete them to switch types.';
+    err.style.display = 'block'; return;
+  }
+  customProbs.push({ eq, ans, ansDisplay, isAlgebra: curCustomType === 'alg', isCustom: true });
   eqInput.value = ''; ansInput.value = ''; eqInput.focus();
   allProbs = [...customProbs];
   selProbs = [...customProbs];
@@ -264,7 +284,7 @@ function renderCustomList() {
     c.innerHTML = '<div style="font-size:12px;color:#bbb;padding:10px 0 4px;">No problems yet — add your first one above.</div>';
     return;
   }
-  c.innerHTML = '<div style="font-size:11px;color:#888;margin-bottom:8px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;">Added (' + customProbs.length + ')</div>' +
+  c.innerHTML = '<div style="font-size:11px;color:#888;margin-bottom:8px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;">Your problems (' + customProbs.length + ')</div>' +
     customProbs.map((p, i) =>
       '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.05);">' +
       '<button onclick="removeCustomProb(' + i + ')" title="Remove" style="background:rgba(229,57,53,0.08);border:none;border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:12px;color:#e53935;flex-shrink:0;padding:0;line-height:1;">✕</button>' +
