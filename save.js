@@ -91,15 +91,22 @@ function buildDLButtons(title,imgData,hintList){
 
     if(!editingActivityId){
       const saveBtn=document.createElement('button');saveBtn.className='dl-btn';
-      saveBtn.innerHTML='Save & Go to Dashboard';
+      saveBtn.innerHTML='Save All 3 Versions & Go to Dashboard';
       saveBtn.onclick=async()=>{
-        saveBtn.disabled=true;saveBtn.innerHTML='Saving...';
-        const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);
-        const tk=genTimerKey();
-        const html=buildHTML(title,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit,tk);
-        const success=await saveActivity(html,title);
-        if(success){window.location.href='dashboard.html';}
-        else{saveBtn.disabled=false;saveBtn.innerHTML='Save & Go to Dashboard';}
+        saveBtn.disabled=true;
+        const vers=['A','B','C'];
+        let allOk=true;
+        for(const v of vers){
+          saveBtn.innerHTML='Saving Version '+v+'...';
+          const p=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);
+          const tk=genTimerKey();
+          const vTitle=title+' \u2014 Version '+v;
+          const html=buildHTML(vTitle,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit,tk);
+          const ok=await saveActivity(html,vTitle);
+          if(!ok){allOk=false;break;}
+        }
+        if(allOk){window.location.href='dashboard.html';}
+        else{saveBtn.disabled=false;saveBtn.innerHTML='Save All 3 Versions & Go to Dashboard';}
       };
       c.appendChild(saveBtn);
     }

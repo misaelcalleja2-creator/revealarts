@@ -126,10 +126,25 @@ nav {
 .activities-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
 .act-card {
   background: var(--white); border: 1.5px solid var(--border);
-  border-radius: 16px; overflow: hidden; display: flex;
+  border-radius: 16px; overflow: hidden; display: flex; position: relative;
   flex-direction: column; transition: border-color .2s, transform .2s, box-shadow .2s;
 }
 .act-card:hover { border-color: rgba(0,0,0,0.18); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+.act-card.selected { border-color: var(--lime-dark); background: rgba(122,170,0,0.05); transform: none; box-shadow: none; }
+.select-cb { position:absolute; top:10px; left:10px; width:22px; height:22px; background:#fff; border:2px solid rgba(0,0,0,0.18); border-radius:6px; display:none; align-items:center; justify-content:center; z-index:2; font-size:13px; font-weight:800; color:var(--lime-dark); pointer-events:none; }
+.activities-grid.select-mode .select-cb { display:flex; }
+.act-card.selected .select-cb { background:var(--lime); border-color:var(--lime-dark); }
+.activities-grid.select-mode .act-card { cursor:pointer; }
+.activities-grid.select-mode .act-card:hover { transform:none; }
+.activities-grid.select-mode .act-actions { opacity:0.3; pointer-events:none; }
+.select-mode-btn { font-size:12px; font-weight:600; color:var(--text3); background:none; border:1.5px solid var(--border); border-radius:8px; padding:5px 12px; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .15s; }
+.select-mode-btn:hover { border-color:var(--ink); color:var(--ink); }
+.select-mode-btn.active { border-color:var(--lime-dark); color:var(--lime-dark); }
+.bulk-bar { position:fixed; bottom:-72px; left:0; right:0; background:var(--ink); color:#fff; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; z-index:200; transition:bottom .25s; box-shadow:0 -4px 20px rgba(0,0,0,0.2); }
+.bulk-bar.visible { bottom:0; }
+.bulk-del-btn { background:rgba(229,57,53,0.9); color:#fff; border:none; border-radius:8px; padding:8px 20px; font-family:'Syne',sans-serif; font-weight:700; font-size:13px; cursor:pointer; }
+.bulk-del-btn:hover { background:#e53935; }
+.bulk-cancel-btn { background:transparent; color:rgba(255,255,255,0.55); border:1.5px solid rgba(255,255,255,0.2); border-radius:8px; padding:8px 16px; font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; }
 .act-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--bg2); }
 .act-thumb-placeholder {
   width: 100%; aspect-ratio: 4/3; background: var(--bg2);
@@ -273,6 +288,7 @@ footer {
       <div class="section-title">My Activities</div>
       <div class="section-sub">Activities you've created and saved</div>
     </div>
+    <button class="select-mode-btn" id="select-mode-btn" onclick="toggleSelectMode()">Select</button>
   </div>
 
   <!-- TIPS SECTION -->
@@ -293,6 +309,14 @@ footer {
     </div>
     <div class="activities-grid" id="activities-grid" style="display:none;"></div>
     <div class="save-limit" id="save-limit" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<div class="bulk-bar" id="bulk-bar">
+  <span id="bulk-count" style="font-size:14px;font-weight:600;">0 selected</span>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <button class="bulk-cancel-btn" onclick="toggleSelectMode()">Cancel</button>
+    <button class="bulk-del-btn" onclick="bulkDelete()">Delete selected</button>
   </div>
 </div>
 
@@ -388,12 +412,14 @@ async function loadActivities(token, userId, profile) {
 
     acts.forEach(act => {
       const card = document.createElement('div');
-      card.className = 'act-card'; card.dataset.title = act.title;
+      card.className = 'act-card'; card.dataset.title = act.title; card.dataset.actId = act.id;
+      card.addEventListener('click', function(e) { if (!selectMode) return; toggleCardSelect(this, act.id); });
       const date = new Date(act.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
       const thumbHtml = act.thumbnail
         ? `<img class="act-thumb" src="${act.thumbnail}" alt="${act.title}">`
         : `<div class="act-thumb-placeholder">🎨</div>`;
       card.innerHTML = `
+        <span class="select-cb">✓</span>
         ${thumbHtml}
         <div class="act-body">
           <div class="act-title">${act.title}</div>
@@ -445,6 +471,69 @@ async function redownload(id) {
     a.click();
   } catch(e) {
     alert('Download failed. Please try again.');
+  }
+}
+
+let selectMode = false;
+let selectedIds = new Set();
+
+function toggleSelectMode() {
+  selectMode = !selectMode;
+  const btn = document.getElementById('select-mode-btn');
+  const grid = document.getElementById('activities-grid');
+  const bar = document.getElementById('bulk-bar');
+  if (selectMode) {
+    btn.textContent = 'Cancel';
+    btn.classList.add('active');
+    grid.classList.add('select-mode');
+  } else {
+    btn.textContent = 'Select';
+    btn.classList.remove('active');
+    grid.classList.remove('select-mode');
+    document.querySelectorAll('.act-card.selected').forEach(c => c.classList.remove('selected'));
+    selectedIds.clear();
+    bar.classList.remove('visible');
+  }
+}
+
+function toggleCardSelect(card, id) {
+  if (selectedIds.has(id)) {
+    selectedIds.delete(id);
+    card.classList.remove('selected');
+  } else {
+    selectedIds.add(id);
+    card.classList.add('selected');
+  }
+  const n = selectedIds.size;
+  document.getElementById('bulk-count').textContent = n + ' activit' + (n === 1 ? 'y' : 'ies') + ' selected';
+  document.getElementById('bulk-bar').classList.toggle('visible', n > 0);
+}
+
+async function bulkDelete() {
+  const n = selectedIds.size;
+  if (n === 0) return;
+  if (!confirm('Delete ' + n + ' activit' + (n === 1 ? 'y' : 'ies') + '? This cannot be undone.')) return;
+  const token = localStorage.getItem('sb_access_token');
+  const ids = [...selectedIds];
+  try {
+    const results = await Promise.all(ids.map(id =>
+      fetch(SB_URL + '/rest/v1/activities?id=eq.' + id, {
+        method: 'DELETE',
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+      })
+    ));
+    if (results.every(r => r.ok)) {
+      ids.forEach(id => {
+        const card = document.querySelector('.act-card[data-act-id="' + id + '"]');
+        if (card) { card.style.opacity = '0'; card.style.transition = 'opacity 0.3s'; setTimeout(() => { card.remove(); checkEmpty(); }, 300); }
+      });
+      selectedIds.clear();
+      toggleSelectMode();
+    } else {
+      alert('Some deletions failed. Please try again.');
+    }
+  } catch(e) {
+    alert('Delete failed. Please try again.');
   }
 }
 
@@ -535,13 +624,16 @@ async function downloadWorksheet(id, btn) {
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Nunito', sans-serif; background: #fff; color: #111; padding: 40px 48px; }
-  .header { text-align: center; margin-bottom: 32px; border-bottom: 2px solid #111; padding-bottom: 16px; }
-  .school-line { font-size: 12px; color: #555; margin-bottom: 6px; }
-  h1 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
-  .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-top: 16px; gap: 20px; }
-  .info-field { flex: 1; border-bottom: 1px solid #aaa; padding-bottom: 2px; }
-  .info-label { font-size: 11px; color: #666; margin-bottom: 4px; }
-  .directions { font-size: 13px; background: #f5f5f5; border-left: 3px solid #9b5de5; padding: 10px 14px; margin-bottom: 24px; border-radius: 0 6px 6px 0; }
+  .header { margin-bottom: 32px; border-bottom: 2px solid #111; padding-bottom: 20px; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .avatar-img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; object-position: center top; }
+  .school-line { font-size: 11px; color: #888; letter-spacing: 0.8px; text-transform: uppercase; }
+  h1 { font-size: 20px; font-weight: 800; color: #111; text-align: center; margin-bottom: 18px; }
+  .info-stack { display: flex; flex-direction: column; gap: 14px; }
+  .info-item { display: flex; flex-direction: column; }
+  .info-label { font-size: 10px; color: #888; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
+  .info-field { border-bottom: 1px solid #ccc; width: 220px; min-height: 18px; }
+  .directions { font-size: 13px; color: #555; background: #f8f8f8; padding: 10px 14px; margin-bottom: 24px; border-radius: 6px; }
   table { width: 100%; border-collapse: collapse; }
   tr { break-inside: avoid; }
   td { padding: 10px 8px; vertical-align: middle; }
@@ -553,12 +645,15 @@ async function downloadWorksheet(id, btn) {
   @media print { body { padding: 20px 32px; } @page { margin: 0.75in; } }
 </style></head><body>
 <div class="header">
-  <div class="school-line">The Real Sum Shady</div>
+  <div class="header-top">
+    <div class="school-line">Reveal Arts by The Real Sum Shady</div>
+    <img class="avatar-img" src="https://therealsumshady.com/avatar.png" alt="Reveal Arts">
+  </div>
   <h1>${actTitle}</h1>
-  <div class="info-row">
-    <div><div class="info-label">Name</div><div class="info-field">&nbsp;</div></div>
-    <div><div class="info-label">Date</div><div class="info-field">&nbsp;</div></div>
-    <div><div class="info-label">Period</div><div class="info-field">&nbsp;</div></div>
+  <div class="info-stack">
+    <div class="info-item"><div class="info-label">Name</div><div class="info-field">&nbsp;</div></div>
+    <div class="info-item"><div class="info-label">Date</div><div class="info-field">&nbsp;</div></div>
+    <div class="info-item"><div class="info-label">Period</div><div class="info-field">&nbsp;</div></div>
   </div>
 </div>
 <div class="directions">Solve each equation for x. Show your work on a separate sheet of paper.</div>
