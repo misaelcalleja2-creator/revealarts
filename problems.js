@@ -152,9 +152,11 @@ function setCat(cat) {
     calcEnabled = false;
     const ct = document.getElementById('calc-toggle'); if (ct) ct.checked = false;
     curMode = 'manual';
-    // Boot with ops bank by default
+    // Boot with ops bank by default — re-show ops-section so its tabs are accessible
     curCustomSubCat = 'ops';
     _styleSubBtns('ops');
+    document.getElementById('ops-section').style.display = 'block';  // override the hide above
+    document.getElementById('alg-section').style.display = 'none';
     allProbs = genBank(curOp || 'addition', curLvl || 1);
     // Start with only custom probs selected; teacher picks rest from pool
     selProbs = [...customProbs];
@@ -180,10 +182,17 @@ function _styleSubBtns(active) {
 function setCustomSubCat(cat, btn) {
   curCustomSubCat = cat;
   _styleSubBtns(cat);
-  allProbs = cat === 'ops'
-    ? genBank(curOp || 'addition', curLvl || 1)
-    : genAlgBank(curAlgType || 'one', curAlgLv || 1);
-  // Keep custom probs selected; drop previously hand-picked generated (new bank)
+  // Show the relevant section's tabs so teacher can filter the generated bank
+  document.getElementById('ops-section').style.display = cat === 'ops' ? 'block' : 'none';
+  document.getElementById('alg-section').style.display = cat === 'alg' ? 'block' : 'none';
+  document.getElementById('calc-section').style.display = cat === 'alg' ? 'block' : 'none';
+  if (cat === 'ops') {
+    allProbs = genBank(curOp || 'addition', curLvl || 1);
+  } else {
+    buildAlgLvTabs();
+    allProbs = genAlgBank(curAlgType || 'one', curAlgLv || 1);
+  }
+  // Clear generated selections when switching banks, keep custom
   selProbs = selProbs.filter(p => p.isCustom);
   renderProbList([...customProbs, ...allProbs], selProbs.map(p => p.eq));
 }
@@ -301,18 +310,31 @@ function addCustomProb() {
   const isAlg = /[a-zA-Z]/.test(eq);
   customProbs.push({ eq, ans, ansDisplay, isAlgebra: isAlg, isCustom: true });
   eqInput.value = ''; ansInput.value = ''; eqInput.focus();
-  allProbs = [...customProbs];
-  selProbs = [...customProbs];
-  renderCustomList();
-  renderProbList(allProbs, selProbs.map(p => p.eq));
+  if (curCat === 'custom') {
+    // Preserve the generated bank (allProbs) — just update custom selection
+    selProbs = [...customProbs, ...selProbs.filter(p => !p.isCustom)];
+    renderCustomList();
+    renderProbList([...customProbs, ...allProbs], selProbs.map(p => p.eq));
+  } else {
+    allProbs = [...customProbs];
+    selProbs = [...customProbs];
+    renderCustomList();
+    renderProbList(allProbs, selProbs.map(p => p.eq));
+  }
 }
 
 function removeCustomProb(idx) {
   customProbs.splice(idx, 1);
-  allProbs = [...customProbs];
-  selProbs = [...customProbs];
-  renderCustomList();
-  renderProbList(allProbs, selProbs.map(p => p.eq));
+  if (curCat === 'custom') {
+    selProbs = [...customProbs, ...selProbs.filter(p => !p.isCustom)];
+    renderCustomList();
+    renderProbList([...customProbs, ...allProbs], selProbs.map(p => p.eq));
+  } else {
+    allProbs = [...customProbs];
+    selProbs = [...customProbs];
+    renderCustomList();
+    renderProbList(allProbs, selProbs.map(p => p.eq));
+  }
 }
 
 function renderCustomList() {
