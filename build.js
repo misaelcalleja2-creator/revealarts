@@ -22,6 +22,7 @@ function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,pr
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>${title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></sc${''}ript>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#1a1a24;}
@@ -87,6 +88,9 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 .brand-name{font-size:11px;color:#bbb;font-style:italic;font-family:'Nunito',sans-serif;}
 .reset-btn{font-family:'Nunito',sans-serif;font-size:11px;padding:3px 10px;border:1px solid rgba(0,0,0,0.1);border-radius:5px;background:transparent;color:#aaa;cursor:pointer;transition:all .15s;}
 .reset-btn:hover{color:#555;border-color:#555;}
+.dl-btn{font-family:'Nunito',sans-serif;font-size:12px;padding:5px 14px;border:none;border-radius:8px;background:#b8e030;color:#0a0a0f;font-weight:800;cursor:pointer;transition:all .15s;display:none;}
+.dl-btn:hover{background:#a0c420;}
+.dl-btn.vis{display:inline-block;}
 .saved-badge{font-size:10px;color:#7aaa00;display:none;align-items:center;gap:3px;font-weight:700;}
 .saved-badge.vis{display:flex;}
 .calc-fab{position:fixed;bottom:16px;left:16px;width:40px;height:40px;border-radius:10px;background:#0a0a0f;color:#b8e030;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:500;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
@@ -136,6 +140,7 @@ ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-tit
         <span class="brand-name">Reveal Arts</span>
       </div>
       <div class="saved-badge" id="sb2">✓ Saved</div>
+      <button class="dl-btn" id="dl-btn" onclick="doDownload()">⬇ Download Result</button>
     </div>
   </div>
   <div class="prob-col-hidden" id="rc2"></div>
@@ -319,6 +324,7 @@ function updateProg(){
   document.getElementById('pp').textContent=pct+'%';
   document.getElementById('pf').style.width=pct+'%';
   if(n===GN&&!document.getElementById('fw-canvas'))launchFireworks();
+  var dlb=document.getElementById('dl-btn');if(dlb)dlb.classList.toggle('vis',n===GN);
 }
 
 function launchFireworks(){
@@ -393,6 +399,48 @@ function launchFireworks(){
     setTimeout(()=>{if(cv.parentNode)cv.parentNode.removeChild(cv);},1000);
   },15000);
 }
+function doDownload(){
+  var name=prompt('Enter your name for the download:');
+  if(!name)return;
+  name=name.trim();if(!name)return;
+  var td=document.getElementById('td');
+  var timeLabel='';
+  if(td&&TIMER_MINS>0){
+    var txt=td.textContent;
+    if(txt.indexOf('⚠')>-1){timeLabel='Overtime: +'+txt.replace(/[^0-9:]/g,'').trim();}
+    else{timeLabel='Time remaining: '+txt.replace(/[^0-9:]/g,'').trim();}
+  } else {
+    var el=Math.floor((Date.now()-pageStart)/1000);
+    var em=Math.floor(el/60),es=el%60;
+    timeLabel='Elapsed: '+(em<10?'0'+em:em)+':'+(es<10?'0'+es:es);
+  }
+  var sc=solved.size+' / '+GN+' correct ('+Math.round(solved.size/GN*100)+'%)';
+  var now=new Date();
+  var ts=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  if(typeof html2canvas==='undefined'){alert('Download loading, please try again.');return;}
+  html2canvas(document.body,{useCORS:true,allowTaint:true,scale:1.5,logging:false}).then(function(cap){
+    var out=document.createElement('canvas');
+    var bh=56;
+    out.width=cap.width;out.height=cap.height+bh;
+    var c2=out.getContext('2d');
+    c2.drawImage(cap,0,0);
+    c2.fillStyle='#0a0a0f';
+    c2.fillRect(0,cap.height,out.width,bh);
+    c2.fillStyle='#b8e030';
+    c2.font='bold 18px Nunito,sans-serif';
+    c2.textBaseline='middle';
+    c2.textAlign='left';
+    c2.fillText(name+' — '+sc,20,cap.height+16);
+    c2.fillStyle='rgba(255,255,255,0.6)';
+    c2.font='13px Nunito,sans-serif';
+    c2.fillText(timeLabel+'  •  '+ts+'  •  Reveal Arts by The Real Sum Shady',20,cap.height+38);
+    var a=document.createElement('a');
+    var safe=name.replace(/[^a-zA-Z0-9]/g,'-');
+    a.download=safe+'-reveal-arts.png';
+    a.href=out.toDataURL('image/png');
+    a.click();
+  });
+}
 function resetAll(){
   if(!confirm('Reset all progress?'))return;
   solved.clear();for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)rev[r][c]=false;
@@ -400,6 +448,7 @@ function resetAll(){
   buildUI();updateProg();drawAll();
 }
 buildUI();drawAll();
+const pageStart=Date.now();
 window.addEventListener('message',function(e){
   if(e.data&&e.data.type==='GET_PROBS'){
     window.parent.postMessage({type:'PROBS_DATA',probs:PROBS,helpMax:0},'*');
