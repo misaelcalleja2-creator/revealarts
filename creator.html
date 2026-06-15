@@ -116,7 +116,7 @@
       <div class="tabs" id="op-tabs">
         <button class="tab active" onclick="setOp('addition',this)">+ Addition</button>
         <button class="tab" onclick="setOp('subtraction',this)">− Subtraction</button>
-        <button class="tab" onclick="setOp('multiplication',this)">× Multiplication</button>
+        <button class="tab" onclick="setOp('multiplication',this)">× Multiply</button>
         <button class="tab" onclick="setOp('division',this)">÷ Division</button>
       </div>
       <div class="tabs" id="lv-tabs"></div>
@@ -172,12 +172,12 @@
         <button class="prob-count-btn" onclick="setNumProbs(30,this)">30</button>
       </div>
     </div>
-    <p style="font-size:11px;color:#aaa;margin-top:6px;">Tip: pick 25+ for more unique differentiated versions in Step 3.</p>
+    <p style="font-size:11px;color:#aaa;margin-top:6px;">Tip: pick 25+ for more unique different versions in Step 3.</p>
     <div class="problem-pool" id="pp"></div>
     <div class="sel-status">
       <div class="sel-ct"><span id="sc">20</span> of <span id="sc-total">20</span> selected</div>
       <div style="display:flex;gap:8px;">
-        <button id="add10-btn" class="rand-btn" style="background:rgba(122,170,0,0.12);color:var(--lime-dark);border-color:rgba(122,170,0,0.25);" onclick="addFromBank(10)">+ Add 10</button>
+        <button class="rand-btn" style="background:rgba(122,170,0,0.12);color:var(--lime-dark);border-color:rgba(122,170,0,0.25);" onclick="addFromBank(10)">+ Add 10</button>
         <button class="rand-btn" id="rerandomize-btn" onclick="rand20()">Re-randomize</button>
       </div>
     </div>
@@ -231,7 +231,7 @@
     </div>
 
     <div class="finish-field">
-      <label class="finish-label">Differentiated versions <span class="finish-optional">optional</span></label>
+      <label class="finish-label">Different versions <span class="finish-optional">optional</span></label>
       <div class="toggle-row">
         <span style="font-size:13px;color:#444;">Generate 3 versions (A, B, C)</span>
         <label class="toggle-switch"><input type="checkbox" id="diff-toggle" onchange="toggleDiff(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
