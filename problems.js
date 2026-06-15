@@ -186,7 +186,66 @@ function rand20(){
   var pool=curMode==='random'?selProbs:[].concat(kept,allProbs);
   renderProbList(pool,selProbs.map(function(p){return p.eq;}));
 }
-function updSC(){document.getElementById('sc').textContent=selProbs.length;document.getElementById('sc-total')&&(document.getElementById('sc-total').textContent=numProbs);}
+function updSC(){
+  document.getElementById('sc').textContent=selProbs.length;
+  document.getElementById('sc-total')&&(document.getElementById('sc-total').textContent=numProbs);
+  var badge=document.getElementById('custom-all-count');if(badge)badge.textContent=selProbs.length;
+  // Keep selection tab count current
+  var selTab=document.getElementById('custom-sub-sel');
+  if(selTab)selTab.textContent='Your selection ('+selProbs.length+')';
+  // Refresh selection view if open
+  if(curCustomSubCat==='sel')renderSelectionList();
+}
+
+// ── YOUR SELECTION VIEW ───────────────────────────────────────────────────────
+function _probBadge(p){
+  if(p.isCustom)return{label:'custom',bg:'rgba(122,170,0,0.12)',color:'#5a8000'};
+  if(p.isAlgebra)return{label:'algebra',bg:'rgba(159,93,229,0.1)',color:'#7c3aed'};
+  var eq=p.eq||'';
+  if(eq.includes('\u00d7'))return{label:'\u00d7',bg:'rgba(255,152,0,0.12)',color:'#c05700'};
+  if(eq.includes('\u00f7'))return{label:'\u00f7',bg:'rgba(33,150,243,0.1)',color:'#1565c0'};
+  if(eq.includes('+'))return{label:'+',bg:'rgba(67,160,71,0.1)',color:'#2e7d32'};
+  if(eq.includes('\u2212'))return{label:'\u2212',bg:'rgba(229,57,53,0.1)',color:'#c62828'};
+  return{label:'?',bg:'rgba(0,0,0,0.06)',color:'#888'};
+}
+function renderSelectionList(){
+  var c=document.getElementById('custom-sel-view');
+  if(!c)return;
+  if(selProbs.length===0){
+    c.innerHTML='<div style="font-size:12px;color:#bbb;padding:16px 0 4px;">No problems selected yet \u2014 browse Operations and Algebra above to pick some.</div>';
+    return;
+  }
+  c.innerHTML='<div style="font-size:11px;color:#888;margin-bottom:10px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;">All selected ('+selProbs.length+')</div>'+
+    selProbs.map(function(p,i){
+      var b=_probBadge(p);
+      var eqSafe=(p.eq||'').replace(/'/g,'\\u0027');
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,0.05);">'+
+        '<span style="font-size:10px;background:'+b.bg+';color:'+b.color+';border-radius:4px;padding:2px 6px;font-weight:700;flex-shrink:0;white-space:nowrap;">'+b.label+'</span>'+
+        '<span style="font-size:13px;font-weight:700;flex:1;color:#1a1a24;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(p.eq||'')+'</span>'+
+        '<span style="font-size:11px;color:#888;white-space:nowrap;margin-right:4px;">'+(p.isAlgebra?'x = ':'= ')+fmtFrac(p.ansDisplay||String(p.ans))+'</span>'+
+        '<button onclick="removeFromSel(\''+eqSafe+'\')" title="Remove" style="background:rgba(229,57,53,0.08);border:none;border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:12px;color:#e53935;flex-shrink:0;padding:0;line-height:1;">\u2715</button>'+
+        '</div>';
+    }).join('');
+}
+function removeFromSel(eq){
+  selProbs=selProbs.filter(function(p){return p.eq!==eq;});
+  var ci=customProbs.findIndex(function(p){return p.eq===eq;});
+  if(ci>=0)customProbs.splice(ci,1);
+  renderSelectionList();
+  renderCustomList();
+  updSC();
+}
+function _applySelViewMode(isSel){
+  var sv=document.getElementById('custom-sel-view');
+  var pc=document.getElementById('prob-count-row');
+  var ss=document.getElementById('sel-status-row');
+  var pp=document.getElementById('pp');
+  if(sv)sv.style.display=isSel?'block':'none';
+  if(pc)pc.style.display=isSel?'none':'';
+  if(ss)ss.style.display=isSel?'none':'';
+  if(pp)pp.style.display=isSel?'none':'';
+  if(isSel)renderSelectionList();
+}
 
 // ── OPERATION / LEVEL SWITCHING ──────────────────────────────────────────────
 function _showOpSubSections(){
@@ -365,17 +424,20 @@ function setCat(cat) {
   if (cat === 'ops') {
     calcEnabled = false;
     var ct = document.getElementById('calc-toggle'); if (ct) ct.checked = false;
+    _applySelViewMode(false);
     _showOpSubSections();
     renderProblems();
   } else if (cat === 'alg') {
     buildAlgLvTabs();
     renderAlgProblems();
+    _applySelViewMode(false);
   } else {
     calcEnabled = false;
     var ct2 = document.getElementById('calc-toggle'); if (ct2) ct2.checked = false;
     curMode = 'manual';
     curCustomSubCat = 'ops';
     _styleSubBtns('ops');
+    _applySelViewMode(false);
     document.getElementById('ops-section').style.display = 'block';
     document.getElementById('alg-section').style.display = 'none';
     _showOpSubSections();
@@ -389,9 +451,10 @@ function setCat(cat) {
 function _styleSubBtns(active) {
   var ops = document.getElementById('custom-sub-ops');
   var alg = document.getElementById('custom-sub-alg');
-  [ops, alg].forEach(function(b, i) {
+  var sel = document.getElementById('custom-sub-sel');
+  [ops, alg, sel].forEach(function(b, i) {
     if (!b) return;
-    var isActive = (active === 'ops' && i === 0) || (active === 'alg' && i === 1);
+    var isActive = (active === 'ops' && i === 0) || (active === 'alg' && i === 1) || (active === 'sel' && i === 2);
     b.style.borderColor = isActive ? 'rgba(184,224,48,0.6)' : 'rgba(0,0,0,0.09)';
     b.style.background = isActive ? 'rgba(184,224,48,0.12)' : 'var(--white)';
     b.style.color = isActive ? '#b8e030' : '#666';
@@ -401,6 +464,16 @@ function _styleSubBtns(active) {
 function setCustomSubCat(cat, btn) {
   curCustomSubCat = cat;
   _styleSubBtns(cat);
+  if (cat === 'sel') {
+    // Hide generated bank UI, show the selection list
+    document.getElementById('ops-section').style.display = 'none';
+    document.getElementById('alg-section').style.display = 'none';
+    document.getElementById('calc-section').style.display = 'none';
+    _applySelViewMode(true);
+    return;
+  }
+  // Back to ops or alg — restore normal bank view
+  _applySelViewMode(false);
   document.getElementById('ops-section').style.display = cat === 'ops' ? 'block' : 'none';
   document.getElementById('alg-section').style.display = cat === 'alg' ? 'block' : 'none';
   document.getElementById('calc-section').style.display = cat === 'alg' ? 'block' : 'none';
@@ -411,8 +484,8 @@ function setCustomSubCat(cat, btn) {
     buildAlgLvTabs();
     allProbs = genAlgBank(curAlgType || 'one', curAlgLv || 1);
   }
-  selProbs = selProbs.filter(function(p){return p.isCustom;});
-  renderProbList([].concat(customProbs,allProbs), selProbs.map(function(p){return p.eq;}));
+  // Keep existing selections, show the combined pool
+  renderProbList([].concat(customProbs, allProbs), selProbs.map(function(p){return p.eq;}));
 }
 
 function setAlgType(t, btn) {
@@ -522,13 +595,14 @@ function addCustomProb() {
   if (curCat === 'custom') {
     selProbs = [].concat(customProbs, selProbs.filter(function(p){return !p.isCustom;}));
     renderCustomList();
-    renderProbList([].concat(customProbs,allProbs), selProbs.map(function(p){return p.eq;}));
+    if (curCustomSubCat === 'sel') { renderSelectionList(); } else { renderProbList([].concat(customProbs,allProbs), selProbs.map(function(p){return p.eq;})); }
   } else {
     allProbs = [].concat(customProbs);
     selProbs = [].concat(customProbs);
     renderCustomList();
     renderProbList(allProbs, selProbs.map(function(p){return p.eq;}));
   }
+  updSC();
 }
 
 function removeCustomProb(idx) {
@@ -536,13 +610,14 @@ function removeCustomProb(idx) {
   if (curCat === 'custom') {
     selProbs = [].concat(customProbs, selProbs.filter(function(p){return !p.isCustom;}));
     renderCustomList();
-    renderProbList([].concat(customProbs,allProbs), selProbs.map(function(p){return p.eq;}));
+    if (curCustomSubCat === 'sel') { renderSelectionList(); } else { renderProbList([].concat(customProbs,allProbs), selProbs.map(function(p){return p.eq;})); }
   } else {
     allProbs = [].concat(customProbs);
     selProbs = [].concat(customProbs);
     renderCustomList();
     renderProbList(allProbs, selProbs.map(function(p){return p.eq;}));
   }
+  updSC();
 }
 
 function renderCustomList() {
