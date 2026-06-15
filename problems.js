@@ -65,8 +65,8 @@ function rand20(){
     updSC();
     return;
   }
-  // Preserve problems from other categories (custom or previously selected)
-  const kept=selProbs.filter(p=>!allProbs.find(ap=>ap.eq===p.eq));
+  // Only preserve explicitly custom problems — not stale level/op problems
+  const kept=selProbs.filter(p=>p.isCustom);
   const fill=Math.max(0,numProbs-kept.length);
   const sh=[...allProbs].sort(()=>Math.random()-0.5);
   selProbs=[...kept,...sh.slice(0,fill)];
@@ -140,9 +140,12 @@ function setCat(cat) {
   document.getElementById('calc-section').style.display = cat === 'alg' ? 'block' : 'none';
   // Show/hide Random/Hand pick toggle — hidden in custom (always hand-pick)
   if (modeRow) modeRow.style.display = cat === 'custom' ? 'none' : '';
-  // Re-randomize serves no purpose in custom mode (hand-pick only)
+  // Re-randomize removed from ops/alg — hide always
   const reBtn = document.getElementById('rerandomize-btn');
-  if (reBtn) reBtn.style.display = cat === 'custom' ? 'none' : '';
+  if (reBtn) reBtn.style.display = 'none';
+  // Add 10 only makes sense in custom (hand-pick) mode
+  const add10Btn = document.getElementById('add10-btn');
+  if (add10Btn) add10Btn.style.display = cat === 'custom' ? '' : 'none';
   if (cat === 'ops') {
     calcEnabled = false;
     const ct = document.getElementById('calc-toggle'); if (ct) ct.checked = false;
