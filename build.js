@@ -1,15 +1,25 @@
 // ── BUILD ACTIVITY HTML ─────────────────────────────────────────────────────────
 function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,probCount,showAiTutor,aiLimit,timerKey){
   const N=probCount||problems.length||20;
-  // Anchor sets for different problem counts
-  const ANCHOR_SETS={
-    15:[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10]],
-    20:[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15]],
-    25:[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15],[2,10],[18,10],[10,2],[10,18],[6,14]],
-    30:[[10,10],[3,3],[10,17],[17,3],[3,17],[17,17],[5,10],[15,10],[10,5],[10,15],[7,7],[7,13],[13,7],[13,13],[4,10],[16,10],[10,4],[10,16],[6,5],[14,15],[2,10],[18,10],[10,2],[10,18],[6,14],[14,6],[2,5],[18,5],[2,15],[18,15]]
-  };
-  const anchors=ANCHOR_SETS[N]||ANCHOR_SETS[20];
-  const TOTAL=anchors.length;
+  // Grid size: cap at 30 so tiles stay a reasonable visual size for any problem count
+  const GN_GRID=Math.min(N,30);
+  // Dynamically generate N evenly-distributed anchor points on a GN_GRID x GN_GRID grid
+  function makeAnchors(n,gs){
+    const cols=Math.ceil(Math.sqrt(n));
+    const rows=Math.ceil(n/cols);
+    const result=[];
+    for(let r=0;r<rows&&result.length<n;r++){
+      for(let c=0;c<cols&&result.length<n;c++){
+        result.push([
+          Math.min(gs-1,Math.round((r+0.5)/rows*gs)),
+          Math.min(gs-1,Math.round((c+0.5)/cols*gs))
+        ]);
+      }
+    }
+    return result;
+  }
+  const anchors=makeAnchors(N,GN_GRID);
+  const TOTAL=N;
   const esc=imageData.replace(/\\/g,'\\\\').replace(/`/g,'\\`');
   const IW=500,IH=Math.round(500*(ar.h/ar.w));
   const hasTimer=timerMinsVal>0,hasHints=hintList.length>0,hasCalc=!!showCalc,hasAiTutor=!!showAiTutor;
@@ -151,17 +161,18 @@ const ANCHORS=${JSON.stringify(anchors)},TOTAL=${N};
 const HINTS=${JSON.stringify(hintList)};
 const TIMER_MINS=${timerMinsVal};
 const SAVE_KEY='ra3_${timerKey||"0"}';
-const GN=${N},IW=${IW},IH=${IH},TW=IW/GN,TH=IH/GN;
+const GN=${GN_GRID},IW=${IW},IH=${IH},TW=IW/GN,TH=IH/GN;
 const hintUsed=new Array(HINTS.length).fill(false);
 
 function buildAssign(){
   const a=Array.from({length:GN},()=>new Array(GN).fill(-1));
   const rem=new Set();for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)rem.add(r*GN+c);
-  const pp=(GN*GN)/ANCHORS.length;
+  const pp=Math.floor((GN*GN)/ANCHORS.length);
   for(let z=0;z<ANCHORS.length;z++){
     const[ar,ac]=ANCHORS[z];
     const s=[...rem].map(i=>{const r=Math.floor(i/GN),c=i%GN;return{i,r,c,d:Math.sqrt((r-ar)**2+(c-ac)**2)};}).sort((a,b)=>a.d-b.d);
-    let n=0;for(const{i,r,c}of s){if(n>=pp)break;a[r][c]=z;rem.delete(i);n++;}
+    const take=z===ANCHORS.length-1?rem.size:pp;
+    let n=0;for(const{i,r,c}of s){if(n>=take)break;a[r][c]=z;rem.delete(i);n++;}
   }return a;
 }
 const assign=buildAssign();
@@ -321,12 +332,12 @@ function chk(i){
 }
 
 function updateProg(){
-  const n=solved.size,pct=Math.round(n/GN*100);
-  document.getElementById('pt').textContent=n+' of '+GN+' solved';
+  const n=solved.size,pct=Math.round(n/TOTAL*100);
+  document.getElementById('pt').textContent=n+' of '+TOTAL+' solved';
   document.getElementById('pp').textContent=pct+'%';
   document.getElementById('pf').style.width=pct+'%';
-  if(n===GN&&!document.getElementById('fw-canvas'))launchFireworks();
-  var dlb=document.getElementById('dl-btn');if(dlb)dlb.classList.toggle('vis',n===GN);
+  if(n===TOTAL&&!document.getElementById('fw-canvas'))launchFireworks();
+  var dlb=document.getElementById('dl-btn');if(dlb)dlb.classList.toggle('vis',n===TOTAL);
 }
 
 function launchFireworks(){
@@ -417,7 +428,7 @@ function doDownload(){
     timeLabel='Elapsed: '+(em<10?'0'+em:em)+':'+(es<10?'0'+es:es);
   }
   var wrongCount=wrongAttempts.size;
-  var sc=solved.size+' / '+GN+' correct'+(wrongCount>0?' ('+wrongCount+' question'+(wrongCount===1?'':'s')+' answered wrong at least once)':'');
+  var sc=solved.size+' / '+TOTAL+' correct'+(wrongCount>0?' ('+wrongCount+' question'+(wrongCount===1?'':'s')+' answered wrong at least once)':'');
   var now=new Date();
   var ts=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
   if(typeof html2canvas==='undefined'){alert('Download loading, please try again.');return;}
