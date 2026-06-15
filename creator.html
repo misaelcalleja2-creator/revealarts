@@ -112,6 +112,35 @@
       <button id="cat-alg" onclick="setCat('alg')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Algebra</button>
       <button id="cat-custom" onclick="setCat('custom')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Custom</button>
     </div>
+
+    <!-- ═══ CUSTOM PROBLEMS SECTION ═══ -->
+    <div id="custom-section" style="display:none;">
+      <!-- Bank selector: controls the generated problems shown below -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">Generated problem bank</div>
+        <div style="display:flex;gap:8px;">
+          <button id="custom-sub-ops" onclick="setCustomSubCat('ops',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(184,224,48,0.6);background:rgba(184,224,48,0.12);color:#b8e030;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Operations</button>
+          <button id="custom-sub-alg" onclick="setCustomSubCat('alg',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.09);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Algebra</button>
+          <button id="custom-sub-sel" onclick="setCustomSubCat('sel',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.09);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Your selection (0)</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#aaa;line-height:1.6;margin-bottom:12px;">Add specific problems above, or hand-pick from the generated list below — or both.</div>
+      <!-- Input row -->
+      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-end;">
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">Problem</div>
+          <input type="text" class="inp" id="custom-eq-input" placeholder="e.g. 12 × 7  or  3x + 5 = 17  or  145 − 68" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
+        </div>
+        <div style="width:76px;flex-shrink:0;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">Answer</div>
+          <input type="text" class="inp" id="custom-ans-input" placeholder="84 or 3/4" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
+        </div>
+        <button onclick="addCustomProb()" style="background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:9px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ Add</button>
+      </div>
+      <div id="custom-err" style="display:none;font-size:11px;color:#e53935;margin-bottom:8px;"></div>
+      <!-- Added problems list -->
+      <div id="custom-list" style="border-top:1px solid rgba(0,0,0,0.07);padding-top:10px;margin-top:6px;margin-bottom:4px;"></div>
+    </div>
     <div id="ops-section">
       <div class="tabs" id="op-tabs">
         <button class="tab active" onclick="setOp('addition',this)">+ Addition</button>
@@ -174,34 +203,6 @@
       <div style="font-size:11px;color:#888;margin-bottom:10px;">L1–L2: integer answers · L3: includes fractions and decimals</div>
     </div>
 
-    <!-- ═══ CUSTOM PROBLEMS SECTION ═══ -->
-    <div id="custom-section" style="display:none;">
-      <!-- Bank selector: controls the generated problems shown below -->
-      <div style="margin-bottom:14px;">
-        <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">Generated problem bank</div>
-        <div style="display:flex;gap:8px;">
-          <button id="custom-sub-ops" onclick="setCustomSubCat('ops',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(184,224,48,0.6);background:rgba(184,224,48,0.12);color:#b8e030;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Operations</button>
-          <button id="custom-sub-alg" onclick="setCustomSubCat('alg',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.09);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Algebra</button>
-          <button id="custom-sub-sel" onclick="setCustomSubCat('sel',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.09);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Your selection (0)</button>
-        </div>
-      </div>
-      <div style="font-size:11px;color:#aaa;line-height:1.6;margin-bottom:12px;">Add specific problems above, or hand-pick from the generated list below — or both.</div>
-      <!-- Input row -->
-      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-end;">
-        <div style="flex:1;">
-          <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">Problem</div>
-          <input type="text" class="inp" id="custom-eq-input" placeholder="e.g. 12 × 7  or  3x + 5 = 17  or  145 − 68" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
-        </div>
-        <div style="width:76px;flex-shrink:0;">
-          <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">Answer</div>
-          <input type="text" class="inp" id="custom-ans-input" placeholder="84 or 3/4" style="width:100%;" onkeydown="if(event.key==='Enter')addCustomProb()">
-        </div>
-        <button onclick="addCustomProb()" style="background:var(--lime);color:var(--ink);border:none;border-radius:8px;padding:9px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ Add</button>
-      </div>
-      <div id="custom-err" style="display:none;font-size:11px;color:#e53935;margin-bottom:8px;"></div>
-      <!-- Added problems list -->
-      <div id="custom-list" style="border-top:1px solid rgba(0,0,0,0.07);padding-top:10px;margin-top:6px;margin-bottom:4px;"></div>
-    </div>
     <div class="divider"></div>
     <div class="mode-row" id="mode-row">
       <button class="mode-btn active" id="random-mode-btn" onclick="setMode('random',this)">Random <span id="random-count">20</span></button>
