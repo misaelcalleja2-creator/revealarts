@@ -233,6 +233,92 @@ function genCuRoots(){
   return probs.sort(function(){return Math.random()-0.5;});
 }
 
+// ── PERCENT GENERATORS ────────────────────────────────────────────────────────
+function genPercents(mode){
+  var probs=[],seen=new Set(),att=0;
+  while(probs.length<50&&att<3000){
+    att++;
+    var pct=rnd(5,95),whole=rnd(10,200);
+    var part=pct*whole/100;
+    if(part!==Math.floor(part))continue;
+    var eq,ans;
+    if(mode==='findpart'){eq='What is '+pct+'% of '+whole+'?';ans=part;}
+    else if(mode==='findpct'){eq=part+' is what % of '+whole+'?';ans=pct;}
+    else{eq=part+' is '+pct+'% of what?';ans=whole;}
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq:eq,ans:ans});}
+  }
+  return probs;
+}
+
+// ── PROPORTION GENERATOR ─────────────────────────────────────────────────────
+function genProportions(){
+  var probs=[],seen=new Set(),att=0;
+  while(probs.length<50&&att<3000){
+    att++;
+    var a=rnd(1,10),b=rnd(2,10);
+    if(a===b)continue;
+    var g=_gcd(a,b);a=a/g;b=b/g;
+    if(a===b)continue;
+    var k=rnd(2,8),c=a*k,d=b*k;
+    var form=rnd(0,3);var eq,ans;
+    if(form===0){eq=a+'/'+b+' = x/'+d;ans=c;}
+    else if(form===1){eq=a+'/'+b+' = '+c+'/x';ans=d;}
+    else if(form===2){eq='x/'+b+' = '+c+'/'+d;ans=a;}
+    else{eq=a+'/x = '+c+'/'+d;ans=b;}
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq:eq,ans:ans});}
+  }
+  return probs;
+}
+
+// ── GEOMETRY GENERATORS ──────────────────────────────────────────────────────
+function genGeoArea(){
+  var probs=[],seen=new Set(),att=0;
+  while(probs.length<50&&att<3000){
+    att++;var shape=rnd(0,3),eq,ans;
+    if(shape===0){var l=rnd(2,20),w=rnd(2,20);ans=l*w;eq='Rectangle area: l = '+l+', w = '+w;}
+    else if(shape===1){var b=rnd(2,20),h=rnd(2,20);if((b*h)%2!==0)continue;ans=b*h/2;eq='Triangle area: b = '+b+', h = '+h;}
+    else if(shape===2){var b2=rnd(2,20),h2=rnd(2,20);ans=b2*h2;eq='Parallelogram area: b = '+b2+', h = '+h2;}
+    else{var b1=rnd(2,15),b2t=rnd(2,15),ht=rnd(2,15);if(((b1+b2t)*ht)%2!==0)continue;ans=(b1+b2t)*ht/2;eq='Trapezoid area: b\u2081 = '+b1+', b\u2082 = '+b2t+', h = '+ht;}
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq:eq,ans:ans});}
+  }
+  return probs;
+}
+function genGeoPerimeter(){
+  var probs=[],seen=new Set(),att=0;
+  while(probs.length<50&&att<3000){
+    att++;var shape=rnd(0,2),eq,ans;
+    if(shape===0){var l=rnd(2,25),w=rnd(2,25);ans=2*(l+w);eq='Rectangle perimeter: l = '+l+', w = '+w;}
+    else if(shape===1){var s=rnd(2,25);ans=4*s;eq='Square perimeter: s = '+s;}
+    else{var a=rnd(2,15),b=rnd(2,15),c=rnd(2,15);if(a+b<=c||a+c<=b||b+c<=a)continue;ans=a+b+c;eq='Triangle perimeter: a = '+a+', b = '+b+', c = '+c;}
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq:eq,ans:ans});}
+  }
+  return probs;
+}
+function genGeoVolume(){
+  var probs=[],seen=new Set(),att=0;
+  while(probs.length<50&&att<3000){
+    att++;var shape=rnd(0,2),eq,ans;
+    if(shape===0){var l=rnd(2,12),w=rnd(2,12),h=rnd(2,12);ans=l*w*h;eq='Rectangular prism: l = '+l+', w = '+w+', h = '+h;}
+    else if(shape===1){var s=rnd(2,8);ans=s*s*s;eq='Cube volume: s = '+s;}
+    else{var b=rnd(2,12),h2=rnd(2,12),le=rnd(2,12);if((b*h2)%2!==0)continue;ans=b*h2/2*le;eq='Triangular prism: b = '+b+', h = '+h2+', l = '+le;}
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq:eq,ans:ans});}
+  }
+  return probs;
+}
+function genGeoPythag(){
+  var probs=[],seen=new Set();
+  var triples=[[3,4,5],[5,12,13],[6,8,10],[7,24,25],[8,15,17],[9,12,15],[9,40,41],[12,16,20],[15,20,25],[20,21,29]];
+  triples.forEach(function(t){
+    for(var k=1;k<=3;k++){
+      var a=t[0]*k,b=t[1]*k,c=t[2]*k;
+      var eq1='Right triangle: a = '+a+', b = '+b+', c = ?';if(!seen.has(eq1)){seen.add(eq1);probs.push({eq:eq1,ans:c});}
+      var eq2='Right triangle: a = '+a+', c = '+c+', b = ?';if(!seen.has(eq2)){seen.add(eq2);probs.push({eq:eq2,ans:b});}
+      var eq3='Right triangle: b = '+b+', c = '+c+', a = ?';if(!seen.has(eq3)){seen.add(eq3);probs.push({eq:eq3,ans:a});}
+    }
+  });
+  return probs.sort(function(){return Math.random()-0.5;});
+}
+
 // ── OPERATIONS BANK ROUTER ───────────────────────────────────────────────────
 function genOpsBank(){
   if(curOp==='multiplication')return mulMode==='tables'?genMulTables(mulTables,mulAllFacts,mulMixOrient):genMulMultiDigit(mulDigitLv);
@@ -240,6 +326,9 @@ function genOpsBank(){
   if(curOp==='fractions')return fracMode==='addsub'?genFracAddSub(fracDenom):fracMode==='multiply'?genFracMultiply():genFracDivide();
   if(curOp==='pemdas')return genPemdas(pemdasLvl);
   if(curOp==='exponents')return expMode==='powers'?genPowers():expMode==='sqroots'?genSqRoots():genCuRoots();
+  if(curOp==='percents')return genPercents(pctMode);
+  if(curOp==='proportions')return genProportions();
+  if(curOp==='geometry')return geoMode==='area'?genGeoArea():geoMode==='perimeter'?genGeoPerimeter():geoMode==='volume'?genGeoVolume():genGeoPythag();
   return genBank(curOp,curLvl);
 }
 
@@ -319,12 +408,18 @@ function _probBadge(p){
   if(p.isCustom)return{label:'custom',bg:'rgba(122,170,0,0.12)',color:'#5a8000'};
   if(p.isAlgebra)return{label:'algebra',bg:'rgba(159,93,229,0.1)',color:'#7c3aed'};
   var eq=p.eq||'';
+  // Geometry (starts with shape name)
+  if(/^(Rectangle|Triangle|Square|Parallelogram|Trapezoid|Cube|Rectangular|Triangular|Right triangle)/.test(eq))return{label:'geo',bg:'rgba(121,85,72,0.1)',color:'#5d4037'};
+  // Percents
+  if(eq.includes('%'))return{label:'%',bg:'rgba(255,193,7,0.12)',color:'#f57f17'};
   // Exponents and roots
   if(/[\u00b2\u00b3\u2070-\u2079\u221a]/.test(eq))return{label:'x\u00b2',bg:'rgba(156,39,176,0.1)',color:'#7b1fa2'};
   // PEMDAS (parentheses or 2+ different operator types without fractions)
   if(eq.includes('(')){return{label:'PEMDAS',bg:'rgba(255,87,34,0.1)',color:'#d84315'};}
   var ops=0;if(eq.includes('+'))ops++;if(eq.includes('\u2212'))ops++;if(eq.includes('\u00d7'))ops++;if(eq.includes('\u00f7'))ops++;
   if(ops>=2&&!eq.includes('/'))return{label:'PEMDAS',bg:'rgba(255,87,34,0.1)',color:'#d84315'};
+  // Proportions (has = and x, not algebra)
+  if(eq.includes('=')&&eq.includes('x'))return{label:'x:y',bg:'rgba(0,121,107,0.1)',color:'#00695c'};
   // Fractions
   if(eq.includes('/'))return{label:'frac',bg:'rgba(0,150,136,0.1)',color:'#00695c'};
   // Basic operations
@@ -385,6 +480,12 @@ function _showOpSubSections(){
   if(fc)fc.style.display=curOp==='fractions'?'':'none';
   if(pc)pc.style.display=curOp==='pemdas'?'':'none';
   if(ec)ec.style.display=curOp==='exponents'?'':'none';
+  var pcc=document.getElementById('pct-config');
+  var prc=document.getElementById('prop-config');
+  var gc=document.getElementById('geo-config');
+  if(pcc)pcc.style.display=curOp==='percents'?'':'none';
+  if(prc)prc.style.display=curOp==='proportions'?'':'none';
+  if(gc)gc.style.display=curOp==='geometry'?'':'none';
 }
 function setOp(op,btn){
   curOp=op;
@@ -539,6 +640,18 @@ function buildPemdasLvTabs(){
 function setExpMode(mode,btn){
   expMode=mode;
   document.querySelectorAll('#exp-mode-tabs .tab').forEach(function(b){b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  renderProblems();
+}
+function setPctMode(mode,btn){
+  pctMode=mode;
+  document.querySelectorAll('#pct-mode-tabs .tab').forEach(function(b){b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  renderProblems();
+}
+function setGeoMode(mode,btn){
+  geoMode=mode;
+  document.querySelectorAll('#geo-mode-tabs .tab').forEach(function(b){b.classList.remove('active');});
   if(btn)btn.classList.add('active');
   renderProblems();
 }

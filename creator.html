@@ -108,7 +108,7 @@
   <!-- ═══ STEP 2: PROBLEMS ═══ -->
   <div id="step-2" class="wiz-pane" style="display:none;">
     <div style="display:flex;gap:8px;margin-bottom:20px;">
-      <button id="cat-ops" onclick="setCat('ops')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--lime-dark);background:rgba(122,170,0,0.08);color:var(--lime-dark);font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Operations</button>
+      <button id="cat-ops" onclick="setCat('ops')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--lime-dark);background:rgba(122,170,0,0.08);color:var(--lime-dark);font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Skills</button>
       <button id="cat-alg" onclick="setCat('alg')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Algebra</button>
       <button id="cat-custom" onclick="setCat('custom')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Custom</button>
     </div>
@@ -119,7 +119,7 @@
       <div style="margin-bottom:14px;">
         <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">Generated problem bank</div>
         <div style="display:flex;gap:8px;">
-          <button id="custom-sub-ops" onclick="setCustomSubCat('ops',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(184,224,48,0.6);background:rgba(184,224,48,0.12);color:#b8e030;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Operations</button>
+          <button id="custom-sub-ops" onclick="setCustomSubCat('ops',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(184,224,48,0.6);background:rgba(184,224,48,0.12);color:#b8e030;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Skills</button>
           <button id="custom-sub-alg" onclick="setCustomSubCat('alg',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.09);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Algebra</button>
           <button id="custom-sub-sel" onclick="setCustomSubCat('sel',this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.09);background:var(--white);color:#666;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Your selection (0)</button>
         </div>
@@ -150,6 +150,9 @@
         <button class="tab" onclick="setOp('fractions',this)">Fractions</button>
         <button class="tab" onclick="setOp('pemdas',this)">PEMDAS</button>
         <button class="tab" onclick="setOp('exponents',this)">Exponents</button>
+        <button class="tab" onclick="setOp('percents',this)">Percents</button>
+        <button class="tab" onclick="setOp('proportions',this)">Proportions</button>
+        <button class="tab" onclick="setOp('geometry',this)">Geometry</button>
       </div>
       <div id="addsub-levels">
         <div class="tabs" id="lv-tabs"></div>
@@ -221,6 +224,26 @@
           <button class="tab" onclick="setExpMode('curoots',this)">Cube roots</button>
         </div>
         <div style="font-size:10px;color:#aaa;margin-top:6px;">Evaluate the expression.</div>
+      </div>
+      <div id="pct-config" style="display:none;">
+        <div class="tabs" id="pct-mode-tabs">
+          <button class="tab active" onclick="setPctMode('findpart',this)">Find the part</button>
+          <button class="tab" onclick="setPctMode('findpct',this)">Find the percent</button>
+          <button class="tab" onclick="setPctMode('findwhole',this)">Find the whole</button>
+        </div>
+        <div style="font-size:10px;color:#aaa;margin-top:6px;">All answers are whole numbers.</div>
+      </div>
+      <div id="prop-config" style="display:none;">
+        <div style="font-size:10px;color:#aaa;margin-top:6px;">Solve for x in each proportion.</div>
+      </div>
+      <div id="geo-config" style="display:none;">
+        <div class="tabs" id="geo-mode-tabs">
+          <button class="tab active" onclick="setGeoMode('area',this)">Area</button>
+          <button class="tab" onclick="setGeoMode('perimeter',this)">Perimeter</button>
+          <button class="tab" onclick="setGeoMode('volume',this)">Volume</button>
+          <button class="tab" onclick="setGeoMode('pythagorean',this)">Pythagorean</button>
+        </div>
+        <div style="font-size:10px;color:#aaa;margin-top:6px;">All answers are whole numbers.</div>
       </div>
     </div>
     <div id="alg-section" style="display:none;">

@@ -147,6 +147,8 @@ function captureSettings() {
     fracDenom: fracDenom,
     pemdasLvl: pemdasLvl,
     expMode: expMode,
+    pctMode: pctMode,
+    geoMode: geoMode,
     image: croppedDataUrl,
     imageAR: edAR
   };

@@ -21,6 +21,8 @@ let divMode = 'families', divTables = [2];
 let fracMode = 'addsub', fracDenom = 'same';
 let pemdasLvl = 1;
 let expMode = 'powers';
+let pctMode = 'findpart';
+let geoMode = 'area';
 
 // Wizard state
 let currentWizStep = 1;

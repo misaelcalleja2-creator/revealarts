@@ -194,6 +194,8 @@ async function initEditMode() {
       if (s.fracMode) { fracMode = s.fracMode; fracDenom = s.fracDenom || 'same'; }
       if (s.pemdasLvl) { pemdasLvl = s.pemdasLvl; }
       if (s.expMode) { expMode = s.expMode; }
+      if (s.pctMode) { pctMode = s.pctMode; }
+      if (s.geoMode) { geoMode = s.geoMode; }
       // Click the right operation tab
       document.querySelectorAll('#op-tabs .tab').forEach(b => {
         const onclick = b.getAttribute('onclick') || '';
@@ -276,6 +278,27 @@ async function initEditMode() {
             (s.expMode === 'powers' && b.textContent.includes('Powers')) ||
             (s.expMode === 'sqroots' && b.textContent.includes('Square')) ||
             (s.expMode === 'curoots' && b.textContent.includes('Cube'))
+          );
+        });
+      }
+      // Restore percents mode UI
+      if (s.op === 'percents' && s.pctMode) {
+        document.querySelectorAll('#pct-mode-tabs .tab').forEach(b => {
+          b.classList.toggle('active',
+            (s.pctMode === 'findpart' && b.textContent.includes('part')) ||
+            (s.pctMode === 'findpct' && b.textContent.includes('percent')) ||
+            (s.pctMode === 'findwhole' && b.textContent.includes('whole'))
+          );
+        });
+      }
+      // Restore geometry mode UI
+      if (s.op === 'geometry' && s.geoMode) {
+        document.querySelectorAll('#geo-mode-tabs .tab').forEach(b => {
+          b.classList.toggle('active',
+            (s.geoMode === 'area' && b.textContent.includes('Area')) ||
+            (s.geoMode === 'perimeter' && b.textContent.includes('Perimeter')) ||
+            (s.geoMode === 'volume' && b.textContent.includes('Volume')) ||
+            (s.geoMode === 'pythagorean' && b.textContent.includes('Pythagorean'))
           );
         });
       }
