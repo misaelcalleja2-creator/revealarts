@@ -139,6 +139,7 @@ function captureSettings() {
     mulMode: mulMode,
     mulTables: [].concat(mulTables),
     mulDigitLv: mulDigitLv,
+    mulAllFacts: mulAllFacts,
     divMode: divMode,
     divTables: [].concat(divTables),
     image: croppedDataUrl,

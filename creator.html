@@ -131,7 +131,11 @@
         <div id="mul-tables-ui">
           <div style="font-size:11px;color:#888;margin:8px 0 6px;">Select the times tables to practice:</div>
           <div id="mul-table-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px;"></div>
-          <div style="font-size:10px;color:#aaa;">Students get both orientations (e.g. 2 × 7 and 7 × 2).</div>
+          <label style="display:flex;align-items:center;gap:6px;margin:6px 0 4px;cursor:pointer;">
+            <input type="checkbox" id="mul-all-facts" onchange="toggleMulAllFacts(this.checked)" style="accent-color:#7aaa00;width:14px;height:14px;">
+            <span style="font-size:11px;color:#666;font-weight:600;">Include all facts</span>
+          </label>
+          <div id="mul-tables-note" style="font-size:10px;color:#aaa;">Students get both orientations (e.g. 2 × 7 and 7 × 2).</div>
         </div>
         <div id="mul-digit-ui" style="display:none;">
           <div class="tabs" id="mul-digit-tabs"></div>
@@ -205,6 +209,7 @@
         <button class="prob-count-btn active" onclick="setNumProbs(20,this)">20</button>
         <button class="prob-count-btn" onclick="setNumProbs(25,this)">25</button>
         <button class="prob-count-btn" onclick="setNumProbs(30,this)">30</button>
+        <button class="prob-count-btn" onclick="setNumProbs(36,this)">36</button>
       </div>
     </div>
     <p style="font-size:11px;color:#aaa;margin-top:6px;">Tip: pick 25+ for more unique different versions in Step 3.</p>

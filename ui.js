@@ -62,7 +62,7 @@ function wizNext(fromStep) {
     }
     if (selProbs.length < numProbs) {
       // Try to snap numProbs down to nearest valid count
-      const valid = [30, 25, 20, 15];
+      const valid = [36, 30, 25, 20, 15];
       const snapped = valid.find(n => n <= selProbs.length);
       if (snapped) {
         numProbs = snapped;
@@ -188,7 +188,7 @@ async function initEditMode() {
     if (s.cat === 'ops' && s.op) {
       curOp = s.op; curLvl = s.lvl || 1;
       // Restore mul/div state before rendering
-      if (s.mulMode) { mulMode = s.mulMode; mulTables = s.mulTables || [2]; mulDigitLv = s.mulDigitLv || 1; }
+      if (s.mulMode) { mulMode = s.mulMode; mulTables = s.mulTables || [2]; mulDigitLv = s.mulDigitLv || 1; mulAllFacts = !!s.mulAllFacts; }
       if (s.divMode) { divMode = s.divMode; divTables = s.divTables || [2]; }
       // Click the right operation tab
       document.querySelectorAll('#op-tabs .tab').forEach(b => {
@@ -219,6 +219,9 @@ async function initEditMode() {
         var mdu = document.getElementById('mul-digit-ui');
         if (mtu) mtu.style.display = s.mulMode === 'tables' ? '' : 'none';
         if (mdu) mdu.style.display = s.mulMode === 'multidigit' ? '' : 'none';
+        // Restore all-facts checkbox
+        var maf = document.getElementById('mul-all-facts');
+        if (maf) maf.checked = !!s.mulAllFacts;
       }
       // Restore division mode UI
       if (s.op === 'division' && s.divMode) {

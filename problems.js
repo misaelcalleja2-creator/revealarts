@@ -38,13 +38,16 @@ function genBank(op,lv){
 }
 
 // ── MULTIPLICATION GENERATORS ────────────────────────────────────────────────
-function genMulTables(tables){
+function genMulTables(tables,allFacts){
   const probs=[],seen=new Set();
   tables.forEach(t=>{
     for(let i=1;i<=12;i++){
-      const eq1=t+' \u00d7 '+i,eq2=i+' \u00d7 '+t;
+      const eq1=t+' \u00d7 '+i;
       if(!seen.has(eq1)){seen.add(eq1);probs.push({eq:eq1,ans:t*i});}
-      if(!seen.has(eq2)){seen.add(eq2);probs.push({eq:eq2,ans:t*i});}
+      if(!allFacts){
+        const eq2=i+' \u00d7 '+t;
+        if(!seen.has(eq2)){seen.add(eq2);probs.push({eq:eq2,ans:t*i});}
+      }
     }
   });
   return probs.sort(()=>Math.random()-0.5);
@@ -103,13 +106,29 @@ function genDivLong(){
 
 // ── OPERATIONS BANK ROUTER ───────────────────────────────────────────────────
 function genOpsBank(){
-  if(curOp==='multiplication')return mulMode==='tables'?genMulTables(mulTables):genMulMultiDigit(mulDigitLv);
+  if(curOp==='multiplication')return mulMode==='tables'?genMulTables(mulTables,mulAllFacts):genMulMultiDigit(mulDigitLv);
   if(curOp==='division')return divMode==='families'?genDivFamilies(divTables):divMode==='decimals'?genDivDecimals():genDivLong();
   return genBank(curOp,curLvl);
 }
 
 // ── RENDER / SELECT ──────────────────────────────────────────────────────────
-function renderProblems(){allProbs=genOpsBank();rand20();}
+function renderProblems(){
+  allProbs=genOpsBank();
+  // Auto-set problem count when "all facts" is on for multiplication tables
+  if(curOp==='multiplication'&&mulMode==='tables'){
+    var note=document.getElementById('mul-tables-note');
+    if(mulAllFacts){
+      numProbs=allProbs.length;
+      document.querySelectorAll('.prob-count-btn').forEach(function(b){b.classList.toggle('active',parseInt(b.textContent)===numProbs);});
+      var sct=document.getElementById('sc-total');if(sct)sct.textContent=numProbs;
+      var rc=document.getElementById('random-count');if(rc)rc.textContent=numProbs;
+      if(note)note.textContent=allProbs.length+' problems \u2014 12 per table, one orientation each.';
+    }else{
+      if(note)note.textContent='Students get both orientations (e.g. 2 \u00d7 7 and 7 \u00d7 2).';
+    }
+  }
+  rand20();
+}
 
 function renderProbList(pool,selEqs=[]){
   const c=document.getElementById('pp');c.innerHTML='';
@@ -229,6 +248,15 @@ function setMulMode(mode,btn){
   if(btn)btn.classList.add('active');
   document.getElementById('mul-tables-ui').style.display=mode==='tables'?'':'none';
   document.getElementById('mul-digit-ui').style.display=mode==='multidigit'?'':'none';
+  // Uncheck all-facts when switching to multi-digit
+  if(mode==='multidigit'){
+    mulAllFacts=false;
+    var cb=document.getElementById('mul-all-facts');if(cb)cb.checked=false;
+  }
+  renderProblems();
+}
+function toggleMulAllFacts(on){
+  mulAllFacts=on;
   renderProblems();
 }
 
