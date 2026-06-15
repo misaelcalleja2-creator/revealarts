@@ -196,20 +196,6 @@ function updSC(){
   if(selTab)selTab.textContent='Your selection ('+selProbs.length+')';
   // Refresh selection view if open
   if(curCustomSubCat==='sel')renderSelectionList();
-  // Smart note when selected > numProbs
-  var note=document.getElementById('pool-note');
-  if(!note){
-    note=document.createElement('div');note.id='pool-note';
-    note.style.cssText='font-size:11px;color:#888;padding:6px 10px;margin-top:4px;background:rgba(122,170,0,0.06);border-radius:6px;line-height:1.5;display:none;';
-    var ssr=document.getElementById('sel-status-row');
-    if(ssr)ssr.parentNode.insertBefore(note,ssr.nextSibling);
-  }
-  if(selProbs.length>numProbs){
-    note.textContent='Each version gets a more unique set from your pool of '+selProbs.length+' problems.';
-    note.style.display='block';
-  }else{
-    note.style.display='none';
-  }
 }
 
 // ── YOUR SELECTION VIEW ───────────────────────────────────────────────────────
@@ -252,11 +238,9 @@ function removeFromSel(eq){
 }
 function _applySelViewMode(isSel){
   var sv=document.getElementById('custom-sel-view');
-  var pc=document.getElementById('prob-count-row');
   var ss=document.getElementById('sel-status-row');
   var pp=document.getElementById('pp');
   if(sv)sv.style.display=isSel?'block':'none';
-  if(pc)pc.style.display=isSel?'none':'';
   if(ss)ss.style.display=isSel?'none':'';
   if(pp)pp.style.display=isSel?'none':'';
   if(isSel)renderSelectionList();
