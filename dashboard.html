@@ -614,8 +614,14 @@ async function downloadWorksheet(id, btn) {
       return eq;
     }
 
+    const numP = probs.length;
+    const rowPad = numP <= 15 ? 9 : numP <= 20 ? 7 : numP <= 25 ? 5 : 3;
+    const eqSize = numP <= 20 ? 16 : 14;
+    const isAlg = probs.some(p => p.isAlgebra);
+
     const rows = probs.map((p, i) => {
-      return '<tr><td class="num">' + (i+1) + '.</td><td class="eq">' + fmtEq(p.eq) + '</td><td class="ans">x = _______</td></tr>';
+      const blank = p.isAlgebra ? 'x =&nbsp;&nbsp;_________' : '=&nbsp;&nbsp;_________';
+      return '<tr><td class="num">' + (i+1) + '.</td><td class="eq">' + fmtEq(p.eq) + '</td><td class="ans">' + blank + '</td></tr>';
     }).join('');
 
     const worksheet = `<!DOCTYPE html>
@@ -623,26 +629,29 @@ async function downloadWorksheet(id, btn) {
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Nunito', sans-serif; background: #fff; color: #111; padding: 40px 48px; }
-  .header { margin-bottom: 32px; border-bottom: 2px solid #111; padding-bottom: 20px; }
-  .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-  .avatar-img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; object-position: center top; }
-  .school-line { font-size: 11px; color: #888; letter-spacing: 0.8px; text-transform: uppercase; }
-  h1 { font-size: 20px; font-weight: 800; color: #111; text-align: center; margin-bottom: 18px; }
-  .info-stack { display: flex; flex-direction: column; gap: 14px; }
+  body { font-family: 'Nunito', sans-serif; background: #fff; color: #111; padding: 24px 44px 16px; }
+  .header { margin-bottom: 10px; border-bottom: 2px solid #111; padding-bottom: 10px; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .avatar-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; object-position: center top; }
+  .school-line { font-size: 10px; color: #888; letter-spacing: 0.8px; text-transform: uppercase; }
+  h1 { font-size: 17px; font-weight: 800; color: #111; text-align: center; margin-bottom: 8px; }
+  .info-row { display: flex; gap: 24px; align-items: flex-end; }
   .info-item { display: flex; flex-direction: column; }
-  .info-label { font-size: 10px; color: #888; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
-  .info-field { border-bottom: 1px solid #ccc; width: 220px; min-height: 18px; }
-  .directions { font-size: 13px; color: #555; background: #f8f8f8; padding: 10px 14px; margin-bottom: 24px; border-radius: 6px; }
+  .info-item.wide { flex: 2; }
+  .info-item.med { flex: 1; }
+  .info-item.narrow { flex: 0 0 80px; }
+  .info-label { font-size: 9px; color: #888; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 2px; }
+  .info-field { border-bottom: 1px solid #bbb; min-height: 16px; }
+  .directions { font-size: 12px; color: #555; background: #f8f8f8; padding: 6px 12px; margin-bottom: 10px; border-radius: 4px; }
   table { width: 100%; border-collapse: collapse; }
   tr { break-inside: avoid; }
-  td { padding: 10px 8px; vertical-align: middle; }
-  td.num { width: 32px; font-weight: 700; font-size: 14px; color: #555; }
-  td.eq { font-size: 17px; font-weight: 700; letter-spacing: 0.3px; width: 55%; }
-  td.ans { font-size: 14px; color: #444; border-bottom: 1.5px solid #aaa; width: 35%; padding-bottom: 4px; }
+  td { padding: ${rowPad}px 8px; vertical-align: middle; }
+  td.num { width: 28px; font-weight: 700; font-size: 13px; color: #555; }
+  td.eq { font-size: ${eqSize}px; font-weight: 700; letter-spacing: 0.3px; width: 55%; }
+  td.ans { font-size: 13px; color: #444; width: 35%; }
   tr:nth-child(even) td { background: #fafafa; }
-  .footer { margin-top: 40px; text-align: center; font-size: 11px; color: #aaa; border-top: 1px solid #ddd; padding-top: 12px; }
-  @media print { body { padding: 20px 32px; } @page { margin: 0.75in; } }
+  .footer { margin-top: 16px; text-align: center; font-size: 10px; color: #bbb; border-top: 1px solid #eee; padding-top: 8px; }
+  @media print { body { padding: 16px 32px 12px; } @page { margin: 0.5in; } }
 </style></head><body>
 <div class="header">
   <div class="header-top">
@@ -650,13 +659,13 @@ async function downloadWorksheet(id, btn) {
     <img class="avatar-img" src="https://therealsumshady.com/avatar.png" alt="Reveal Arts">
   </div>
   <h1>${actTitle}</h1>
-  <div class="info-stack">
-    <div class="info-item"><div class="info-label">Name</div><div class="info-field">&nbsp;</div></div>
-    <div class="info-item"><div class="info-label">Date</div><div class="info-field">&nbsp;</div></div>
-    <div class="info-item"><div class="info-label">Period</div><div class="info-field">&nbsp;</div></div>
+  <div class="info-row">
+    <div class="info-item wide"><div class="info-label">Name</div><div class="info-field">&nbsp;</div></div>
+    <div class="info-item med"><div class="info-label">Date</div><div class="info-field">&nbsp;</div></div>
+    <div class="info-item narrow"><div class="info-label">Period</div><div class="info-field">&nbsp;</div></div>
   </div>
 </div>
-<div class="directions">Solve each equation for x. Show your work on a separate sheet of paper.</div>
+<div class="directions">${isAlg ? 'Solve each equation for x. Show your work on a separate sheet of paper.' : 'Solve each problem. Show your work on a separate sheet of paper.'}</div>
 <table><tbody>${rows}</tbody></table>
 <div class="footer">© The Real Sum Shady — therealsumshady.com</div>
 <script>window.onload = function() { window.print(); }<\/script>
