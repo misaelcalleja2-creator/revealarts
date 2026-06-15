@@ -187,14 +187,29 @@ function rand20(){
   renderProbList(pool,selProbs.map(function(p){return p.eq;}));
 }
 function updSC(){
-  document.getElementById('sc').textContent=selProbs.length;
-  document.getElementById('sc-total')&&(document.getElementById('sc-total').textContent=numProbs);
-  var badge=document.getElementById('custom-all-count');if(badge)badge.textContent=selProbs.length;
+  var sc=document.getElementById('sc');
+  var sct=document.getElementById('sc-total');
+  if(sc)sc.textContent=selProbs.length;
+  if(sct)sct.textContent=numProbs;
   // Keep selection tab count current
   var selTab=document.getElementById('custom-sub-sel');
   if(selTab)selTab.textContent='Your selection ('+selProbs.length+')';
   // Refresh selection view if open
   if(curCustomSubCat==='sel')renderSelectionList();
+  // Smart note when selected > numProbs
+  var note=document.getElementById('pool-note');
+  if(!note){
+    note=document.createElement('div');note.id='pool-note';
+    note.style.cssText='font-size:11px;color:#888;padding:6px 10px;margin-top:4px;background:rgba(122,170,0,0.06);border-radius:6px;line-height:1.5;display:none;';
+    var ssr=document.getElementById('sel-status-row');
+    if(ssr)ssr.parentNode.insertBefore(note,ssr.nextSibling);
+  }
+  if(selProbs.length>numProbs){
+    note.textContent='Each version gets a more unique set from your pool of '+selProbs.length+' problems.';
+    note.style.display='block';
+  }else{
+    note.style.display='none';
+  }
 }
 
 // ── YOUR SELECTION VIEW ───────────────────────────────────────────────────────
