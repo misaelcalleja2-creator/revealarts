@@ -136,6 +136,11 @@ function captureSettings() {
     diffEnabled: diffEnabled,
     aiTutorEnabled: aiTutorEnabled,
     aiHelpLimit: aiHelpLimit,
+    mulMode: mulMode,
+    mulTables: [].concat(mulTables),
+    mulDigitLv: mulDigitLv,
+    divMode: divMode,
+    divTables: [].concat(divTables),
     image: croppedDataUrl,
     imageAR: edAR
   };

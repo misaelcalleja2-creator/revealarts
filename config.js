@@ -14,6 +14,9 @@ let isDragging=false,dragSX=0,dragSY=0,dragPX=0,dragPY=0;
 let editorReady=false;
 // Category state
 let curCat = 'ops', curAlgType = 'one', curAlgLv = 1;
+// Multiplication / Division state
+let mulMode = 'tables', mulTables = [2], mulDigitLv = 1;
+let divMode = 'families', divTables = [2];
 
 // Wizard state
 let currentWizStep = 1;

@@ -116,11 +116,46 @@
       <div class="tabs" id="op-tabs">
         <button class="tab active" onclick="setOp('addition',this)">+ Addition</button>
         <button class="tab" onclick="setOp('subtraction',this)">− Subtraction</button>
-        <button class="tab" onclick="setOp('multiplication',this)">× Multiply</button>
+        <button class="tab" onclick="setOp('multiplication',this)">× Multiplication</button>
         <button class="tab" onclick="setOp('division',this)">÷ Division</button>
       </div>
-      <div class="tabs" id="lv-tabs"></div>
-      <div class="neg-note" id="neg-note">⚠️ Levels 4–6 include negative numbers</div>
+      <div id="addsub-levels">
+        <div class="tabs" id="lv-tabs"></div>
+        <div class="neg-note" id="neg-note">⚠️ Levels 4–6 include negative numbers</div>
+      </div>
+      <div id="mul-config" style="display:none;">
+        <div class="tabs" id="mul-mode-tabs">
+          <button class="tab active" onclick="setMulMode('tables',this)">Times tables</button>
+          <button class="tab" onclick="setMulMode('multidigit',this)">Multi-digit</button>
+        </div>
+        <div id="mul-tables-ui">
+          <div style="font-size:11px;color:#888;margin:8px 0 6px;">Select the times tables to practice:</div>
+          <div id="mul-table-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px;"></div>
+          <div style="font-size:10px;color:#aaa;">Students get both orientations (e.g. 2 × 7 and 7 × 2).</div>
+        </div>
+        <div id="mul-digit-ui" style="display:none;">
+          <div class="tabs" id="mul-digit-tabs"></div>
+          <div style="font-size:10px;color:#aaa;margin-top:4px;">Best with scratch paper — great for worksheets too.</div>
+        </div>
+      </div>
+      <div id="div-config" style="display:none;">
+        <div class="tabs" id="div-mode-tabs">
+          <button class="tab active" onclick="setDivMode('families',this)">Fact families</button>
+          <button class="tab" onclick="setDivMode('decimals',this)">Decimals</button>
+          <button class="tab" onclick="setDivMode('longdiv',this)">Long division</button>
+        </div>
+        <div id="div-families-ui">
+          <div style="font-size:11px;color:#888;margin:8px 0 6px;">Select the divisors to practice:</div>
+          <div id="div-table-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px;"></div>
+          <div style="font-size:10px;color:#aaa;">All answers are whole numbers.</div>
+        </div>
+        <div id="div-dec-ui" style="display:none;">
+          <div style="font-size:11px;color:#888;margin:8px 0;">Clean decimal answers only — halves, quarters, fifths (e.g. 7.5, 2.25, 3.4)</div>
+        </div>
+        <div id="div-long-ui" style="display:none;">
+          <div style="font-size:11px;color:#888;margin:8px 0;">Larger dividends with multi-digit divisors. Whole number answers only.</div>
+        </div>
+      </div>
     </div>
     <div id="alg-section" style="display:none;">
       <div class="tabs" id="alg-type-tabs">
@@ -177,7 +212,7 @@
     <div class="sel-status">
       <div class="sel-ct"><span id="sc">20</span> of <span id="sc-total">20</span> selected</div>
       <div style="display:flex;gap:8px;">
-        <button class="rand-btn" style="background:rgba(122,170,0,0.12);color:var(--lime-dark);border-color:rgba(122,170,0,0.25);" onclick="addFromBank(10)">+ Add 10</button>
+        <button id="add10-btn" class="rand-btn" style="background:rgba(122,170,0,0.12);color:var(--lime-dark);border-color:rgba(122,170,0,0.25);" onclick="addFromBank(10)">+ Add 10</button>
         <button class="rand-btn" id="rerandomize-btn" onclick="rand20()">Re-randomize</button>
       </div>
     </div>
@@ -231,7 +266,7 @@
     </div>
 
     <div class="finish-field">
-      <label class="finish-label">Different versions <span class="finish-optional">optional</span></label>
+      <label class="finish-label">Differentiated versions <span class="finish-optional">optional</span></label>
       <div class="toggle-row">
         <span style="font-size:13px;color:#444;">Generate 3 versions (A, B, C)</span>
         <label class="toggle-switch"><input type="checkbox" id="diff-toggle" onchange="toggleDiff(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>

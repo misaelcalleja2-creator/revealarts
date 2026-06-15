@@ -184,9 +184,12 @@ async function initEditMode() {
       if (catBtn) setCat(s.cat, catBtn);
     }
 
-    // Restore ops settings
+    // Restore ops settings (including multiplication/division)
     if (s.cat === 'ops' && s.op) {
       curOp = s.op; curLvl = s.lvl || 1;
+      // Restore mul/div state before rendering
+      if (s.mulMode) { mulMode = s.mulMode; mulTables = s.mulTables || [2]; mulDigitLv = s.mulDigitLv || 1; }
+      if (s.divMode) { divMode = s.divMode; divTables = s.divTables || [2]; }
       // Click the right operation tab
       document.querySelectorAll('#op-tabs .tab').forEach(b => {
         const onclick = b.getAttribute('onclick') || '';
@@ -196,8 +199,43 @@ async function initEditMode() {
           b.classList.remove('active');
         }
       });
+      // Show correct sub-sections for this operation
+      _showOpSubSections();
       // Rebuild level tabs and select right level
       buildLvTabs && buildLvTabs();
+      // Rebuild mul/div grids with restored state
+      buildMulTableGrid();
+      buildMulDigitTabs();
+      buildDivTableGrid();
+      // Restore multiplication mode UI
+      if (s.op === 'multiplication' && s.mulMode) {
+        document.querySelectorAll('#mul-mode-tabs .tab').forEach(b => {
+          b.classList.toggle('active',
+            (s.mulMode === 'tables' && b.textContent.includes('Times')) ||
+            (s.mulMode === 'multidigit' && b.textContent.includes('Multi'))
+          );
+        });
+        var mtu = document.getElementById('mul-tables-ui');
+        var mdu = document.getElementById('mul-digit-ui');
+        if (mtu) mtu.style.display = s.mulMode === 'tables' ? '' : 'none';
+        if (mdu) mdu.style.display = s.mulMode === 'multidigit' ? '' : 'none';
+      }
+      // Restore division mode UI
+      if (s.op === 'division' && s.divMode) {
+        document.querySelectorAll('#div-mode-tabs .tab').forEach(b => {
+          b.classList.toggle('active',
+            (s.divMode === 'families' && b.textContent.includes('Fact')) ||
+            (s.divMode === 'decimals' && b.textContent.includes('Decimal')) ||
+            (s.divMode === 'longdiv' && b.textContent.includes('Long'))
+          );
+        });
+        var dfu = document.getElementById('div-families-ui');
+        var ddu = document.getElementById('div-dec-ui');
+        var dlu = document.getElementById('div-long-ui');
+        if (dfu) dfu.style.display = s.divMode === 'families' ? '' : 'none';
+        if (ddu) ddu.style.display = s.divMode === 'decimals' ? '' : 'none';
+        if (dlu) dlu.style.display = s.divMode === 'longdiv' ? '' : 'none';
+      }
       setTimeout(() => {
         document.querySelectorAll('#lv-tabs .tab').forEach(b => {
           const onclick = b.getAttribute('onclick') || '';
@@ -284,23 +322,21 @@ async function initEditMode() {
       document.getElementById('diff-toggle').checked = true;
       toggleDiff(true);
     }
-
-    // Disable diff/versions toggle in edit mode — always runs after restore so it wins
-    const diffToggle = document.getElementById('diff-toggle');
-    const diffNoteBox = document.getElementById('diff-note-box');
+    // In edit mode: disable diff toggle — each version is independent
     diffEnabled = false;
+    var diffToggle = document.getElementById('diff-toggle');
     if (diffToggle) {
       diffToggle.checked = false;
       diffToggle.disabled = true;
-      diffToggle.closest('label').style.opacity = '0.4';
+      diffToggle.parentElement.style.opacity = '0.5';
     }
+    toggleDiff && toggleDiff(false);
+    var diffNoteBox = document.getElementById('diff-note-box');
     if (diffNoteBox) {
-      diffNoteBox.style.background = '#fdf6e3';
-      diffNoteBox.style.borderLeft = '3px solid #e6a817';
-      diffNoteBox.style.borderRadius = '0 6px 6px 0';
-      diffNoteBox.style.color = '#7a5200';
-      diffNoteBox.innerHTML = '<strong style="display:block;margin-bottom:2px;color:#5a3a00;">You\'re editing a single version.</strong>Each version is its own independent activity — changes here won\'t affect any others. New versions cannot be generated from an edit.';
-      diffNoteBox.style.display = 'block';
+      diffNoteBox.innerHTML = '<div style="background:rgba(255,193,7,0.08);border:1.5px solid rgba(255,193,7,0.3);border-radius:10px;padding:12px 14px;margin-top:8px;">' +
+        '<div style="font-size:12px;color:#f59e0b;font-weight:700;margin-bottom:4px;">Editing a single version</div>' +
+        '<div style="font-size:11px;color:#92844a;line-height:1.5;">Each version is its own independent activity — changes here won\'t affect any others. New versions cannot be generated from an edit.</div></div>';
+      diffNoteBox.classList.add('active');
     }
 
     // Restore calculator
@@ -326,6 +362,9 @@ async function initEditMode() {
 
 // ── INIT ────────────────────────────────────────────────────────────────────
 buildLvTabs();
+buildMulTableGrid();
+buildMulDigitTabs();
+buildDivTableGrid();
 renderProblems();
 checkAuth();
 initEditMode();
