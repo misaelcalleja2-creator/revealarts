@@ -55,7 +55,10 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 .hint-box h3{font-family:'Fredoka One',cursive;color:#0a0a0f;margin-bottom:10px;font-size:22px;}
 .hint-box p{font-size:15px;color:#444;line-height:1.65;margin-bottom:20px;}
 .hint-close{background:#0a0a0f;color:#b8e030;border:none;border-radius:8px;padding:9px 28px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;}
-.layout{display:grid;grid-template-columns:310px 1fr;height:calc(100vh - 57px);overflow:hidden;}
+.layout{display:grid;grid-template-columns:310px 6px 1fr;height:calc(100vh - 57px);overflow:hidden;}
+.resize-handle{cursor:col-resize;display:flex;align-items:center;justify-content:center;background:transparent;z-index:10;touch-action:none;}
+.resize-handle::after{content:'';width:4px;height:36px;background:rgba(0,0,0,0.12);border-radius:3px;transition:background .15s;}
+.resize-handle:hover::after,.resize-handle:active::after{background:rgba(0,0,0,0.3);}
 .prob-panel{background:#fff;border-right:1px solid rgba(0,0,0,0.09);overflow-y:auto;padding:10px 12px 60px;}
 .prob-panel::-webkit-scrollbar{width:4px;}
 .prob-panel::-webkit-scrollbar-track{background:#f0efeb;}
@@ -122,7 +125,7 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 .cb.eq{background:#0a0a0f;color:#b8e030;grid-column:span 2;}
 .cb.clr{background:rgba(255,92,58,0.1);color:#ff5c3a;}
 .cb.zero{grid-column:span 2;}
-@media(max-width:700px){.layout{grid-template-columns:1fr;height:auto;overflow:visible;}body{overflow:auto;}.prob-panel{max-height:45vh;border-right:none;border-bottom:1px solid rgba(0,0,0,0.09);}.img-panel{min-height:50vw;}}
+@media(max-width:700px){.layout{grid-template-columns:1fr!important;height:auto;overflow:visible;}body{overflow:auto;}.prob-panel{max-height:45vh;border-right:none;border-bottom:1px solid rgba(0,0,0,0.09);}.img-panel{min-height:50vw;}.resize-handle{display:none;}}
 </style>
 </head>
 <body>
@@ -131,9 +134,10 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
   ${hasTimer||hasHints?`<div class="top-bar">${hasTimer?`<div class="timer-display" id="td">⏱ ${timerStart}</div>`:''}${hasHints?`<div class="hint-bar">${hintList.map((h,i)=>`<button class="hint-btn" id="hb${i}" onclick="openHint(${i})">💡 Hint ${i+1}</button>`).join('')}</div>`:''}</div>`:''}
 </div>
 ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-title">💡 Hint</h3><p id="hmt"></p><button class="hint-close" onclick="closeHint()">Got it!</button></div></div>`:''}
-<div class="layout">
+<div class="layout" id="layout">
   <div class="prob-panel" id="lc">
   </div>
+  <div class="resize-handle" id="rsh"></div>
   <div class="img-panel">
     <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;padding:0 2px;">
       <img src="https://therealsumshady.com/avatar.png" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid rgba(0,0,0,0.08);flex-shrink:0;">
@@ -465,6 +469,21 @@ function resetAll(){
 }
 buildUI();drawAll();
 const pageStart=Date.now();
+// Resize handle for problem panel
+(function(){
+  var h=document.getElementById('rsh'),ly=document.getElementById('layout'),pn=document.getElementById('lc');
+  if(!h||!ly||!pn)return;
+  var dragging=false,startX=0,startW=0;
+  function sd(x){dragging=true;startX=x;startW=pn.offsetWidth;document.body.style.cursor='col-resize';document.body.style.userSelect='none';}
+  function dd(x){if(!dragging)return;var nw=Math.max(200,Math.min(600,startW+(x-startX)));ly.style.gridTemplateColumns=nw+'px 6px 1fr';drawAll();}
+  function ed(){if(!dragging)return;dragging=false;document.body.style.cursor='';document.body.style.userSelect='';}
+  h.addEventListener('mousedown',function(e){sd(e.clientX);e.preventDefault();});
+  document.addEventListener('mousemove',function(e){dd(e.clientX);});
+  document.addEventListener('mouseup',ed);
+  h.addEventListener('touchstart',function(e){sd(e.touches[0].clientX);},{passive:true});
+  document.addEventListener('touchmove',function(e){if(dragging){e.preventDefault();dd(e.touches[0].clientX);}},{passive:false});
+  document.addEventListener('touchend',ed);
+})();
 window.addEventListener('message',function(e){
   if(e.data&&e.data.type==='GET_PROBS'){
     window.parent.postMessage({type:'PROBS_DATA',probs:PROBS,helpMax:0},'*');
