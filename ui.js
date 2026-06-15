@@ -188,7 +188,7 @@ async function initEditMode() {
     if (s.cat === 'ops' && s.op) {
       curOp = s.op; curLvl = s.lvl || 1;
       // Restore mul/div state before rendering
-      if (s.mulMode) { mulMode = s.mulMode; mulTables = s.mulTables || [2]; mulDigitLv = s.mulDigitLv || 1; mulAllFacts = !!s.mulAllFacts; }
+      if (s.mulMode) { mulMode = s.mulMode; mulTables = s.mulTables || [2]; mulDigitLv = s.mulDigitLv || 1; mulAllFacts = !!s.mulAllFacts; mulMixOrient = !!s.mulMixOrient; }
       if (s.divMode) { divMode = s.divMode; divTables = s.divTables || [2]; }
       // Click the right operation tab
       document.querySelectorAll('#op-tabs .tab').forEach(b => {
@@ -219,9 +219,13 @@ async function initEditMode() {
         var mdu = document.getElementById('mul-digit-ui');
         if (mtu) mtu.style.display = s.mulMode === 'tables' ? '' : 'none';
         if (mdu) mdu.style.display = s.mulMode === 'multidigit' ? '' : 'none';
-        // Restore all-facts checkbox
+        // Restore all-facts and mix-orient checkboxes
         var maf = document.getElementById('mul-all-facts');
         if (maf) maf.checked = !!s.mulAllFacts;
+        var mmr = document.getElementById('mul-mix-orient-row');
+        if (mmr) mmr.style.display = s.mulAllFacts ? 'flex' : 'none';
+        var mmo = document.getElementById('mul-mix-orient');
+        if (mmo) mmo.checked = !!s.mulMixOrient;
       }
       // Restore division mode UI
       if (s.op === 'division' && s.divMode) {

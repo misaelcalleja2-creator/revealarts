@@ -19,6 +19,8 @@ function buildHTML(title,problems,imageData,hintList,timerMinsVal,ar,showCalc,pr
     return result;
   }
   const anchors=makeAnchors(N,GN_GRID);
+  // Shuffle so the image reveals in a random spatial pattern each time
+  for(let i=anchors.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[anchors[i],anchors[j]]=[anchors[j],anchors[i]];}
   const TOTAL=N;
   const esc=imageData.replace(/\\/g,'\\\\').replace(/`/g,'\\`');
   const IW=500,IH=Math.round(500*(ar.h/ar.w));

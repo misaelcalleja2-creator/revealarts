@@ -38,7 +38,7 @@ function genBank(op,lv){
 }
 
 // ── MULTIPLICATION GENERATORS ────────────────────────────────────────────────
-function genMulTables(tables,allFacts){
+function genMulTables(tables,allFacts,mixOrient){
   const probs=[],seen=new Set();
   tables.forEach(t=>{
     for(let i=1;i<=12;i++){
@@ -50,7 +50,23 @@ function genMulTables(tables,allFacts){
       }
     }
   });
-  return probs.sort(()=>Math.random()-0.5);
+  const shuffled=probs.sort(()=>Math.random()-0.5);
+  // Mix orientations: randomly flip some facts (e.g. 3×7 → 7×3), deduping collisions
+  if(allFacts&&mixOrient){
+    const result=[],used=new Set();
+    shuffled.forEach(function(p){
+      var parts=p.eq.split(' \u00d7 ');
+      var flipped=parts[1]+' \u00d7 '+parts[0];
+      var tryFlip=Math.random()<0.5;
+      var preferred=tryFlip?flipped:p.eq;
+      var fallback=tryFlip?p.eq:flipped;
+      if(!used.has(preferred)){used.add(preferred);result.push({eq:preferred,ans:p.ans});}
+      else if(!used.has(fallback)){used.add(fallback);result.push({eq:fallback,ans:p.ans});}
+      // else: both orientations already used (only possible for perfect squares like 3×3 — skip)
+    });
+    return result;
+  }
+  return shuffled;
 }
 function genMulMultiDigit(lv){
   const probs=[],seen=new Set();let att=0;
@@ -106,7 +122,7 @@ function genDivLong(){
 
 // ── OPERATIONS BANK ROUTER ───────────────────────────────────────────────────
 function genOpsBank(){
-  if(curOp==='multiplication')return mulMode==='tables'?genMulTables(mulTables,mulAllFacts):genMulMultiDigit(mulDigitLv);
+  if(curOp==='multiplication')return mulMode==='tables'?genMulTables(mulTables,mulAllFacts,mulMixOrient):genMulMultiDigit(mulDigitLv);
   if(curOp==='division')return divMode==='families'?genDivFamilies(divTables):divMode==='decimals'?genDivDecimals():genDivLong();
   return genBank(curOp,curLvl);
 }
@@ -257,6 +273,16 @@ function setMulMode(mode,btn){
 }
 function toggleMulAllFacts(on){
   mulAllFacts=on;
+  var mixRow=document.getElementById('mul-mix-orient-row');
+  if(mixRow)mixRow.style.display=on?'':'none';
+  if(!on){
+    mulMixOrient=false;
+    var cb=document.getElementById('mul-mix-orient');if(cb)cb.checked=false;
+  }
+  renderProblems();
+}
+function toggleMulMixOrient(on){
+  mulMixOrient=on;
   renderProblems();
 }
 
