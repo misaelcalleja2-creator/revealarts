@@ -61,14 +61,14 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 .prob-panel::-webkit-scrollbar-track{background:#f0efeb;}
 .prob-panel::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:99px;}
 .prob-col-hidden{display:none;}
-.card{background:#f7f6f2;border:1.5px solid rgba(0,0,0,0.09);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:7px;transition:all .2s;margin-bottom:5px;}
+.card{background:#f7f6f2;border:1.5px solid rgba(0,0,0,0.09);border-radius:10px;padding:8px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 7px;transition:all .2s;margin-bottom:5px;}
 .card:hover{border-color:rgba(0,0,0,0.18);background:#fff;}
 .card.correct{background:rgba(67,160,71,0.08);border-color:rgba(67,160,71,0.4);}
 .card.wrong{animation:shake .35s ease;background:rgba(229,57,53,0.08);border-color:rgba(229,57,53,0.5);}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .num{font-size:9px;font-weight:800;color:#ccc;min-width:16px;flex-shrink:0;}
 .card.correct .num{color:#81c784;}
-.eq{font-size:13px;font-weight:700;flex:1;white-space:nowrap;color:#1a1a24;}
+.eq{font-size:13px;font-weight:700;flex:1 1 calc(100% - 26px);white-space:normal;color:#1a1a24;line-height:1.4;}
 .card.correct .eq{color:#2e7d32;}
 .ans{width:46px;background:#fff;border:1.5px solid rgba(0,0,0,0.15);border-radius:6px;padding:4px;font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;color:#1a1a24;text-align:center;outline:none;flex-shrink:0;-moz-appearance:textfield;appearance:textfield;}
 .ans::-webkit-outer-spin-button,.ans::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
@@ -287,7 +287,7 @@ function buildUI(){
       const parts=p.eq.split(':');const num=parts[1];const rest=parts[2];const denParts=rest.split(' = ');const den=denParts[0];const rhs=denParts[1];
       eqHtml='<span class="frac" style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;font-size:1em;"><span class="fn" style="border-bottom:1.5px solid currentColor;padding:0 4px;text-align:center;">'+num+'</span><span class="fd" style="padding:0 4px;text-align:center;">'+den+'</span></span><span style="margin:0 4px;">=</span><span>'+rhs+'</span>';
     }else{eqHtml=p.eq.replace(/(\\d+)\\/(\\d+)/g,'<span class="frac" style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;line-height:1.1;font-size:0.85em;"><span style="border-bottom:1.5px solid currentColor;padding:0 4px;text-align:center;">$1</span><span style="padding:0 4px;text-align:center;">$2</span></span>');}
-    card.innerHTML='<span class="num">'+(i+1)+'</span><span class="eq">'+eqHtml+'</span><span style="font-size:10px;color:#aaa;white-space:nowrap;flex-shrink:0;margin:0 3px;">'+xlbl+'</span><input class="ans" type="text" id="inp-'+i+'" placeholder=""><button class="go" onclick="chk('+i+')">Go</button><span class="tick">✓</span>';
+    card.innerHTML='<span class="num">'+(i+1)+'</span><span class="eq">'+eqHtml+'</span><span style="font-size:10px;color:#aaa;white-space:nowrap;flex-shrink:0;padding-left:18px;">'+xlbl+'</span><input class="ans" type="text" id="inp-'+i+'" placeholder=""><button class="go" onclick="chk('+i+')">Go</button><span class="tick">✓</span>';
     const inp=card.querySelector('input');
     inp.addEventListener('keydown',e=>{
       if(e.key==='Enter'||e.key==='Tab'){
