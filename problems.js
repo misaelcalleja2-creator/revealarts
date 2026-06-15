@@ -16,6 +16,10 @@ function fmtFrac(s){
 // ── CORE HELPERS ─────────────────────────────────────────────────────────────
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function rneg(a,b){const v=rnd(a,b);return Math.random()<0.45?-v:v;}
+function _gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=b;b=a%b;a=t;}return a;}
+function _lcm(a,b){return Math.abs(a*b)/_gcd(a,b);}
+function _simplify(n,d){var g=_gcd(n,d);return[n/g,d/g];}
+function _sup(n){var m={0:'\u2070',1:'\u00b9',2:'\u00b2',3:'\u00b3',4:'\u2074',5:'\u2075',6:'\u2076',7:'\u2077',8:'\u2078',9:'\u2079'};return String(n).split('').map(function(d){return m[parseInt(d)];}).join('');}
 
 // ── ADDITION / SUBTRACTION BANK ──────────────────────────────────────────────
 function genBank(op,lv){
@@ -120,10 +124,122 @@ function genDivLong(){
   return probs;
 }
 
+// ── FRACTION GENERATORS ───────────────────────────────────────────────────────
+function genFracAddSub(denomType){
+  var probs=[],seen=new Set(),att=0;
+  while(probs.length<50&&att<3000){
+    att++;
+    var d1,d2,n1,n2;
+    if(denomType==='same'){d1=rnd(2,12);d2=d1;}
+    else{d1=rnd(2,12);d2=rnd(2,12);if(d2===d1)continue;}
+    n1=rnd(1,d1-1);n2=rnd(1,d2-1);
+    var op=Math.random()<0.5?'+':'\u2212';
+    var lcd=_lcm(d1,d2);
+    var a1=n1*(lcd/d1),a2=n2*(lcd/d2);
+    if(op==='\u2212'&&a1<a2){var t=n1;n1=n2;n2=t;t=d1;d1=d2;d2=t;lcd=_lcm(d1,d2);a1=n1*(lcd/d1);a2=n2*(lcd/d2);}
+    var rn=op==='+'?a1+a2:a1-a2;
+    if(rn===0)continue;
+    var s=_simplify(rn,lcd);
+    var eq=n1+'/'+d1+' '+op+' '+n2+'/'+d2;
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq:eq,ans:s[0]/s[1],ansDisplay:s[1]===1?String(s[0]):s[0]+'/'+s[1]});}
+  }
+  return probs;
+}
+function genFracMultiply(){
+  var probs=[],seen=new Set(),att=0;
+  while(probs.length<50&&att<3000){
+    att++;
+    var n1=rnd(1,9),d1=rnd(2,10),n2=rnd(1,9),d2=rnd(2,10);
+    if(n1===d1||n2===d2)continue;
+    var rn=n1*n2,rd=d1*d2;
+    var s=_simplify(rn,rd);
+    var eq=n1+'/'+d1+' \u00d7 '+n2+'/'+d2;
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq:eq,ans:s[0]/s[1],ansDisplay:s[1]===1?String(s[0]):s[0]+'/'+s[1]});}
+  }
+  return probs;
+}
+function genFracDivide(){
+  var probs=[],seen=new Set(),att=0;
+  while(probs.length<50&&att<3000){
+    att++;
+    var n1=rnd(1,9),d1=rnd(2,10),n2=rnd(1,9),d2=rnd(2,10);
+    if(n1===d1||n2===d2||n2===0)continue;
+    var rn=n1*d2,rd=d1*n2;
+    var s=_simplify(rn,rd);
+    var eq=n1+'/'+d1+' \u00f7 '+n2+'/'+d2;
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq:eq,ans:s[0]/s[1],ansDisplay:s[1]===1?String(s[0]):s[0]+'/'+s[1]});}
+  }
+  return probs;
+}
+
+// ── PEMDAS GENERATOR ─────────────────────────────────────────────────────────
+function genPemdas(lvl){
+  var probs=[],seen=new Set(),att=0;
+  while(probs.length<50&&att<5000){
+    att++;var eq,ans,a,b,c;
+    if(lvl===1){
+      var f=rnd(0,7);
+      if(f===0){a=rnd(1,20);b=rnd(2,9);c=rnd(2,9);ans=a+b*c;eq=a+' + '+b+' \u00d7 '+c;}
+      else if(f===1){b=rnd(2,9);c=rnd(2,9);a=rnd(b*c+1,b*c+20);ans=a-b*c;eq=a+' \u2212 '+b+' \u00d7 '+c;}
+      else if(f===2){a=rnd(2,9);b=rnd(2,9);c=rnd(1,20);ans=a*b+c;eq=a+' \u00d7 '+b+' + '+c;}
+      else if(f===3){a=rnd(2,9);b=rnd(2,9);c=rnd(1,a*b-1);ans=a*b-c;eq=a+' \u00d7 '+b+' \u2212 '+c;}
+      else if(f===4){c=rnd(2,9);b=c*rnd(1,9);a=rnd(1,20);ans=a+b/c;eq=a+' + '+b+' \u00f7 '+c;}
+      else if(f===5){c=rnd(2,9);b=c*rnd(1,9);var q=b/c;a=rnd(q+1,q+20);ans=a-q;eq=a+' \u2212 '+b+' \u00f7 '+c;}
+      else if(f===6){b=rnd(2,9);a=b*rnd(1,9);c=rnd(1,20);ans=a/b+c;eq=a+' \u00f7 '+b+' + '+c;}
+      else{b=rnd(2,9);a=b*rnd(2,9);var q2=a/b;c=rnd(1,q2-1);ans=q2-c;eq=a+' \u00f7 '+b+' \u2212 '+c;}
+    }else if(lvl===2){
+      var f2=rnd(0,5);
+      if(f2===0){a=rnd(1,9);b=rnd(1,9);c=rnd(2,9);ans=(a+b)*c;eq='('+a+' + '+b+') \u00d7 '+c;}
+      else if(f2===1){a=rnd(3,15);b=rnd(1,a-1);c=rnd(2,9);ans=(a-b)*c;eq='('+a+' \u2212 '+b+') \u00d7 '+c;}
+      else if(f2===2){a=rnd(2,9);b=rnd(1,9);c=rnd(1,9);ans=a*(b+c);eq=a+' \u00d7 ('+b+' + '+c+')';}
+      else if(f2===3){c=rnd(2,9);var sm=c*rnd(2,9);a=rnd(1,sm-1);b=sm-a;ans=sm/c;eq='('+a+' + '+b+') \u00f7 '+c;}
+      else if(f2===4){var bc=rnd(2,9);a=bc*rnd(2,9);b=rnd(1,bc-1);c=bc-b;ans=a/bc;eq=a+' \u00f7 ('+b+' + '+c+')';}
+      else{a=rnd(2,9);b=rnd(3,12);c=rnd(1,b-1);ans=a*(b-c);eq=a+' \u00d7 ('+b+' \u2212 '+c+')';}
+    }else{
+      var f3=rnd(0,5);
+      if(f3===0){a=rnd(2,6);b=rnd(1,20);ans=a*a+b;eq=a+'\u00b2 + '+b;}
+      else if(f3===1){a=rnd(2,6);b=rnd(1,a*a-1);ans=a*a-b;eq=a+'\u00b2 \u2212 '+b;}
+      else if(f3===2){a=rnd(2,5);b=rnd(2,5);c=rnd(1,10);ans=a*b*b+c;eq=a+' \u00d7 '+b+'\u00b2 + '+c;}
+      else if(f3===3){a=rnd(1,4);b=rnd(1,5);ans=(a+b)*(a+b);eq='('+a+' + '+b+')\u00b2';}
+      else if(f3===4){a=rnd(2,4);ans=a*a*a;eq=a+'\u00b3';}
+      else{a=rnd(2,5);b=rnd(2,4);ans=a*a+b*b;eq=a+'\u00b2 + '+b+'\u00b2';}
+    }
+    if(ans<0||ans!==Math.floor(ans))continue;
+    if(!seen.has(eq)){seen.add(eq);probs.push({eq:eq,ans:ans});}
+  }
+  return probs;
+}
+
+// ── EXPONENT / ROOT GENERATORS ───────────────────────────────────────────────
+function genPowers(){
+  var probs=[],seen=new Set();
+  // Squares 1-20
+  for(var i=1;i<=20;i++){var eq=i+'\u00b2';seen.add(eq);probs.push({eq:eq,ans:i*i});}
+  // Cubes 1-10
+  for(var j=1;j<=10;j++){var eq2=j+'\u00b3';if(!seen.has(eq2)){seen.add(eq2);probs.push({eq:eq2,ans:j*j*j});}}
+  // Higher powers small bases
+  var extras=[[2,4],[2,5],[2,6],[2,7],[2,8],[2,9],[2,10],[3,4],[3,5],[4,4],[5,4]];
+  extras.forEach(function(p){var eq3=p[0]+_sup(p[1]);if(!seen.has(eq3)){seen.add(eq3);probs.push({eq:eq3,ans:Math.pow(p[0],p[1])});}});
+  return probs.sort(function(){return Math.random()-0.5;});
+}
+function genSqRoots(){
+  var probs=[];
+  for(var n=1;n<=20;n++){probs.push({eq:'\u221a'+n*n,ans:n});}
+  return probs.sort(function(){return Math.random()-0.5;});
+}
+function genCuRoots(){
+  var probs=[];
+  for(var n=1;n<=10;n++){probs.push({eq:'\u00b3\u221a'+n*n*n,ans:n});}
+  return probs.sort(function(){return Math.random()-0.5;});
+}
+
 // ── OPERATIONS BANK ROUTER ───────────────────────────────────────────────────
 function genOpsBank(){
   if(curOp==='multiplication')return mulMode==='tables'?genMulTables(mulTables,mulAllFacts,mulMixOrient):genMulMultiDigit(mulDigitLv);
   if(curOp==='division')return divMode==='families'?genDivFamilies(divTables):divMode==='decimals'?genDivDecimals():genDivLong();
+  if(curOp==='fractions')return fracMode==='addsub'?genFracAddSub(fracDenom):fracMode==='multiply'?genFracMultiply():genFracDivide();
+  if(curOp==='pemdas')return genPemdas(pemdasLvl);
+  if(curOp==='exponents')return expMode==='powers'?genPowers():expMode==='sqroots'?genSqRoots():genCuRoots();
   return genBank(curOp,curLvl);
 }
 
@@ -203,6 +319,15 @@ function _probBadge(p){
   if(p.isCustom)return{label:'custom',bg:'rgba(122,170,0,0.12)',color:'#5a8000'};
   if(p.isAlgebra)return{label:'algebra',bg:'rgba(159,93,229,0.1)',color:'#7c3aed'};
   var eq=p.eq||'';
+  // Exponents and roots
+  if(/[\u00b2\u00b3\u2070-\u2079\u221a]/.test(eq))return{label:'x\u00b2',bg:'rgba(156,39,176,0.1)',color:'#7b1fa2'};
+  // PEMDAS (parentheses or 2+ different operator types without fractions)
+  if(eq.includes('(')){return{label:'PEMDAS',bg:'rgba(255,87,34,0.1)',color:'#d84315'};}
+  var ops=0;if(eq.includes('+'))ops++;if(eq.includes('\u2212'))ops++;if(eq.includes('\u00d7'))ops++;if(eq.includes('\u00f7'))ops++;
+  if(ops>=2&&!eq.includes('/'))return{label:'PEMDAS',bg:'rgba(255,87,34,0.1)',color:'#d84315'};
+  // Fractions
+  if(eq.includes('/'))return{label:'frac',bg:'rgba(0,150,136,0.1)',color:'#00695c'};
+  // Basic operations
   if(eq.includes('\u00d7'))return{label:'\u00d7',bg:'rgba(255,152,0,0.12)',color:'#c05700'};
   if(eq.includes('\u00f7'))return{label:'\u00f7',bg:'rgba(33,150,243,0.1)',color:'#1565c0'};
   if(eq.includes('+'))return{label:'+',bg:'rgba(67,160,71,0.1)',color:'#2e7d32'};
@@ -251,9 +376,15 @@ function _showOpSubSections(){
   var asl=document.getElementById('addsub-levels');
   var mc=document.getElementById('mul-config');
   var dc=document.getElementById('div-config');
+  var fc=document.getElementById('frac-config');
+  var pc=document.getElementById('pemdas-config');
+  var ec=document.getElementById('exp-config');
   if(asl)asl.style.display=(curOp==='addition'||curOp==='subtraction')?'':'none';
   if(mc)mc.style.display=curOp==='multiplication'?'':'none';
   if(dc)dc.style.display=curOp==='division'?'':'none';
+  if(fc)fc.style.display=curOp==='fractions'?'':'none';
+  if(pc)pc.style.display=curOp==='pemdas'?'':'none';
+  if(ec)ec.style.display=curOp==='exponents'?'':'none';
 }
 function setOp(op,btn){
   curOp=op;
@@ -262,6 +393,7 @@ function setOp(op,btn){
   _showOpSubSections();
   if(op==='multiplication')buildMulTableGrid();
   if(op==='division')buildDivTableGrid();
+  if(op==='pemdas')buildPemdasLvTabs();
   renderProblems();
 }
 function setMode(m,btn){
@@ -371,6 +503,43 @@ function setDivMode(mode,btn){
   document.getElementById('div-families-ui').style.display=mode==='families'?'':'none';
   document.getElementById('div-dec-ui').style.display=mode==='decimals'?'':'none';
   document.getElementById('div-long-ui').style.display=mode==='longdiv'?'':'none';
+  renderProblems();
+}
+
+// ── FRACTIONS UI ─────────────────────────────────────────────────────────────
+function setFracMode(mode,btn){
+  fracMode=mode;
+  document.querySelectorAll('#frac-mode-tabs .tab').forEach(function(b){b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  var du=document.getElementById('frac-denom-ui');
+  if(du)du.style.display=mode==='addsub'?'':'none';
+  renderProblems();
+}
+function setFracDenom(d,btn){
+  fracDenom=d;
+  document.querySelectorAll('#frac-denom-tabs .tab').forEach(function(b){b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  renderProblems();
+}
+
+// ── PEMDAS UI ────────────────────────────────────────────────────────────────
+function buildPemdasLvTabs(){
+  var c=document.getElementById('pemdas-lv-tabs');
+  if(!c)return;c.innerHTML='';
+  [{n:1,l:'L1',s:'No parentheses'},{n:2,l:'L2',s:'With parentheses'},{n:3,l:'L3',s:'With exponents'}].forEach(function(lv){
+    var b=document.createElement('button');
+    b.className='tab'+(lv.n===pemdasLvl?' active':'');
+    b.innerHTML=lv.l+'<br><span style="font-size:9px;opacity:0.6;">'+lv.s+'</span>';
+    b.onclick=function(){pemdasLvl=lv.n;document.querySelectorAll('#pemdas-lv-tabs .tab').forEach(function(x){x.classList.remove('active');});b.classList.add('active');renderProblems();};
+    c.appendChild(b);
+  });
+}
+
+// ── EXPONENTS UI ─────────────────────────────────────────────────────────────
+function setExpMode(mode,btn){
+  expMode=mode;
+  document.querySelectorAll('#exp-mode-tabs .tab').forEach(function(b){b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
   renderProblems();
 }
 

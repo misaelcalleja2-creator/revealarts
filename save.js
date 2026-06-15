@@ -143,6 +143,10 @@ function captureSettings() {
     mulMixOrient: mulMixOrient,
     divMode: divMode,
     divTables: [].concat(divTables),
+    fracMode: fracMode,
+    fracDenom: fracDenom,
+    pemdasLvl: pemdasLvl,
+    expMode: expMode,
     image: croppedDataUrl,
     imageAR: edAR
   };

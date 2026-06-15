@@ -190,6 +190,10 @@ async function initEditMode() {
       // Restore mul/div state before rendering
       if (s.mulMode) { mulMode = s.mulMode; mulTables = s.mulTables || [2]; mulDigitLv = s.mulDigitLv || 1; mulAllFacts = !!s.mulAllFacts; mulMixOrient = !!s.mulMixOrient; }
       if (s.divMode) { divMode = s.divMode; divTables = s.divTables || [2]; }
+      // Restore fractions/PEMDAS/exponents state
+      if (s.fracMode) { fracMode = s.fracMode; fracDenom = s.fracDenom || 'same'; }
+      if (s.pemdasLvl) { pemdasLvl = s.pemdasLvl; }
+      if (s.expMode) { expMode = s.expMode; }
       // Click the right operation tab
       document.querySelectorAll('#op-tabs .tab').forEach(b => {
         const onclick = b.getAttribute('onclick') || '';
@@ -207,6 +211,7 @@ async function initEditMode() {
       buildMulTableGrid();
       buildMulDigitTabs();
       buildDivTableGrid();
+      buildPemdasLvTabs();
       // Restore multiplication mode UI
       if (s.op === 'multiplication' && s.mulMode) {
         document.querySelectorAll('#mul-mode-tabs .tab').forEach(b => {
@@ -242,6 +247,37 @@ async function initEditMode() {
         if (dfu) dfu.style.display = s.divMode === 'families' ? '' : 'none';
         if (ddu) ddu.style.display = s.divMode === 'decimals' ? '' : 'none';
         if (dlu) dlu.style.display = s.divMode === 'longdiv' ? '' : 'none';
+      }
+      // Restore fractions mode UI
+      if (s.op === 'fractions' && s.fracMode) {
+        document.querySelectorAll('#frac-mode-tabs .tab').forEach(b => {
+          b.classList.toggle('active',
+            (s.fracMode === 'addsub' && b.textContent.includes('Add')) ||
+            (s.fracMode === 'multiply' && b.textContent.includes('Multiply')) ||
+            (s.fracMode === 'divide' && b.textContent.includes('Divide'))
+          );
+        });
+        var fdu = document.getElementById('frac-denom-ui');
+        if (fdu) fdu.style.display = s.fracMode === 'addsub' ? '' : 'none';
+        if (s.fracMode === 'addsub' && s.fracDenom) {
+          document.querySelectorAll('#frac-denom-tabs .tab').forEach(b => {
+            b.classList.toggle('active',
+              (s.fracDenom === 'same' && b.textContent.includes('Same')) ||
+              (s.fracDenom === 'different' && b.textContent.includes('Different'))
+            );
+          });
+        }
+      }
+      // Restore PEMDAS level UI (tabs rebuilt above)
+      // Restore exponents mode UI
+      if (s.op === 'exponents' && s.expMode) {
+        document.querySelectorAll('#exp-mode-tabs .tab').forEach(b => {
+          b.classList.toggle('active',
+            (s.expMode === 'powers' && b.textContent.includes('Powers')) ||
+            (s.expMode === 'sqroots' && b.textContent.includes('Square')) ||
+            (s.expMode === 'curoots' && b.textContent.includes('Cube'))
+          );
+        });
       }
       setTimeout(() => {
         document.querySelectorAll('#lv-tabs .tab').forEach(b => {
@@ -372,6 +408,7 @@ buildLvTabs();
 buildMulTableGrid();
 buildMulDigitTabs();
 buildDivTableGrid();
+buildPemdasLvTabs();
 renderProblems();
 checkAuth();
 initEditMode();

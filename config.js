@@ -17,6 +17,10 @@ let curCat = 'ops', curAlgType = 'one', curAlgLv = 1;
 // Multiplication / Division state
 let mulMode = 'tables', mulTables = [2], mulDigitLv = 1, mulAllFacts = false, mulMixOrient = false;
 let divMode = 'families', divTables = [2];
+// Fractions / PEMDAS / Exponents state
+let fracMode = 'addsub', fracDenom = 'same';
+let pemdasLvl = 1;
+let expMode = 'powers';
 
 // Wizard state
 let currentWizStep = 1;

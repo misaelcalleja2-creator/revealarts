@@ -142,11 +142,14 @@
       <div id="custom-list" style="border-top:1px solid rgba(0,0,0,0.07);padding-top:10px;margin-top:6px;margin-bottom:4px;"></div>
     </div>
     <div id="ops-section">
-      <div class="tabs" id="op-tabs">
+      <div class="tabs" id="op-tabs" style="flex-wrap:wrap;">
         <button class="tab active" onclick="setOp('addition',this)">+ Addition</button>
         <button class="tab" onclick="setOp('subtraction',this)">− Subtraction</button>
         <button class="tab" onclick="setOp('multiplication',this)">× Multiplication</button>
         <button class="tab" onclick="setOp('division',this)">÷ Division</button>
+        <button class="tab" onclick="setOp('fractions',this)">Fractions</button>
+        <button class="tab" onclick="setOp('pemdas',this)">PEMDAS</button>
+        <button class="tab" onclick="setOp('exponents',this)">Exponents</button>
       </div>
       <div id="addsub-levels">
         <div class="tabs" id="lv-tabs"></div>
@@ -192,6 +195,32 @@
         <div id="div-long-ui" style="display:none;">
           <div style="font-size:11px;color:#888;margin:8px 0;">Larger dividends with multi-digit divisors. Whole number answers only.</div>
         </div>
+      </div>
+      <div id="frac-config" style="display:none;">
+        <div class="tabs" id="frac-mode-tabs">
+          <button class="tab active" onclick="setFracMode('addsub',this)">Add / Subtract</button>
+          <button class="tab" onclick="setFracMode('multiply',this)">Multiply</button>
+          <button class="tab" onclick="setFracMode('divide',this)">Divide</button>
+        </div>
+        <div id="frac-denom-ui">
+          <div class="tabs" id="frac-denom-tabs" style="margin-top:6px;">
+            <button class="tab active" onclick="setFracDenom('same',this)">Same denominator</button>
+            <button class="tab" onclick="setFracDenom('different',this)">Different denominators</button>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#aaa;margin-top:6px;">Answers should be in simplified form (e.g. 1/2 not 2/4).</div>
+      </div>
+      <div id="pemdas-config" style="display:none;">
+        <div class="tabs" id="pemdas-lv-tabs"></div>
+        <div style="font-size:10px;color:#aaa;margin-top:6px;">Evaluate using order of operations.</div>
+      </div>
+      <div id="exp-config" style="display:none;">
+        <div class="tabs" id="exp-mode-tabs">
+          <button class="tab active" onclick="setExpMode('powers',this)">Powers</button>
+          <button class="tab" onclick="setExpMode('sqroots',this)">Square roots</button>
+          <button class="tab" onclick="setExpMode('curoots',this)">Cube roots</button>
+        </div>
+        <div style="font-size:10px;color:#aaa;margin-top:6px;">Evaluate the expression.</div>
       </div>
     </div>
     <div id="alg-section" style="display:none;">
