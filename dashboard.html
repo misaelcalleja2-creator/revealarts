@@ -423,7 +423,6 @@ async function loadActivities(token, userId, profile) {
         ${thumbHtml}
         <div class="act-body">
           <div class="act-title">${act.title}</div>
-          ${/— Version [ABC]$/.test(act.title) ? '<div style="font-size:10px;color:#bbb;margin-top:2px;letter-spacing:0.2px;">Independent version — edits won\'t affect others.</div>' : ''}
           <div class="act-meta">
             ${act.subject ? '<span class="act-subject">' + act.subject + '</span>' : ''}
             <span>${date}</span>
