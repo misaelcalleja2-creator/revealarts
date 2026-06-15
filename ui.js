@@ -285,6 +285,24 @@ async function initEditMode() {
       toggleDiff(true);
     }
 
+    // Disable diff/versions toggle in edit mode — always runs after restore so it wins
+    const diffToggle = document.getElementById('diff-toggle');
+    const diffNoteBox = document.getElementById('diff-note-box');
+    diffEnabled = false;
+    if (diffToggle) {
+      diffToggle.checked = false;
+      diffToggle.disabled = true;
+      diffToggle.closest('label').style.opacity = '0.4';
+    }
+    if (diffNoteBox) {
+      diffNoteBox.style.background = '#fdf6e3';
+      diffNoteBox.style.borderLeft = '3px solid #e6a817';
+      diffNoteBox.style.borderRadius = '0 6px 6px 0';
+      diffNoteBox.style.color = '#7a5200';
+      diffNoteBox.innerHTML = '<strong style="display:block;margin-bottom:2px;color:#5a3a00;">You\'re editing a single version.</strong>Each version is its own independent activity — changes here won\'t affect any others. New versions cannot be generated from an edit.';
+      diffNoteBox.style.display = 'block';
+    }
+
     // Restore calculator
     if (s.calcEnabled) {
       calcEnabled = true;
