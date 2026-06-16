@@ -849,7 +849,7 @@ function addCustomProb() {
   var eqInput = document.getElementById('custom-eq-input');
   var ansInput = document.getElementById('custom-ans-input');
   var err = document.getElementById('custom-err');
-  var eq = eqInput.value.trim();
+  var eq = formatExponents(eqInput.value.trim());
   var ansRaw = ansInput.value.trim();
   err.style.display = 'none';
   if (!eq) { err.textContent = 'Please enter a problem.'; err.style.display = 'block'; return; }
