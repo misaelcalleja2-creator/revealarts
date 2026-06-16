@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spiral Review — Reveal Arts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="creator.css">
+<style>
+/* ── SPIRAL-SPECIFIC STYLES ── */
+.activity-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px; margin-bottom: 16px;
+}
+.spiral-act-card {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  transition: border-color .2s, transform .15s, box-shadow .15s;
+  position: relative;
+}
+.spiral-act-card:hover { border-color: rgba(0,0,0,0.18); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.spiral-act-card.selected { border-color: var(--lime-dark); background: rgba(122,170,0,0.04); }
+.spiral-act-card.no-problems { opacity: 0.45; cursor: not-allowed; }
+.spiral-act-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--bg2); }
+.spiral-act-thumb-ph { width: 100%; aspect-ratio: 4/3; background: var(--bg2); display: flex; align-items: center; justify-content: center; font-size: 28px; opacity: 0.3; }
+.spiral-act-body { padding: 10px 12px; }
+.spiral-act-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spiral-act-meta { font-size: 10px; color: #888; margin-top: 3px; display: flex; gap: 8px; align-items: center; }
+.spiral-act-badge { font-size: 9px; padding: 1px 6px; border-radius: 3px; font-weight: 700; }
+.spiral-act-badge.has-probs { background: rgba(122,170,0,0.1); color: var(--lime-dark); }
+.spiral-act-badge.no-probs { background: rgba(255,92,58,0.1); color: var(--coral); }
+.spiral-act-check { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.9); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: var(--lime-dark); transition: all .15s; }
+.spiral-act-card.selected .spiral-act-check { background: var(--lime); border-color: var(--lime-dark); }
+
+.spiral-selected-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.spiral-sel-item { display: flex; align-items: center; gap: 10px; background: rgba(122,170,0,0.04); border: 1px solid rgba(122,170,0,0.15); border-radius: 8px; padding: 8px 12px; }
+.spiral-sel-name { flex: 1; font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spiral-sel-count { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }
+.spiral-sel-count input { width: 50px; text-align: center; border: 1px solid var(--border); border-radius: 6px; padding: 4px; font-size: 12px; font-weight: 700; font-family: 'DM Sans', sans-serif; }
+.spiral-sel-remove { background: none; border: none; color: rgba(255,92,58,0.5); font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1; }
+.spiral-sel-remove:hover { color: var(--coral); }
+
+.custom-prob-section { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+.custom-prob-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.custom-prob-row input { flex: 1; }
+.custom-prob-row .ans-inp { width: 80px; }
+.custom-prob-add-btn { background: var(--lime); color: var(--ink); border: none; border-radius: 8px; padding: 7px 14px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px; cursor: pointer; white-space: nowrap; }
+.custom-prob-list { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+.custom-prob-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(79,195,247,0.06); border: 1px solid rgba(79,195,247,0.15); border-radius: 6px; font-size: 12px; }
+.custom-prob-item .eq { flex: 1; font-weight: 600; }
+.custom-prob-item .ans { color: var(--lime-dark); font-weight: 700; }
+.custom-prob-item .del { background: none; border: none; color: rgba(255,92,58,0.4); cursor: pointer; font-size: 14px; }
+
+.spiral-summary { background: rgba(122,170,0,0.05); border: 1.5px solid rgba(122,170,0,0.15); border-radius: 10px; padding: 10px 14px; margin-bottom: 10px; }
+.spiral-summary-text { font-size: 12px; color: var(--ink); font-weight: 600; }
+.spiral-summary-text span { color: var(--lime-dark); font-weight: 800; }
+
+.empty-activities { text-align: center; padding: 40px 20px; color: #888; }
+.empty-activities-icon { font-size: 36px; opacity: 0.3; margin-bottom: 10px; }
+.empty-activities-text { font-size: 13px; line-height: 1.6; }
+.empty-activities-link { color: var(--lime-dark); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+<!-- PAYWALL OVERLAY -->
+<div class="paywall-overlay" id="paywall-overlay">
+  <div style="font-size:48px;">⏰</div>
+  <div class="paywall-title">Your free trial has ended</div>
+  <div class="paywall-sub">You've had 7 days of free access. Subscribe to keep creating Reveal Art activities for your students.</div>
+  <a href="plans.html" class="paywall-btn">View Plans — from $2 per activity</a>
+  <div class="paywall-signin">Already subscribed? <a href="login.html">Sign in</a></div>
+</div>
+
+<div class="loading-overlay" id="lo"><div class="spin"></div><div class="load-txt" id="lo-txt">Building your Spiral Review...</div><div class="load-sub">This takes about 3 seconds</div></div>
+<nav>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="nav-back" id="nav-back-btn" onclick="confirmDashboard()">← Dashboard</button>
+    <span id="trial-pill"></span>
+  </div>
+  <a href="index.html" class="nav-logo"><div style="width:32px;height:32px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-size:7px;font-weight:800;color:#b8e030;line-height:1.2;text-align:center;flex-shrink:0;">THE<br>REAL<br>SUM<br>SHADY</div><div><span style="font-family:Syne,sans-serif;font-weight:800;font-size:17px;color:var(--ink);letter-spacing:-0.3px;">Spiral Review</span><span style="font-size:11px;color:#888;font-weight:400;display:block;">by The Real Sum Shady</span></div></a>
+  <div class="auth-nav" id="auth-nav"></div>
+</nav>
+
+<!-- WIZARD PROGRESS BAR -->
+<div class="wiz-bar">
+  <div class="wiz-steps">
+    <div class="wiz-step wiz-active" id="wstep-1" onclick="goToStep(1)">
+      <div class="wiz-num">1</div>
+      <div class="wiz-label">Image</div>
+    </div>
+    <div class="wiz-line" id="wline-1"></div>
+    <div class="wiz-step" id="wstep-2" onclick="goToStep(2)">
+      <div class="wiz-num">2</div>
+      <div class="wiz-label">Activities</div>
+    </div>
+    <div class="wiz-line" id="wline-2"></div>
+    <div class="wiz-step" id="wstep-3" onclick="goToStep(3)">
+      <div class="wiz-num">3</div>
+      <div class="wiz-label">Finish</div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-layout">
+<div class="form-panel" id="form-panel">
+
+  <!-- ═══ STEP 1: IMAGE ═══ -->
+  <div id="step-1" class="wiz-pane">
+    <div id="img-picker">
+      <div class="search-row">
+        <input type="text" class="inp" id="si" placeholder="Search photos... (Easter, space, animals...)">
+        <button class="search-btn" id="sb" onclick="searchPhotos()">Search</button>
+      </div>
+      <div class="photo-grid" id="pg"><div class="photo-empty">Search above or upload your own below</div></div>
+      <div class="or-row"><div class="or-line"></div><span>or upload your own</span><div class="or-line"></div></div>
+      <div class="upload-zone" onclick="document.getElementById('fu').click()">
+        <input type="file" id="fu" accept="image/*" onchange="handleUpload(event)">
+        <div style="font-size:32px;margin-bottom:8px;">📁</div>
+        <div class="upload-text">Click to upload from your computer</div>
+      </div>
+    </div>
+
+    <div class="img-editor" id="img-editor">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:13px;font-weight:600;color:#444;">Adjust your image</span>
+        <button class="change-img-btn" onclick="clearImage()">← Choose different image</button>
+      </div>
+      <div class="epw" id="epw">
+        <div class="loading-msg" id="epw-msg">Loading image...</div>
+        <canvas id="ec"></canvas>
+      </div>
+      <div class="ctrl-row" style="margin-top:12px;">
+        <span class="ctrl-label">Aspect</span>
+        <div class="aspect-btns">
+          <button class="aspect-btn active" id="asp-sq" onclick="setAspect(1,1,this)">■ Square<span class="rec">★ recommended</span></button>
+          <button class="aspect-btn" onclick="setAspect(16,9,this)">▬ 16:9</button>
+          <button class="aspect-btn" onclick="setAspect(9,16,this)">▮ Portrait</button>
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label" style="color:var(--lime-dark);">Zoom</span>
+        <input type="range" id="zoom-sl" min="1" max="500" step="1" value="100" oninput="onZoomSlider(this.value)" style="accent-color:#b8e030;">
+        <span style="font-size:11px;color:var(--lime-dark);min-width:36px;font-weight:700;" id="zoom-val">100%</span>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <div class="step-nav-hint" id="step1-hint" style="display:none;"></div>
+      <button class="step-next-btn" onclick="wizNext(1)">Select activities →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 2: SELECT ACTIVITIES ═══ -->
+  <div id="step-2" class="wiz-pane" style="display:none;">
+    <div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px;color:var(--ink);margin-bottom:4px;">Select your saved Reveal Arts</div>
+    <div style="font-size:11px;color:#888;margin-bottom:14px;">Pick the activities whose problems you want to blend into this spiral review.</div>
+
+    <div id="activities-loading" style="text-align:center;padding:30px;color:#888;font-size:12px;">Loading your activities...</div>
+    <div class="activity-grid" id="spiral-activity-grid" style="display:none;"></div>
+    <div id="no-activities" class="empty-activities" style="display:none;">
+      <div class="empty-activities-icon">🎨</div>
+      <div class="empty-activities-text">No activities with problem data found.<br>Save a new Reveal Art first, then come back here.<br><a href="creator.html" class="empty-activities-link">Create a Reveal Art →</a></div>
+    </div>
+
+    <div id="spiral-selection-area" style="display:none;">
+      <div class="divider"></div>
+      <div style="font-family:Syne,sans-serif;font-weight:700;font-size:13px;color:var(--ink);margin-bottom:8px;">Selected activities</div>
+      <div class="spiral-selected-list" id="spiral-selected-list"></div>
+
+      <div class="divider"></div>
+      <div class="custom-prob-section">
+        <div style="font-family:Syne,sans-serif;font-weight:700;font-size:13px;color:var(--ink);margin-bottom:2px;">Add custom problems</div>
+        <div style="font-size:10px;color:#888;margin-bottom:4px;">Type a problem and its answer to add it to the pool.</div>
+        <div class="custom-prob-row">
+          <input type="text" class="inp" id="custom-eq-input" placeholder="e.g. 12 × 8">
+          <input type="text" class="inp ans-inp" id="custom-ans-input" placeholder="Answer">
+          <button class="custom-prob-add-btn" onclick="addCustomProblem()">Add</button>
+        </div>
+        <div class="custom-prob-list" id="custom-prob-list"></div>
+      </div>
+
+      <div class="divider"></div>
+      <div id="prob-count-row" style="background:rgba(122,170,0,0.05);border:1.5px solid rgba(122,170,0,0.15);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:12px;color:#1a1a24;min-width:110px;font-weight:700;">Problems per activity:</span>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <button class="prob-count-btn" onclick="setSpiralProbCount(15,this)">15</button>
+            <button class="prob-count-btn active" onclick="setSpiralProbCount(20,this)">20</button>
+            <button class="prob-count-btn" onclick="setSpiralProbCount(25,this)">25</button>
+            <button class="prob-count-btn" onclick="setSpiralProbCount(30,this)">30</button>
+            <button class="prob-count-btn" onclick="setSpiralProbCount(36,this)">36</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="spiral-summary" id="spiral-summary">
+        <div class="spiral-summary-text">Total problems in pool: <span id="spiral-pool-count">0</span> · Will use: <span id="spiral-use-count">20</span></div>
+        <div id="spiral-mismatch-note" style="font-size:10px;color:var(--coral);margin-top:4px;display:none;"></div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="step-back-btn" onclick="goToStep(1)">← Back</button>
+      <div class="step-nav-hint" id="step2-hint" style="display:none;"></div>
+      <button class="step-next-btn" onclick="wizNext(2)">Finish & generate →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 3: FINISH ═══ -->
+  <div id="step-3" class="wiz-pane" style="display:none;">
+    <div class="finish-field">
+      <label class="finish-label">Name your spiral review</label>
+      <input type="text" class="inp" id="act-title" placeholder="e.g. Week 5 Spiral Review" maxlength="60">
+      <div class="val-msg" id="vm"></div>
+    </div>
+
+    <div class="finish-field">
+      <label class="finish-label">Timer <span class="finish-optional">optional</span></label>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:#444;">Enable countdown timer</span>
+        <label class="toggle-switch"><input type="checkbox" id="timer-toggle" onchange="spiralTimerEnabled=this.checked;document.getElementById('timer-settings').classList.toggle('active',this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+      <div class="timer-settings" id="timer-settings">
+        <div class="timer-presets">
+          <button class="timer-preset active" onclick="setSpiralTimer(5,this)">5 min</button>
+          <button class="timer-preset" onclick="setSpiralTimer(10,this)">10 min</button>
+          <button class="timer-preset" onclick="setSpiralTimer(15,this)">15 min</button>
+          <button class="timer-preset" onclick="setSpiralTimer(20,this)">20 min</button>
+          <button class="timer-preset" onclick="setSpiralTimer(30,this)">30 min</button>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:4px;">Timer turns red and counts up when time runs out.</div>
+      </div>
+    </div>
+
+    <div class="finish-field">
+      <label class="finish-label">Calculator <span class="finish-optional">optional</span></label>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:#444;">Include calculator for students</span>
+        <label class="toggle-switch"><input type="checkbox" id="calc-toggle" onchange="spiralCalcEnabled=this.checked"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+    </div>
+
+    <div class="finish-field">
+      <label class="finish-label">Differentiated versions <span class="finish-optional">optional</span></label>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:#444;">Generate 3 versions (A, B, C)</span>
+        <label class="toggle-switch"><input type="checkbox" id="diff-toggle" onchange="spiralDiffEnabled=this.checked"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+      <div class="diff-note-box" id="diff-note-box">Students in the same class can each attempt different problems!</div>
+    </div>
+
+    <button class="gen-btn" onclick="spiralGenerate()" style="margin-top:8px;">Preview my Spiral Review →</button>
+
+    <div class="step-nav" style="margin-top:0;">
+      <button class="step-back-btn" onclick="goToStep(2)">← Back to activities</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="preview-panel" id="preview-panel" style="display:none;">
+  <div class="prev-header">Preview</div>
+  <div class="prev-empty" id="pe">
+    <div class="prev-empty-icon">🌀</div>
+    <div class="prev-empty-text">Click "Preview my Spiral Review" to see it here.</div>
+  </div>
+  <div id="pc" style="display:none;flex-direction:column;gap:14px;">
+    <div class="prev-frame"><iframe id="pi" title="Preview"></iframe></div>
+    <div class="dl-btns" id="dl-btns"></div>
+    <div class="dl-note">Saved to dashboard · Share via Google Classroom · Works on any device</div>
+  </div>
+</div>
+</div>
+
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<script src="image-editor.js"></script>
+<script src="build.js"></script>
+<script src="spiral-ui.js"></script>
+</body>
+</html>
