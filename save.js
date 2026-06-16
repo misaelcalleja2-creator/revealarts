@@ -201,7 +201,7 @@ async function saveActivity(html, title) {
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({ title, html, subject, thumbnail, settings: safeSettings })
+        body: JSON.stringify({ title, html, subject, thumbnail, settings: safeSettings, problems: selProbs.map(p => ({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra})) })
       });
       if (res.ok) { showSaveToast('✓ Changes saved!', 'ok'); return true; }
       return false;
@@ -238,7 +238,7 @@ async function saveActivity(html, title) {
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify({ user_id: user.id, title, html, subject, thumbnail, settings })
+      body: JSON.stringify({ user_id: user.id, title, html, subject, thumbnail, settings, problems: selProbs.map(p => ({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra})) })
     });
 
     if (res.ok) { showSaveToast('✓ Activity saved to your dashboard!', 'ok'); return true; }
