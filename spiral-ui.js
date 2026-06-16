@@ -224,27 +224,45 @@ function removeActivity(id) {
   updateSelectionUI();
 }
 
+// ── FORMAT HELPERS ────────────────────────────────────────────────────────────
+function formatExponents(eq) {
+  var sup = {'0':'\u2070','1':'\u00B9','2':'\u00B2','3':'\u00B3','4':'\u2074','5':'\u2075','6':'\u2076','7':'\u2077','8':'\u2078','9':'\u2079'};
+  return eq.replace(/\^(\d+)/g, function(m, digits) {
+    return digits.split('').map(function(d) { return sup[d] || d; }).join('');
+  });
+}
+
 // ── CUSTOM PROBLEMS ──────────────────────────────────────────────────────────
 function addCustomProblem() {
   var eqInput = document.getElementById('custom-eq-input');
   var ansInput = document.getElementById('custom-ans-input');
-  var eq = eqInput.value.trim();
+  var rawEq = eqInput.value.trim();
   var ans = ansInput.value.trim();
-  if (!eq || !ans) return;
+  if (!rawEq || !ans) return;
 
-  spiralCustomProbs.push({
+  var eq = formatExponents(rawEq);
+  var parsedAns = isNaN(parseFloat(ans)) ? ans : parseFloat(ans);
+  var isAlg = /[a-zA-Z]/.test(eq);
+
+  var prob = {
     eq: eq,
-    ans: isNaN(parseFloat(ans)) ? ans : parseFloat(ans),
+    ans: parsedAns,
     ansDisplay: ans,
-    isAlgebra: /[a-zA-Z]/.test(eq)
-  });
+    isAlgebra: isAlg
+  };
 
+  spiralCustomProbs.push(prob);
   eqInput.value = '';
   ansInput.value = '';
-  spiralPreviewProbs = null;
+
+  // If preview is active, add custom prob directly — it's guaranteed
+  if (spiralPreviewProbs !== null) {
+    spiralPreviewProbs.push({ eq: eq, ans: parsedAns, ansDisplay: ans, isAlgebra: isAlg });
+    renderPreviewList();
+  }
+
   renderCustomProbs();
   updateSpiralSummary();
-  // Show selection area if first custom prob and no activities selected
   document.getElementById('spiral-selection-area').style.display = '';
 }
 
@@ -323,28 +341,38 @@ function setSpiralProbCount(n, btn) {
 
 // ── PROBLEM PREVIEW / HAND-PICK ──────────────────────────────────────────────
 function buildSpiralPool() {
-  var pool = [];
+  // 1. Always include ALL custom problems (guaranteed)
+  var customPool = spiralCustomProbs.map(function(p) {
+    return { eq: p.eq, ans: p.ans, ansDisplay: p.ansDisplay || String(p.ans), isAlgebra: !!p.isAlgebra };
+  });
 
+  // 2. Build activity problem pool
+  var activityPool = [];
   Object.values(selectedActivityMap).forEach(function(entry) {
     var probs = entry.activity.problems;
     var count = Math.min(entry.count, probs.length);
     var shuffled = probs.slice().sort(function() { return Math.random() - 0.5; });
     shuffled.slice(0, count).forEach(function(p) {
-      pool.push({ eq: p.eq, ans: p.ans, ansDisplay: p.ansDisplay || String(p.ans), isAlgebra: !!p.isAlgebra });
+      activityPool.push({ eq: p.eq, ans: p.ans, ansDisplay: p.ansDisplay || String(p.ans), isAlgebra: !!p.isAlgebra });
     });
   });
 
-  spiralCustomProbs.forEach(function(p) {
-    pool.push({ eq: p.eq, ans: p.ans, ansDisplay: p.ansDisplay || String(p.ans), isAlgebra: !!p.isAlgebra });
-  });
+  // Shuffle activity pool
+  for (var i = activityPool.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = activityPool[i]; activityPool[i] = activityPool[j]; activityPool[j] = tmp;
+  }
 
-  // Fisher-Yates shuffle
+  // 3. Fill remaining slots from activity pool (custom problems take priority)
+  var remaining = Math.max(0, spiralProbCount - customPool.length);
+  var pool = customPool.concat(activityPool.slice(0, remaining));
+
+  // 4. Final shuffle so custom probs aren't clustered at the start
   for (var i = pool.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
     var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
   }
 
-  if (pool.length > spiralProbCount) pool = pool.slice(0, spiralProbCount);
   return pool;
 }
 
