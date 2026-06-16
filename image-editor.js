@@ -28,10 +28,10 @@ function loadEditorImage(url,thumb){
   // show editor panel first
   document.getElementById('img-picker').style.display='none';
   document.getElementById('img-editor').classList.add('active');
-  // reset aspect to square
-  edAR={w:1,h:1};
+  // reset aspect to 16:9
+  edAR={w:16,h:9};
   document.querySelectorAll('.aspect-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('asp-sq').classList.add('active');
+  var wBtn=document.getElementById('asp-wide');if(wBtn)wBtn.classList.add('active');else{var sqBtn=document.getElementById('asp-sq');if(sqBtn)sqBtn.classList.add('active');}
   // load image
   const i=new Image();i.crossOrigin='anonymous';
   i.onload=()=>{edImg=i;editorReady=true;document.getElementById('epw-msg').style.display='none';document.getElementById('ec').style.display='block';requestAnimationFrame(()=>fillImage());};

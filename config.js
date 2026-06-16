@@ -9,7 +9,7 @@ let allProbs=[],selProbs=[],hintCount=0,hints=['','','','',''],timerEnabled=fals
 let aiTutorEnabled=false,aiHelpLimit=0;
 let editingActivityId=null;
 let generatedHTML='';
-let edAR={w:1,h:1},edZoom=100,edPanX=0,edPanY=0,edImg=null;
+let edAR={w:16,h:9},edZoom=100,edPanX=0,edPanY=0,edImg=null;
 let isDragging=false,dragSX=0,dragSY=0,dragPX=0,dragPY=0;
 let editorReady=false;
 // Category state

@@ -59,6 +59,17 @@
 .empty-activities-icon { font-size: 36px; opacity: 0.3; margin-bottom: 10px; }
 .empty-activities-text { font-size: 13px; line-height: 1.6; }
 .empty-activities-link { color: var(--lime-dark); text-decoration: none; font-weight: 600; }
+
+/* Preview problems */
+.spiral-prob-preview { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
+.spiral-prob-preview::-webkit-scrollbar { width: 3px; }
+.spiral-prob-preview::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 99px; }
+.spiral-prob-row { display: flex; align-items: center; gap: 7px; padding: 6px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--white); font-size: 12px; }
+.spiral-prob-row .num { font-size: 9px; font-weight: 800; color: #ccc; min-width: 16px; }
+.spiral-prob-row .eq { flex: 1; font-weight: 600; color: var(--ink); }
+.spiral-prob-row .ans { color: var(--lime-dark); font-weight: 700; font-size: 11px; }
+.spiral-prob-row .remove-prob { background: none; border: none; color: rgba(255,92,58,0.35); font-size: 15px; cursor: pointer; padding: 0 3px; }
+.spiral-prob-row .remove-prob:hover { color: var(--coral); }
 </style>
 </head>
 <body>
@@ -132,9 +143,8 @@
       <div class="ctrl-row" style="margin-top:12px;">
         <span class="ctrl-label">Aspect</span>
         <div class="aspect-btns">
-          <button class="aspect-btn active" id="asp-sq" onclick="setAspect(1,1,this)">■ Square<span class="rec">★ recommended</span></button>
-          <button class="aspect-btn" onclick="setAspect(16,9,this)">▬ 16:9</button>
-          <button class="aspect-btn" onclick="setAspect(9,16,this)">▮ Portrait</button>
+          <button class="aspect-btn" id="asp-sq" onclick="setAspect(1,1,this)">■ Square</button>
+          <button class="aspect-btn active" id="asp-wide" onclick="setAspect(16,9,this)">▬ 16:9<span class="rec">★ recommended</span></button>
         </div>
       </div>
       <div class="ctrl-row">
@@ -193,6 +203,21 @@
         </div>
       </div>
 
+      <!-- Preview & hand-pick problems -->
+      <button class="rand-btn" style="width:100%;padding:9px;margin-bottom:10px;font-size:12px;background:rgba(122,170,0,0.08);color:var(--lime-dark);border-color:rgba(122,170,0,0.2);" onclick="previewSpiralProblems()" id="spiral-preview-btn">Preview selected problems</button>
+
+      <div id="spiral-preview-section" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-family:Syne,sans-serif;font-weight:700;font-size:12px;color:var(--ink);">Problem preview</div>
+          <div style="display:flex;gap:6px;">
+            <button class="rand-btn" onclick="reshuffleSpiralPreview()" style="background:rgba(122,170,0,0.12);color:var(--lime-dark);border-color:rgba(122,170,0,0.25);">Re-randomize</button>
+            <button class="rand-btn" onclick="closeSpiralPreview()">Close</button>
+          </div>
+        </div>
+        <div class="spiral-prob-preview" id="spiral-preview-list"></div>
+        <div id="spiral-preview-status" style="font-size:11px;margin-top:6px;color:#888;"></div>
+      </div>
+
       <div class="spiral-summary" id="spiral-summary">
         <div class="spiral-summary-text">Total problems in pool: <span id="spiral-pool-count">0</span> · Will use: <span id="spiral-use-count">20</span></div>
         <div id="spiral-mismatch-note" style="font-size:10px;color:var(--coral);margin-top:4px;display:none;"></div>
@@ -246,7 +271,6 @@
         <span style="font-size:13px;color:#444;">Generate 3 versions (A, B, C)</span>
         <label class="toggle-switch"><input type="checkbox" id="diff-toggle" onchange="spiralDiffEnabled=this.checked"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
       </div>
-      <div class="diff-note-box" id="diff-note-box">Students in the same class can each attempt different problems!</div>
     </div>
 
     <button class="gen-btn" onclick="spiralGenerate()" style="margin-top:8px;">Preview my Spiral Review →</button>

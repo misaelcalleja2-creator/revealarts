@@ -1,9 +1,9 @@
 // ── SPIRAL REVIEW UI ──────────────────────────────────────────────────────────
 // Globals
-let spiralActivities = [];      // all fetched activities with problems
+let spiralActivities = [];
 let selectedActivityMap = {};    // { id: { activity, count } }
-let spiralCustomProbs = [];     // teacher-typed custom problems
-let spiralProbCount = 20;       // target problem count
+let spiralCustomProbs = [];
+let spiralProbCount = 20;
 let spiralTimerEnabled = false;
 let spiralTimerMins = 5;
 let spiralCalcEnabled = false;
@@ -11,25 +11,31 @@ let spiralDiffEnabled = false;
 let spiralGeneratedHTML = '';
 let currentSpiralStep = 1;
 
+// Edit mode
+let editingSpiralId = null;
+let originalEditImage = null;
+let editSourceActivityIds = [];
+
+// Problem preview / hand-pick
+let spiralPreviewProbs = null; // null = not previewed; array = previewed/hand-picked
+
 // ── WIZARD ───────────────────────────────────────────────────────────────────
 function goToStep(n) {
   if (n > currentSpiralStep + 1) return;
-  for (let i = 1; i <= 3; i++) {
+  for (var i = 1; i <= 3; i++) {
     document.getElementById('step-' + i).style.display = i === n ? '' : 'none';
-    const ws = document.getElementById('wstep-' + i);
+    var ws = document.getElementById('wstep-' + i);
     ws.className = 'wiz-step' + (i === n ? ' wiz-active' : (i < n ? ' wiz-done' : ''));
     if (i < 3) {
-      const wl = document.getElementById('wline-' + i);
-      wl.className = 'wiz-line' + (i < n ? ' done' : '');
+      document.getElementById('wline-' + i).className = 'wiz-line' + (i < n ? ' done' : '');
     }
   }
-  // layout: step 1 & 2 full width, step 3 shows preview
-  const page = document.getElementById('page-layout');
-  const form = document.getElementById('form-panel');
-  const prev = document.getElementById('preview-panel');
+  var form = document.getElementById('form-panel');
+  var prev = document.getElementById('preview-panel');
   if (n === 3) {
     form.classList.remove('full-width');
     prev.style.display = '';
+    restoreStep3UI();
   } else {
     form.classList.add('full-width');
     prev.style.display = 'none';
@@ -39,7 +45,7 @@ function goToStep(n) {
 }
 
 function wizNext(fromStep) {
-  const hint = document.getElementById('step' + fromStep + '-hint');
+  var hint = document.getElementById('step' + fromStep + '-hint');
   if (hint) { hint.style.display = 'none'; hint.textContent = ''; }
 
   if (fromStep === 1) {
@@ -50,13 +56,13 @@ function wizNext(fromStep) {
     if (!croppedDataUrl && editorReady) cropDone();
     goToStep(2);
   } else if (fromStep === 2) {
-    const totalPool = getSpiralPoolSize();
-    if (totalPool === 0) {
+    var pool = getEffectivePoolSize();
+    if (pool === 0) {
       if (hint) { hint.textContent = 'Select at least one activity or add custom problems.'; hint.style.display = ''; }
       return;
     }
-    if (totalPool < spiralProbCount) {
-      if (hint) { hint.textContent = 'Not enough problems. Add more activities or lower the count.'; hint.style.display = ''; }
+    if (pool < spiralProbCount) {
+      if (hint) { hint.textContent = 'Not enough problems (' + pool + '). Add more or lower the count.'; hint.style.display = ''; }
       return;
     }
     goToStep(3);
@@ -65,21 +71,20 @@ function wizNext(fromStep) {
 
 // ── LOAD ACTIVITIES FROM SUPABASE ────────────────────────────────────────────
 async function loadSpiralActivities() {
-  const token = localStorage.getItem('sb_access_token');
+  var token = localStorage.getItem('sb_access_token');
   if (!token) return;
 
   try {
-    const ur = await fetch(SB_URL + '/auth/v1/user', {
+    var ur = await fetch(SB_URL + '/auth/v1/user', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     if (!ur.ok) return;
-    const user = await ur.json();
+    var user = await ur.json();
 
-    // Fetch all activities for this user
-    const r = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id,title,thumbnail,subject,created_at,problems,settings&order=created_at.desc', {
+    var r = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id,title,thumbnail,subject,created_at,problems,settings&order=created_at.desc', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
-    const acts = await r.json();
+    var acts = await r.json();
 
     document.getElementById('activities-loading').style.display = 'none';
 
@@ -88,47 +93,58 @@ async function loadSpiralActivities() {
       return;
     }
 
-    // Separate: activities with problems data vs without
     spiralActivities = acts;
-    const withProblems = acts.filter(a => a.problems && Array.isArray(a.problems) && a.problems.length > 0);
+    var withProblems = acts.filter(function(a) { return a.problems && Array.isArray(a.problems) && a.problems.length > 0; });
 
     if (withProblems.length === 0) {
       document.getElementById('no-activities').style.display = '';
-      document.getElementById('no-activities').querySelector('.empty-activities-text').innerHTML =
-        'Your saved activities don\'t have problem data yet.<br>Re-save any existing activity to enable spiral review.<br><a href="creator.html" class="empty-activities-link">Create a new activity →</a>';
       return;
     }
 
     renderActivityGrid(acts);
 
+    // If editing, pre-select source activities
+    if (editSourceActivityIds.length > 0) {
+      editSourceActivityIds.forEach(function(id) {
+        var act = acts.find(function(a) { return a.id === id; });
+        if (act && act.problems && act.problems.length > 0) {
+          selectedActivityMap[id] = { activity: act, count: act.problems.length };
+        }
+      });
+      updateSelectionUI();
+    }
+
   } catch (e) {
     console.log('Failed to load activities', e);
-    document.getElementById('activities-loading').textContent = 'Failed to load activities. Please refresh.';
+    document.getElementById('activities-loading').textContent = 'Failed to load. Please refresh.';
   }
 }
 
 function renderActivityGrid(acts) {
-  const grid = document.getElementById('spiral-activity-grid');
+  var grid = document.getElementById('spiral-activity-grid');
   grid.style.display = 'grid';
   grid.innerHTML = '';
 
-  acts.forEach(act => {
-    const hasProbs = act.problems && Array.isArray(act.problems) && act.problems.length > 0;
-    const card = document.createElement('div');
-    card.className = 'spiral-act-card' + (hasProbs ? '' : ' no-problems');
+  // Don't show the activity we're currently editing
+  var filtered = editingSpiralId ? acts.filter(function(a) { return a.id !== editingSpiralId; }) : acts;
+
+  filtered.forEach(function(act) {
+    var hasProbs = act.problems && Array.isArray(act.problems) && act.problems.length > 0;
+    var card = document.createElement('div');
+    card.className = 'spiral-act-card' + (hasProbs ? '' : ' no-problems') + (selectedActivityMap[act.id] ? ' selected' : '');
     card.dataset.actId = act.id;
 
-    const date = new Date(act.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const probCount = hasProbs ? act.problems.length : 0;
+    var date = new Date(act.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    var probCount = hasProbs ? act.problems.length : 0;
 
-    const thumbHtml = act.thumbnail
-      ? '<img class="spiral-act-thumb" src="' + act.thumbnail + '" alt="' + act.title + '">'
+    var thumbHtml = act.thumbnail
+      ? '<img class="spiral-act-thumb" src="' + act.thumbnail + '" alt="' + (act.title||'') + '">'
       : '<div class="spiral-act-thumb-ph">🎨</div>';
 
     card.innerHTML = thumbHtml +
       '<div class="spiral-act-check">' + (selectedActivityMap[act.id] ? '✓' : '') + '</div>' +
       '<div class="spiral-act-body">' +
-        '<div class="spiral-act-title">' + act.title + '</div>' +
+        '<div class="spiral-act-title">' + (act.title||'Untitled') + '</div>' +
         '<div class="spiral-act-meta">' +
           (hasProbs
             ? '<span class="spiral-act-badge has-probs">' + probCount + ' problems</span>'
@@ -138,7 +154,7 @@ function renderActivityGrid(acts) {
       '</div>';
 
     if (hasProbs) {
-      card.addEventListener('click', function () { toggleActivitySelection(act); });
+      card.addEventListener('click', function() { toggleActivitySelection(act); });
     }
 
     grid.appendChild(card);
@@ -150,23 +166,19 @@ function toggleActivitySelection(act) {
   if (selectedActivityMap[act.id]) {
     delete selectedActivityMap[act.id];
   } else {
-    selectedActivityMap[act.id] = {
-      activity: act,
-      count: act.problems.length  // default: all problems
-    };
+    selectedActivityMap[act.id] = { activity: act, count: act.problems.length };
   }
+  spiralPreviewProbs = null; // reset preview when selection changes
   updateSelectionUI();
 }
 
 function updateSelectionUI() {
-  const ids = Object.keys(selectedActivityMap);
-  const area = document.getElementById('spiral-selection-area');
-  area.style.display = ids.length > 0 ? '' : 'none';
+  var ids = Object.keys(selectedActivityMap);
+  document.getElementById('spiral-selection-area').style.display = ids.length > 0 || spiralCustomProbs.length > 0 ? '' : 'none';
 
-  // Update card check marks
-  document.querySelectorAll('.spiral-act-card').forEach(card => {
-    const id = card.dataset.actId;
-    const check = card.querySelector('.spiral-act-check');
+  document.querySelectorAll('.spiral-act-card').forEach(function(card) {
+    var id = card.dataset.actId;
+    var check = card.querySelector('.spiral-act-check');
     if (selectedActivityMap[id]) {
       card.classList.add('selected');
       check.textContent = '✓';
@@ -176,18 +188,16 @@ function updateSelectionUI() {
     }
   });
 
-  // Render selected list
-  const list = document.getElementById('spiral-selected-list');
+  var list = document.getElementById('spiral-selected-list');
   list.innerHTML = '';
-  ids.forEach(id => {
-    const entry = selectedActivityMap[id];
-    const act = entry.activity;
-    const maxCount = act.problems.length;
-
-    const item = document.createElement('div');
+  ids.forEach(function(id) {
+    var entry = selectedActivityMap[id];
+    var act = entry.activity;
+    var maxCount = act.problems.length;
+    var item = document.createElement('div');
     item.className = 'spiral-sel-item';
     item.innerHTML =
-      '<div class="spiral-sel-name">' + act.title + '</div>' +
+      '<div class="spiral-sel-name">' + (act.title||'Untitled') + '</div>' +
       '<div class="spiral-sel-count">' +
         '<span>Use</span>' +
         '<input type="number" min="1" max="' + maxCount + '" value="' + entry.count + '" onchange="updateActivityCount(\'' + id + '\', this.value, ' + maxCount + ')">' +
@@ -197,29 +207,29 @@ function updateSelectionUI() {
     list.appendChild(item);
   });
 
+  closeSpiralPreview();
   updateSpiralSummary();
 }
 
 function updateActivityCount(id, val, max) {
-  const n = Math.max(1, Math.min(parseInt(val) || 1, max));
-  if (selectedActivityMap[id]) {
-    selectedActivityMap[id].count = n;
-  }
+  var n = Math.max(1, Math.min(parseInt(val) || 1, max));
+  if (selectedActivityMap[id]) selectedActivityMap[id].count = n;
+  spiralPreviewProbs = null;
   updateSpiralSummary();
 }
 
 function removeActivity(id) {
   delete selectedActivityMap[id];
+  spiralPreviewProbs = null;
   updateSelectionUI();
 }
 
 // ── CUSTOM PROBLEMS ──────────────────────────────────────────────────────────
 function addCustomProblem() {
-  const eqInput = document.getElementById('custom-eq-input');
-  const ansInput = document.getElementById('custom-ans-input');
-  const eq = eqInput.value.trim();
-  const ans = ansInput.value.trim();
-
+  var eqInput = document.getElementById('custom-eq-input');
+  var ansInput = document.getElementById('custom-ans-input');
+  var eq = eqInput.value.trim();
+  var ans = ansInput.value.trim();
   if (!eq || !ans) return;
 
   spiralCustomProbs.push({
@@ -231,21 +241,25 @@ function addCustomProblem() {
 
   eqInput.value = '';
   ansInput.value = '';
+  spiralPreviewProbs = null;
   renderCustomProbs();
   updateSpiralSummary();
+  // Show selection area if first custom prob and no activities selected
+  document.getElementById('spiral-selection-area').style.display = '';
 }
 
 function removeCustomProb(index) {
   spiralCustomProbs.splice(index, 1);
+  spiralPreviewProbs = null;
   renderCustomProbs();
   updateSpiralSummary();
 }
 
 function renderCustomProbs() {
-  const list = document.getElementById('custom-prob-list');
+  var list = document.getElementById('custom-prob-list');
   list.innerHTML = '';
-  spiralCustomProbs.forEach((p, i) => {
-    const item = document.createElement('div');
+  spiralCustomProbs.forEach(function(p, i) {
+    var item = document.createElement('div');
     item.className = 'custom-prob-item';
     item.innerHTML =
       '<span class="eq">' + p.eq + '</span>' +
@@ -255,32 +269,37 @@ function renderCustomProbs() {
   });
 }
 
-// Enter key adds custom problem
 document.addEventListener('DOMContentLoaded', function() {
   var ansInp = document.getElementById('custom-ans-input');
-  if (ansInp) {
-    ansInp.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') addCustomProblem();
-    });
-  }
+  if (ansInp) ansInp.addEventListener('keydown', function(e) { if (e.key === 'Enter') addCustomProblem(); });
+  var eqInp = document.getElementById('custom-eq-input');
+  if (eqInp) eqInp.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('custom-ans-input').focus(); });
 });
 
 // ── SUMMARY & POOL ───────────────────────────────────────────────────────────
-function getSpiralPoolSize() {
-  let total = spiralCustomProbs.length;
-  Object.values(selectedActivityMap).forEach(entry => {
-    total += entry.count;
-  });
+function getRawPoolSize() {
+  var total = spiralCustomProbs.length;
+  Object.values(selectedActivityMap).forEach(function(e) { total += e.count; });
   return total;
 }
 
+function getEffectivePoolSize() {
+  if (spiralPreviewProbs !== null) return spiralPreviewProbs.length;
+  return getRawPoolSize();
+}
+
 function updateSpiralSummary() {
-  const pool = getSpiralPoolSize();
+  var pool = spiralPreviewProbs !== null ? spiralPreviewProbs.length : getRawPoolSize();
   document.getElementById('spiral-pool-count').textContent = pool;
   document.getElementById('spiral-use-count').textContent = spiralProbCount;
 
-  const note = document.getElementById('spiral-mismatch-note');
-  if (pool > spiralProbCount) {
+  var note = document.getElementById('spiral-mismatch-note');
+  if (spiralPreviewProbs !== null && spiralPreviewProbs.length < spiralProbCount) {
+    var need = spiralProbCount - spiralPreviewProbs.length;
+    note.textContent = 'You removed problems. Need ' + need + ' more — add custom problems or re-randomize.';
+    note.style.display = '';
+    note.style.color = 'var(--coral)';
+  } else if (pool > spiralProbCount) {
     note.textContent = pool + ' problems available, ' + spiralProbCount + ' will be randomly selected.';
     note.style.display = '';
     note.style.color = 'var(--lime-dark)';
@@ -295,84 +314,144 @@ function updateSpiralSummary() {
 
 function setSpiralProbCount(n, btn) {
   spiralProbCount = n;
-  document.querySelectorAll('.prob-count-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.prob-count-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
+  spiralPreviewProbs = null;
+  closeSpiralPreview();
   updateSpiralSummary();
 }
 
-// ── BUILD PROBLEM POOL ───────────────────────────────────────────────────────
+// ── PROBLEM PREVIEW / HAND-PICK ──────────────────────────────────────────────
 function buildSpiralPool() {
-  let pool = [];
+  var pool = [];
 
-  // Collect problems from selected activities
-  Object.values(selectedActivityMap).forEach(entry => {
-    const probs = entry.activity.problems;
-    const count = Math.min(entry.count, probs.length);
-
-    // Shuffle activity problems, take 'count' of them
-    const shuffled = [...probs].sort(() => Math.random() - 0.5);
-    const picked = shuffled.slice(0, count).map(p => ({
-      eq: p.eq,
-      ans: p.ans,
-      ansDisplay: p.ansDisplay || String(p.ans),
-      isAlgebra: !!p.isAlgebra
-    }));
-    pool = pool.concat(picked);
-  });
-
-  // Add custom problems
-  spiralCustomProbs.forEach(p => {
-    pool.push({
-      eq: p.eq,
-      ans: p.ans,
-      ansDisplay: p.ansDisplay || String(p.ans),
-      isAlgebra: !!p.isAlgebra
+  Object.values(selectedActivityMap).forEach(function(entry) {
+    var probs = entry.activity.problems;
+    var count = Math.min(entry.count, probs.length);
+    var shuffled = probs.slice().sort(function() { return Math.random() - 0.5; });
+    shuffled.slice(0, count).forEach(function(p) {
+      pool.push({ eq: p.eq, ans: p.ans, ansDisplay: p.ansDisplay || String(p.ans), isAlgebra: !!p.isAlgebra });
     });
   });
 
-  // Shuffle entire pool (Fisher-Yates)
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+  spiralCustomProbs.forEach(function(p) {
+    pool.push({ eq: p.eq, ans: p.ans, ansDisplay: p.ansDisplay || String(p.ans), isAlgebra: !!p.isAlgebra });
+  });
+
+  // Fisher-Yates shuffle
+  for (var i = pool.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
   }
 
-  // Trim to target count
-  if (pool.length > spiralProbCount) {
-    pool = pool.slice(0, spiralProbCount);
-  }
-
+  if (pool.length > spiralProbCount) pool = pool.slice(0, spiralProbCount);
   return pool;
+}
+
+function previewSpiralProblems() {
+  var rawPool = getRawPoolSize();
+  if (rawPool === 0) return;
+
+  spiralPreviewProbs = buildSpiralPool();
+  renderPreviewList();
+  document.getElementById('spiral-preview-section').style.display = '';
+  document.getElementById('spiral-preview-btn').style.display = 'none';
+  updateSpiralSummary();
+}
+
+function reshuffleSpiralPreview() {
+  spiralPreviewProbs = buildSpiralPool();
+  renderPreviewList();
+  updateSpiralSummary();
+}
+
+function closeSpiralPreview() {
+  document.getElementById('spiral-preview-section').style.display = 'none';
+  document.getElementById('spiral-preview-btn').style.display = '';
+}
+
+function removePreviewProb(index) {
+  if (!spiralPreviewProbs) return;
+  spiralPreviewProbs.splice(index, 1);
+  renderPreviewList();
+  updateSpiralSummary();
+}
+
+function renderPreviewList() {
+  var list = document.getElementById('spiral-preview-list');
+  list.innerHTML = '';
+  if (!spiralPreviewProbs) return;
+
+  spiralPreviewProbs.forEach(function(p, i) {
+    var row = document.createElement('div');
+    row.className = 'spiral-prob-row';
+    row.innerHTML =
+      '<span class="num">' + (i + 1) + '</span>' +
+      '<span class="eq">' + p.eq + '</span>' +
+      '<span class="ans">' + (p.ansDisplay || p.ans) + '</span>' +
+      '<button class="remove-prob" onclick="removePreviewProb(' + i + ')" title="Remove">×</button>';
+    list.appendChild(row);
+  });
+
+  var status = document.getElementById('spiral-preview-status');
+  if (spiralPreviewProbs.length < spiralProbCount) {
+    var need = spiralProbCount - spiralPreviewProbs.length;
+    status.innerHTML = '<span style="color:var(--coral);">' + spiralPreviewProbs.length + '/' + spiralProbCount + ' — need ' + need + ' more</span>';
+  } else {
+    status.innerHTML = '<span style="color:var(--lime-dark);">' + spiralPreviewProbs.length + '/' + spiralProbCount + ' problems ready</span>';
+  }
 }
 
 // ── TIMER ────────────────────────────────────────────────────────────────────
 function setSpiralTimer(mins, btn) {
   spiralTimerMins = mins;
-  document.querySelectorAll('.timer-preset').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.timer-preset').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
+}
+
+// ── RESTORE STEP 3 UI (for edit mode) ────────────────────────────────────────
+function restoreStep3UI() {
+  if (!editingSpiralId) return;
+
+  var timerTog = document.getElementById('timer-toggle');
+  if (timerTog) { timerTog.checked = spiralTimerEnabled; document.getElementById('timer-settings').classList.toggle('active', spiralTimerEnabled); }
+
+  document.querySelectorAll('.timer-preset').forEach(function(b) {
+    b.classList.toggle('active', parseInt(b.textContent) === spiralTimerMins);
+  });
+
+  var calcTog = document.getElementById('calc-toggle');
+  if (calcTog) calcTog.checked = spiralCalcEnabled;
+
+  var diffTog = document.getElementById('diff-toggle');
+  if (diffTog) diffTog.checked = spiralDiffEnabled;
 }
 
 // ── GENERATE & PREVIEW ───────────────────────────────────────────────────────
 function genTimerKey() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
 
 function spiralGenerate() {
-  const vm = document.getElementById('vm');
+  var vm = document.getElementById('vm');
   vm.style.display = 'none';
 
   if (!selImgUrl) { vm.textContent = 'Please go back and choose an image first.'; vm.style.display = 'block'; return; }
   if (!croppedDataUrl && editorReady) cropDone();
-  const imgToUse = croppedDataUrl || selImgUrl;
+  var imgToUse = croppedDataUrl || selImgUrl;
 
-  const pool = buildSpiralPool();
+  // Use hand-picked if available, else build fresh
+  var pool = (spiralPreviewProbs !== null && spiralPreviewProbs.length >= spiralProbCount)
+    ? spiralPreviewProbs.slice()
+    : buildSpiralPool();
+
   if (pool.length < spiralProbCount) {
-    vm.textContent = 'Not enough problems. Go back and add more activities or lower the count.';
+    vm.textContent = 'Not enough problems (' + pool.length + '). Go back and add more.';
     vm.style.display = 'block';
     return;
   }
 
-  const title = document.getElementById('act-title').value.trim() || 'Spiral Review';
+  var title = document.getElementById('act-title').value.trim() || 'Spiral Review';
   document.getElementById('lo').classList.add('active');
 
-  // Build preview
   spiralGeneratedHTML = buildHTML(title, pool, imgToUse, [], spiralTimerEnabled ? spiralTimerMins : 0, edAR, spiralCalcEnabled, spiralProbCount, false, 0, 'preview');
   document.getElementById('pi').srcdoc = spiralGeneratedHTML;
   document.getElementById('pe').style.display = 'none';
@@ -382,107 +461,139 @@ function spiralGenerate() {
   document.querySelector('.preview-panel').scrollIntoView({ behavior: 'smooth' });
 }
 
-// ── DOWNLOAD BUTTONS ─────────────────────────────────────────────────────────
+// ── DOWNLOAD / SAVE BUTTONS ──────────────────────────────────────────────────
 function buildSpiralDLButtons(title, imgData) {
-  const c = document.getElementById('dl-btns');
+  var c = document.getElementById('dl-btns');
   c.innerHTML = '';
 
+  // Edit mode — show Save Changes + Discard
+  if (editingSpiralId) {
+    var label = document.createElement('div');
+    label.className = 'dl-edit-label';
+    label.textContent = 'Editing saved spiral review';
+    c.appendChild(label);
+
+    var saveBtn = document.createElement('button');
+    saveBtn.className = 'dl-btn-save';
+    saveBtn.innerHTML = 'Save Changes';
+    saveBtn.onclick = async function() {
+      saveBtn.disabled = true; saveBtn.innerHTML = 'Saving...';
+      var pool = (spiralPreviewProbs !== null && spiralPreviewProbs.length >= spiralProbCount)
+        ? spiralPreviewProbs.slice() : buildSpiralPool();
+      var tk = genTimerKey();
+      var html = buildHTML(title, pool, imgData, [], spiralTimerEnabled ? spiralTimerMins : 0, edAR, spiralCalcEnabled, spiralProbCount, false, 0, tk);
+      var ok = await saveSpiralActivity(html, title, pool);
+      if (ok) window.location.href = 'dashboard.html';
+      else { saveBtn.disabled = false; saveBtn.innerHTML = 'Save Changes'; }
+    };
+    c.appendChild(saveBtn);
+
+    var discardBtn = document.createElement('button');
+    discardBtn.className = 'dl-btn-discard';
+    discardBtn.innerHTML = 'Discard Changes';
+    discardBtn.onclick = function() { if (confirm('Discard changes?')) window.location.href = 'dashboard.html'; };
+    c.appendChild(discardBtn);
+
+    var divider = document.createElement('div');
+    divider.className = 'dl-divider';
+    c.appendChild(divider);
+    return;
+  }
+
   if (!spiralDiffEnabled) {
-    const b = document.createElement('button');
+    var b = document.createElement('button');
     b.className = 'dl-btn';
     b.innerHTML = 'Save & Go to Dashboard';
-    b.onclick = async () => {
+    b.onclick = async function() {
       b.disabled = true; b.innerHTML = 'Saving...';
-      const pool = buildSpiralPool();
-      const tk = genTimerKey();
-      const html = buildHTML(title, pool, imgData, [], spiralTimerEnabled ? spiralTimerMins : 0, edAR, spiralCalcEnabled, spiralProbCount, false, 0, tk);
-      const success = await saveSpiralActivity(html, title, pool);
-      if (success) { window.location.href = 'dashboard.html'; }
+      var pool = (spiralPreviewProbs !== null && spiralPreviewProbs.length >= spiralProbCount)
+        ? spiralPreviewProbs.slice() : buildSpiralPool();
+      var tk = genTimerKey();
+      var html = buildHTML(title, pool, imgData, [], spiralTimerEnabled ? spiralTimerMins : 0, edAR, spiralCalcEnabled, spiralProbCount, false, 0, tk);
+      var ok = await saveSpiralActivity(html, title, pool);
+      if (ok) window.location.href = 'dashboard.html';
       else { b.disabled = false; b.innerHTML = 'Save & Go to Dashboard'; }
     };
     c.appendChild(b);
   } else {
-    // Diff mode — 3 versions
-    const previewLabel = document.createElement('div');
+    var previewLabel = document.createElement('div');
     previewLabel.style.cssText = 'font-size:11px;color:#888;margin-bottom:8px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;';
     previewLabel.textContent = 'Preview version';
     c.appendChild(previewLabel);
 
-    const switcher = document.createElement('div');
+    var switcher = document.createElement('div');
     switcher.style.cssText = 'display:flex;gap:6px;margin-bottom:12px;';
-    ['A', 'B', 'C'].forEach((v, idx) => {
-      const pb = document.createElement('button');
+    ['A', 'B', 'C'].forEach(function(v, idx) {
+      var pb = document.createElement('button');
       pb.className = 'dl-btn dl-btn-diff';
       pb.style.cssText = 'flex:1;padding:9px;font-size:13px;';
       pb.innerHTML = 'Version ' + v;
       if (idx === 0) pb.style.background = 'rgba(122,170,0,0.15)';
-      pb.onclick = () => {
-        const pool = buildSpiralPool();
-        document.getElementById('pi').srcdoc = buildHTML(title + ' — Version ' + v, pool, imgData, [], spiralTimerEnabled ? spiralTimerMins : 0, edAR, spiralCalcEnabled, spiralProbCount, false, 0);
-        switcher.querySelectorAll('button').forEach(b => b.style.background = '');
+      pb.onclick = function() {
+        var pool = buildSpiralPool();
+        document.getElementById('pi').srcdoc = buildHTML(title + ' \u2014 Version ' + v, pool, imgData, [], spiralTimerEnabled ? spiralTimerMins : 0, edAR, spiralCalcEnabled, spiralProbCount, false, 0);
+        switcher.querySelectorAll('button').forEach(function(b) { b.style.background = ''; });
         pb.style.background = 'rgba(122,170,0,0.15)';
       };
       switcher.appendChild(pb);
     });
     c.appendChild(switcher);
 
-    const saveBtn = document.createElement('button');
-    saveBtn.className = 'dl-btn';
-    saveBtn.innerHTML = 'Save All 3 Versions & Go to Dashboard';
-    saveBtn.onclick = async () => {
-      saveBtn.disabled = true;
-      const vers = ['A', 'B', 'C'];
-      let allOk = true;
-      for (const v of vers) {
-        saveBtn.innerHTML = 'Saving Version ' + v + '...';
-        const pool = buildSpiralPool();
-        const tk = genTimerKey();
-        const vTitle = title + ' — Version ' + v;
-        const html = buildHTML(vTitle, pool, imgData, [], spiralTimerEnabled ? spiralTimerMins : 0, edAR, spiralCalcEnabled, spiralProbCount, false, 0, tk);
-        const ok = await saveSpiralActivity(html, vTitle, pool);
+    var saveAllBtn = document.createElement('button');
+    saveAllBtn.className = 'dl-btn';
+    saveAllBtn.innerHTML = 'Save All 3 Versions & Go to Dashboard';
+    saveAllBtn.onclick = async function() {
+      saveAllBtn.disabled = true;
+      var allOk = true;
+      for (var vi = 0; vi < 3; vi++) {
+        var v = ['A', 'B', 'C'][vi];
+        saveAllBtn.innerHTML = 'Saving Version ' + v + '...';
+        var pool = buildSpiralPool();
+        var tk = genTimerKey();
+        var vTitle = title + ' \u2014 Version ' + v;
+        var html = buildHTML(vTitle, pool, imgData, [], spiralTimerEnabled ? spiralTimerMins : 0, edAR, spiralCalcEnabled, spiralProbCount, false, 0, tk);
+        var ok = await saveSpiralActivity(html, vTitle, pool);
         if (!ok) { allOk = false; break; }
       }
-      if (allOk) { window.location.href = 'dashboard.html'; }
-      else { saveBtn.disabled = false; saveBtn.innerHTML = 'Save All 3 Versions & Go to Dashboard'; }
+      if (allOk) window.location.href = 'dashboard.html';
+      else { saveAllBtn.disabled = false; saveAllBtn.innerHTML = 'Save All 3 Versions & Go to Dashboard'; }
     };
-    c.appendChild(saveBtn);
+    c.appendChild(saveAllBtn);
   }
 }
 
 // ── SAVE TO SUPABASE ─────────────────────────────────────────────────────────
 async function saveSpiralActivity(html, title, problems) {
-  const token = localStorage.getItem('sb_access_token');
+  var token = localStorage.getItem('sb_access_token');
   if (!token) { showSpiralToast('Sign in to save activities', 'warn'); return false; }
 
   try {
-    const ur = await fetch(SB_URL + '/auth/v1/user', {
+    var ur = await fetch(SB_URL + '/auth/v1/user', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     if (!ur.ok) return false;
-    const user = await ur.json();
+    var user = await ur.json();
 
-    // Generate thumbnail
-    let thumbnail = null;
+    // Thumbnail
+    var thumbnail = null;
     if (croppedDataUrl) {
       try {
-        thumbnail = await new Promise((resolve) => {
-          const img = new Image();
-          img.onload = () => {
-            const maxW = 300;
-            const scale = maxW / img.width;
-            const c = document.createElement('canvas');
-            c.width = maxW;
-            c.height = Math.round(img.height * scale);
-            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-            resolve(c.toDataURL('image/jpeg', 0.7));
+        thumbnail = await new Promise(function(resolve) {
+          var img = new Image();
+          img.onload = function() {
+            var maxW = 300, scale = maxW / img.width;
+            var cv = document.createElement('canvas');
+            cv.width = maxW; cv.height = Math.round(img.height * scale);
+            cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+            resolve(cv.toDataURL('image/jpeg', 0.7));
           };
-          img.onerror = () => resolve(null);
+          img.onerror = function() { resolve(null); };
           img.src = croppedDataUrl;
         });
       } catch (e) { thumbnail = null; }
     }
 
-    const settings = {
+    var settings = {
       type: 'spiral',
       probCount: spiralProbCount,
       timerEnabled: spiralTimerEnabled,
@@ -490,40 +601,47 @@ async function saveSpiralActivity(html, title, problems) {
       calcEnabled: spiralCalcEnabled,
       diffEnabled: spiralDiffEnabled,
       sourceActivities: Object.keys(selectedActivityMap),
-      customProbs: spiralCustomProbs
+      customProbs: spiralCustomProbs,
+      image: croppedDataUrl || null,
+      imageAR: edAR
     };
 
-    // Check limit
-    const cr = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id', {
+    // EDIT MODE — PATCH
+    if (editingSpiralId) {
+      var safeSettings = Object.assign({}, settings);
+      if (!safeSettings.image && originalEditImage) safeSettings.image = originalEditImage;
+
+      var res = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + editingSpiralId, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SB_KEY, 'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ title: title, html: html, subject: 'Spiral Review', thumbnail: thumbnail, settings: safeSettings, problems: problems })
+      });
+      if (res.ok) { showSpiralToast('✓ Changes saved!', 'ok'); return true; }
+      return false;
+    }
+
+    // NEW — check limit then POST
+    var cr = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
-    const existing = await cr.json();
-    const count = Array.isArray(existing) ? existing.length : 0;
-    if (count >= 20) {
+    var existing = await cr.json();
+    if (Array.isArray(existing) && existing.length >= 20) {
       showSpiralToast('Activity limit reached. Delete some to save new ones.', 'warn');
       return false;
     }
 
-    const res = await fetch(SB_URL + '/rest/v1/activities', {
+    var res2 = await fetch(SB_URL + '/rest/v1/activities', {
       method: 'POST',
       headers: {
-        'apikey': SB_KEY,
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
+        'apikey': SB_KEY, 'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json', 'Prefer': 'return=minimal'
       },
-      body: JSON.stringify({
-        user_id: user.id,
-        title: title,
-        html: html,
-        subject: 'Spiral Review',
-        thumbnail: thumbnail,
-        settings: settings,
-        problems: problems
-      })
+      body: JSON.stringify({ user_id: user.id, title: title, html: html, subject: 'Spiral Review', thumbnail: thumbnail, settings: settings, problems: problems })
     });
-
-    if (res.ok) { showSpiralToast('✓ Spiral review saved!', 'ok'); return true; }
+    if (res2.ok) { showSpiralToast('✓ Spiral review saved!', 'ok'); return true; }
     return false;
   } catch (e) {
     console.log('Save failed', e);
@@ -533,7 +651,7 @@ async function saveSpiralActivity(html, title, problems) {
 }
 
 function showSpiralToast(msg, type) {
-  let t = document.getElementById('save-toast');
+  var t = document.getElementById('save-toast');
   if (!t) {
     t = document.createElement('div');
     t.id = 'save-toast';
@@ -545,7 +663,58 @@ function showSpiralToast(msg, type) {
   t.style.color = type === 'ok' ? '#0a0a0f' : '#fff';
   t.style.opacity = '1';
   clearTimeout(t._timeout);
-  t._timeout = setTimeout(() => { t.style.opacity = '0'; }, 3500);
+  t._timeout = setTimeout(function() { t.style.opacity = '0'; }, 3500);
+}
+
+// ── EDIT MODE ────────────────────────────────────────────────────────────────
+async function initEditMode(id) {
+  var token = localStorage.getItem('sb_access_token');
+  if (!token) return;
+
+  try {
+    var r = await fetch(SB_URL + '/rest/v1/activities?id=eq.' + id + '&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    if (!Array.isArray(data) || !data[0]) return;
+
+    var act = data[0];
+    var s = act.settings || {};
+
+    // Title
+    document.getElementById('act-title').value = act.title || '';
+
+    // Image
+    if (s.image) {
+      originalEditImage = s.image;
+      loadEditorImage(s.image, null);
+    }
+    if (s.imageAR) { edAR = s.imageAR; }
+
+    // Settings
+    spiralTimerEnabled = !!s.timerEnabled;
+    spiralTimerMins = s.timerMins || 5;
+    spiralCalcEnabled = !!s.calcEnabled;
+    spiralDiffEnabled = !!s.diffEnabled;
+    spiralProbCount = s.probCount || 20;
+
+    // Update prob count buttons
+    document.querySelectorAll('.prob-count-btn').forEach(function(b) {
+      b.classList.toggle('active', parseInt(b.textContent) === spiralProbCount);
+    });
+
+    // Custom problems
+    if (s.customProbs && Array.isArray(s.customProbs)) {
+      spiralCustomProbs = s.customProbs;
+      renderCustomProbs();
+    }
+
+    // Source activities — store IDs, will be selected after activities load
+    editSourceActivityIds = s.sourceActivities || [];
+
+  } catch (e) {
+    console.log('Edit mode init failed', e);
+  }
 }
 
 // ── NAV ──────────────────────────────────────────────────────────────────────
@@ -559,8 +728,16 @@ function confirmDashboard() {
 // ── INIT ─────────────────────────────────────────────────────────────────────
 (function init() {
   checkAuth();
-  // Start on step 1 with full-width form
-  const form = document.getElementById('form-panel');
+
+  var form = document.getElementById('form-panel');
   form.classList.add('full-width');
   document.getElementById('preview-panel').style.display = 'none';
+
+  // Check for edit mode
+  var params = new URLSearchParams(window.location.search);
+  var editId = params.get('edit');
+  if (editId) {
+    editingSpiralId = editId;
+    initEditMode(editId);
+  }
 })();
