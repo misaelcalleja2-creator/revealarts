@@ -403,7 +403,7 @@ function showCompletion(){
 }
 // enable download when name is typed
 document.getElementById('studentName').addEventListener('input',function(){
-  document.getElementById('dlBtn').disabled=this.value.trim().length<2;
+  document.getElementById('dlBtn').disabled=this.value.trim().length<1;
 });
 
 // ═══ DOWNLOAD ═══
