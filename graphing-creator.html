@@ -259,11 +259,12 @@ function selectConst(id){
 function buildProbBtns(){
   var container=document.getElementById('probBtns');container.innerHTML='';
   var min=selConst.points.length;
-  var options=[min];
-  if(min+3<=26)options.push(min+3);
-  if(min+6<=26)options.push(min+6);
-  if(min+10<=26)options.push(min+10);
-  selNumProbs=min;
+  var clean=[10,15,20,25];
+  var options=[];
+  // add constellation minimum if not already a clean number
+  if(clean.indexOf(min)===-1)options.push(min);
+  clean.forEach(function(n){if(n>=min&&n<=26)options.push(n);});
+  selNumProbs=options[0];
   options.forEach(function(n,i){
     var btn=document.createElement('button');
     btn.className='prob-count-btn'+(i===0?' active':'');

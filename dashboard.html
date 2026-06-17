@@ -427,11 +427,22 @@ async function init() {
 
 async function loadActivities(token, userId, profile) {
   try {
-    const r = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + userId + '&select=*&order=created_at.desc', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
-    });
-    const acts = await r.json();
-    if (!Array.isArray(acts) || acts.length === 0) return;
+    // Fetch BOTH regular and graphing activities in parallel
+    const [rArts, rGraph] = await Promise.all([
+      fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + userId + '&select=*&order=created_at.desc', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+      }),
+      fetch(SB_URL + '/rest/v1/graphing_activities?user_id=eq.' + userId + '&select=*&order=created_at.desc', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+      })
+    ]);
+    const arts = await rArts.json();
+    const graphs = await rGraph.json();
+    const artsArr = Array.isArray(arts) ? arts.map(a => ({...a, _type:'art'})) : [];
+    const graphsArr = Array.isArray(graphs) ? graphs.map(g => ({...g, _type:'graphing'})) : [];
+    const allActs = artsArr.concat(graphsArr).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+    if (allActs.length === 0) return;
 
     const isPaid = profile && profile.is_paid;
     const limit = isPaid ? 20 : 10;
@@ -441,51 +452,79 @@ async function loadActivities(token, userId, profile) {
     grid.style.display = 'grid';
     grid.innerHTML = '';
 
-    acts.forEach(act => {
+    allActs.forEach(act => {
       const card = document.createElement('div');
-      card.className = 'act-card'; card.dataset.title = act.title; card.dataset.actId = act.id;
+      card.className = 'act-card'; card.dataset.title = act.title; card.dataset.actId = act.id; card.dataset.actType = act._type;
       card.addEventListener('click', function(e) { if (!selectMode) return; toggleCardSelect(this, act.id); });
       const date = new Date(act.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-      const thumbHtml = act.thumbnail
-        ? `<img class="act-thumb" src="${act.thumbnail}" alt="${act.title}">`
-        : `<div class="act-thumb-placeholder">🎨</div>`;
-      card.innerHTML = `
-        <span class="select-cb">✓</span>
-        ${thumbHtml}
-        <div class="act-body">
-          <div class="act-title">${act.title}<button class="act-rename-btn" onclick="event.stopPropagation();renameActivity('${act.id}',this)" title="Rename"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button></div>
-          <div class="act-meta">
-            ${act.subject ? '<span class="act-subject">' + act.subject + '</span>' : ''}
-            <span>${date}</span>
+
+      if (act._type === 'graphing') {
+        // Graphing activity card with SVG thumbnail
+        var thumbSvg = buildGraphingThumb(act);
+        card.innerHTML = `
+          <span class="select-cb">✓</span>
+          <div class="act-thumb-placeholder" style="position:relative;display:flex;align-items:center;justify-content:center;background:#f0f0ec;">${thumbSvg}</div>
+          <div class="act-body">
+            <div class="act-title">${act.title}</div>
+            <div class="act-meta">
+              <span class="act-subject" style="background:rgba(0,122,255,0.08);border-color:rgba(0,122,255,0.2);color:#1565c0;">Graphing</span>
+              <span>${act.num_problems} pts</span>
+              <span>${date}</span>
+            </div>
+            <div class="act-actions">
+              <button class="act-copy" onclick="copyGraphingLink('${act.id}', this)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy Link
+              </button>
+              <button class="act-del" onclick="deleteGraphingActivity('${act.id}', this)" title="Delete">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            </div>
           </div>
-          <div class="act-actions">
-            <button class="act-copy" onclick="copyLink('${act.id}', this)">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              Copy Link
-            </button>
-            <button class="act-pdf" onclick="downloadWorksheet('${act.id}', this)" title="Worksheet">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </button>
-            <a class="act-edit" href="${act.subject==='Spiral Review'?'spiral-creator':'creator'}.html?edit=${act.id}" title="Edit">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </a>
-            <button class="act-del" onclick="deleteActivity('${act.id}', this)" title="Delete">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-            </button>
+        `;
+      } else {
+        // Regular Reveal Arts card (unchanged)
+        const thumbHtml = act.thumbnail
+          ? `<img class="act-thumb" src="${act.thumbnail}" alt="${act.title}">`
+          : `<div class="act-thumb-placeholder">🎨</div>`;
+        card.innerHTML = `
+          <span class="select-cb">✓</span>
+          ${thumbHtml}
+          <div class="act-body">
+            <div class="act-title">${act.title}<button class="act-rename-btn" onclick="event.stopPropagation();renameActivity('${act.id}',this)" title="Rename"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button></div>
+            <div class="act-meta">
+              ${act.subject ? '<span class="act-subject">' + act.subject + '</span>' : ''}
+              <span>${date}</span>
+            </div>
+            <div class="act-actions">
+              <button class="act-copy" onclick="copyLink('${act.id}', this)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy Link
+              </button>
+              <button class="act-pdf" onclick="downloadWorksheet('${act.id}', this)" title="Worksheet">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </button>
+              <a class="act-edit" href="${act.subject==='Spiral Review'?'spiral-creator':'creator'}.html?edit=${act.id}" title="Edit">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </a>
+              <button class="act-del" onclick="deleteActivity('${act.id}', this)" title="Delete">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
       grid.appendChild(card);
     });
 
     document.getElementById('save-limit').innerHTML =
-      '<span>' + acts.length + '</span> of <span>' + limit + '</span> activities saved' +
+      '<span>' + allActs.length + '</span> of <span>' + limit + '</span> activities saved' +
       (isPaid ? '' : ' · <a href="plans.html" style="color:var(--lime-dark);font-weight:600;">Upgrade for more</a>');
 
-    // Unlock spiral card if 2+ activities have problem data
+    // Unlock spiral card if 2+ Reveal Arts activities have problem data
     var spiralCard = document.getElementById('spiral-action-card');
     if (spiralCard) {
-      var withProbs = acts.filter(function(a) { return a.problems && Array.isArray(a.problems) && a.problems.length > 0; });
+      var withProbs = artsArr.filter(function(a) { return a.problems && Array.isArray(a.problems) && a.problems.length > 0; });
       if (withProbs.length >= 2) {
         spiralCard.classList.remove('action-card-disabled');
         spiralCard.style.cursor = 'pointer';
@@ -494,7 +533,7 @@ async function loadActivities(token, userId, profile) {
         if (note) note.style.display = 'none';
         var btn = spiralCard.querySelector('.action-btn');
         if (btn) btn.style.opacity = '';
-      } else if (acts.length >= 2) {
+      } else if (artsArr.length >= 2) {
         var note = document.getElementById('spiral-disabled-note');
         if (note) note.textContent = 'Re-save your activities to unlock';
       }
@@ -633,6 +672,55 @@ function copyLink(id, btn) {
       btn.classList.remove('copied');
     }, 2000);
   });
+}
+
+function copyGraphingLink(id, btn) {
+  const url = window.location.origin + '/graphing.html?id=' + id;
+  navigator.clipboard.writeText(url).then(() => {
+    btn.innerHTML = '✓ Copied!'; btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Link';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+async function deleteGraphingActivity(id, btn) {
+  if (!confirm('Delete this graphing activity? This cannot be undone.')) return;
+  const token = localStorage.getItem('sb_access_token');
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/graphing_activities?id=eq.' + id, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (r.ok) {
+      const card = btn.closest('.act-card');
+      card.style.opacity = '0';
+      card.style.transition = 'opacity 0.3s';
+      setTimeout(() => { card.remove(); checkEmpty(); }, 300);
+    }
+  } catch(e) { alert('Delete failed.'); }
+}
+
+function buildGraphingThumb(act) {
+  var pts = act.points, edges = act.edges;
+  if (!pts || !edges) return '<div style="font-size:36px;opacity:0.4;">📐</div>';
+  var gMin = act.grid_min, gMax = act.grid_max, range = gMax - gMin;
+  var sz = 200, pad = 16;
+  function mx(x) { return pad + (x - gMin) / range * (sz - pad * 2); }
+  function my(y) { return pad + (range - (y - gMin)) / range * (sz - pad * 2); }
+  var s = '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 ' + sz + ' ' + sz + '" style="display:block;margin:auto;">';
+  edges.forEach(function(e) {
+    var a = pts.find(function(p) { return p.label === e[0]; });
+    var b = pts.find(function(p) { return p.label === e[1]; });
+    if (a && b) s += '<line x1="' + mx(a.x) + '" y1="' + my(a.y) + '" x2="' + mx(b.x) + '" y2="' + my(b.y) + '" stroke="#0a0a0f" stroke-width="2" stroke-linecap="round"/>';
+  });
+  pts.forEach(function(p) {
+    var col = p.isStar ? '#7aaa00' : '#ccc';
+    s += '<circle cx="' + mx(p.x) + '" cy="' + my(p.y) + '" r="3" fill="' + col + '"/>';
+  });
+  s += '</svg>';
+  return s;
 }
 
 async function downloadWorksheet(id, btn) {
