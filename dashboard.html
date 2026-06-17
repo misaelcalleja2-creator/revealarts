@@ -877,15 +877,21 @@ async function downloadGraphingWorksheet(id, btn) {
       svgLines += '<line x1="' + sx(gMin) + '" y1="' + sy(gMin) + '" x2="' + sx(gMax) + '" y2="' + sy(gMin) + '" stroke="#000" stroke-width="1.5"/>';
       svgLines += '<line x1="' + sx(gMin) + '" y1="' + sy(gMin) + '" x2="' + sx(gMin) + '" y2="' + sy(gMax) + '" stroke="#000" stroke-width="1.5"/>';
     }
-    // labels
+    // labels — x at the axis, not bottom
     let svgLabels = '';
+    const xAxisY = isQ4 ? sy(0) : sy(gMin);
     for (let i = gMin; i <= gMax; i++) {
-      svgLabels += '<text x="' + sx(i) + '" y="' + (sy(gMin) + 16) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + i + '</text>';
+      svgLabels += '<text x="' + sx(i) + '" y="' + (xAxisY + 16) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + i + '</text>';
+    }
+    const yAxisX = isQ4 ? sx(0) : sx(gMin);
+    for (let i = gMin; i <= gMax; i++) {
       if (i === gMin && !isQ4) continue;
       if (i === 0 && isQ4) continue;
-      const yAnchor = isQ4 ? sx(0) - 10 : sx(gMin) - 10;
-      svgLabels += '<text x="' + yAnchor + '" y="' + (sy(i) + 3) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + i + '</text>';
+      svgLabels += '<text x="' + (yAxisX - 10) + '" y="' + (sy(i) + 3) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + i + '</text>';
     }
+    // axis titles
+    svgLabels += '<text x="' + (pad + range * cell + 14) + '" y="' + (xAxisY + 5) + '" font-size="12" font-family="sans-serif" font-weight="700" font-style="italic" fill="#888">x</text>';
+    svgLabels += '<text x="' + yAxisX + '" y="' + (pad - 10) + '" text-anchor="middle" font-size="12" font-family="sans-serif" font-weight="700" font-style="italic" fill="#888">y</text>';
 
     const worksheet = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + act.title + ' — Worksheet</title>' +
       '<style>' +
