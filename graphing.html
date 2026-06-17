@@ -252,8 +252,13 @@ let SIZE, CELL, RANGE, SVG;
 // ═══════════════════════════════════════════════════
 const params = new URLSearchParams(window.location.search);
 const paramC = params.get('c');
+const paramId = params.get('id');
 const paramCoords = params.get('coords') === 'true';
 if (paramCoords) showCoords = true;
+
+var SB_URL='https://zionhfdaksktpwcvjnde.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+var supabaseId = null;
 
 // ═══════════════════════════════════════════════════
 //  MENU
@@ -290,17 +295,36 @@ function buildMenu() {
 function startActivity(id) {
   act = LIBRARY.find(function(c) { return c.id === id; });
   if (!act) return;
-  cur = 0; wrongCount = 0;
+  cur = 0; wrongCount = 0; supabaseId = null;
 
-  // Update URL without reload
   var newUrl = window.location.pathname + '?c=' + id + (showCoords ? '&coords=true' : '');
   history.pushState({c: id}, '', newUrl);
 
+  launchActivity(act.name);
+}
+
+function startFromDB(data) {
+  act = {
+    id: data.id,
+    name: data.title,
+    gridMin: data.grid_min,
+    gridMax: data.grid_max,
+    quadrants: data.quadrants,
+    points: data.points,
+    edges: data.edges
+  };
+  showCoords = data.show_coords;
+  supabaseId = data.id;
+  cur = 0; wrongCount = 0;
+  launchActivity(data.title);
+}
+
+function launchActivity(title) {
   document.getElementById('menuScreen').style.display = 'none';
   document.getElementById('navBar').style.display = 'none';
   document.getElementById('activityScreen').classList.add('show');
   document.getElementById('overlay').classList.remove('show');
-  document.getElementById('actTitle').textContent = 'Plot the ' + act.name;
+  document.getElementById('actTitle').textContent = title;
 
   RANGE = act.gridMax - act.gridMin;
   drawGrid();
@@ -532,12 +556,26 @@ function flashWrong(m) {
 //  REVEAL
 // ═══════════════════════════════════════════════════
 function reveal() {
-  // dots → lime
+  // Separate constellation dots (lime) from filler dots (fade out)
   var allDots = document.querySelectorAll('#dots circle');
   for (var i = 0; i < allDots.length; i++) {
     if (allDots[i].getAttribute('fill') === 'var(--lime-dark)') {
-      allDots[i].style.transition = 'fill .4s';
-      allDots[i].setAttribute('fill','var(--lime)');
+      allDots[i].style.transition = 'fill .4s, opacity .4s';
+      var ptData = act.points[i] || {};
+      if (ptData.isStar === false) {
+        allDots[i].setAttribute('opacity', '0.25');
+      } else {
+        allDots[i].setAttribute('fill','var(--lime)');
+      }
+    }
+  }
+  // Also fade filler labels
+  var allLabels = document.querySelectorAll('#dots text');
+  for (var i = 0; i < allLabels.length; i++) {
+    var ptData = act.points[i] || {};
+    if (ptData.isStar === false) {
+      allLabels[i].style.transition = 'opacity .4s';
+      allLabels[i].setAttribute('opacity', '0.2');
     }
   }
 
@@ -565,12 +603,17 @@ function reveal() {
 
   var delay = act.edges.length * 0.12 + 0.45;
   setTimeout(function() {
-    document.getElementById('completeTitle').textContent = act.name + ' Revealed!';
+    document.getElementById('completeTitle').textContent = (act.name || 'Picture') + ' Revealed!';
     var stat = wrongCount === 0 ? 'Perfect \u2014 zero wrong attempts!' : wrongCount + ' wrong attempt' + (wrongCount === 1 ? '' : 's');
     document.getElementById('completeStat').textContent = stat;
 
-    // Share link
-    var link = window.location.origin + window.location.pathname + '?c=' + act.id + (showCoords ? '&coords=true' : '');
+    // Share link — use ?id= for Supabase activities, ?c= for library
+    var link;
+    if (supabaseId) {
+      link = window.location.origin + window.location.pathname + '?id=' + supabaseId;
+    } else {
+      link = window.location.origin + window.location.pathname + '?c=' + act.id + (showCoords ? '&coords=true' : '');
+    }
     document.getElementById('shareInput').value = link;
     document.getElementById('overlay').classList.add('show');
   }, delay * 1000 + 400);
@@ -602,8 +645,24 @@ function toast(msg, type) {
 // ═══════════════════════════════════════════════════
 buildMenu();
 
-// Direct link: ?c=house
-if (paramC) {
+// Load from Supabase: ?id=<uuid>
+if (paramId) {
+  (async function() {
+    try {
+      var r = await fetch(SB_URL + '/rest/v1/graphing_activities?id=eq.' + paramId + '&select=*', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+      });
+      if (!r.ok) { document.body.classList.add('ready'); return; }
+      var data = await r.json();
+      if (Array.isArray(data) && data[0]) {
+        startFromDB(data[0]);
+      }
+    } catch(e) { console.log('Failed to load activity', e); }
+    document.body.classList.add('ready');
+  })();
+}
+// Direct link from library: ?c=house
+else if (paramC) {
   var found = LIBRARY.find(function(c) { return c.id === paramC; });
   if (found) startActivity(found.id);
 }

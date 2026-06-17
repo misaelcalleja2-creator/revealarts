@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Graphing Activity — Reveal Arts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0a0f;--bg:#f7f6f2;--bg2:#eeecea;--white:#ffffff;--lime:#b8e030;--lime-dark:#7aaa00;--coral:#ff5c3a;--text:#1a1a24;--text2:#555560;--text3:#888894;--border:rgba(0,0,0,0.09)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;opacity:0;transition:opacity .25s}
+body.ready{opacity:1}
+nav{position:sticky;top:0;z-index:100;background:rgba(247,246,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 48px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo-circle{width:34px;height:34px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:7px;font-weight:800;color:var(--lime);letter-spacing:.5px;text-align:center;line-height:1.2;position:relative;overflow:hidden}
+.nav-logo-circle::before{content:'';position:absolute;inset:3px;border-radius:50%;border:1px solid rgba(184,224,48,0.3)}
+.nav-logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--text)}
+.nav-logo-sub{font-size:10px;color:var(--text3);font-weight:400;display:block}
+.nav-back{font-size:13px;color:var(--lime-dark);text-decoration:none;font-weight:600;display:flex;align-items:center;gap:4px}
+.nav-back:hover{text-decoration:underline}
+.page{max-width:900px;margin:0 auto;padding:32px 32px 80px}
+h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.step-label{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text2);margin:28px 0 12px;display:flex;align-items:center;gap:10px}
+.step-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.c-card{background:var(--white);border:2px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all .2s}
+.c-card:hover{border-color:var(--text3);transform:translateY(-2px)}
+.c-card.selected{border-color:var(--lime-dark);background:rgba(122,170,0,0.06)}
+.c-card .c-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px}
+.c-card .c-meta{font-size:11px;color:var(--text3)}
+.settings{display:none;background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:24px;margin-top:20px}
+.settings.show{display:block}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.field input[type=text]{width:100%;max-width:360px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none}
+.field input[type=text]:focus{border-color:var(--lime-dark)}
+.prob-btns{display:flex;gap:8px;flex-wrap:wrap}
+.prob-btn{padding:8px 18px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.prob-btn:hover{border-color:var(--text3)}
+.prob-btn.active{background:var(--ink);color:var(--lime);border-color:var(--ink)}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-top:4px}
+.toggle-label{font-size:13px;color:var(--text3)}
+.toggle-track{width:40px;height:22px;border-radius:11px;background:var(--bg2);position:relative;cursor:pointer;flex-shrink:0;transition:background .25s}
+.toggle-knob{width:18px;height:18px;border-radius:50%;background:var(--white);position:absolute;top:2px;left:2px;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.toggle-track.on{background:var(--lime-dark)}
+.toggle-track.on .toggle-knob{transform:translateX(18px)}
+.save-btn{margin-top:24px;padding:12px 32px;border:none;border-radius:12px;background:var(--ink);color:var(--lime);font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:background .2s}
+.save-btn:hover{background:#1a1a24}
+.save-btn:disabled{opacity:.4;cursor:not-allowed}
+.link-box{display:none;margin-top:16px;padding:14px 18px;background:rgba(122,170,0,0.08);border:1.5px solid rgba(122,170,0,0.2);border-radius:12px}
+.link-box.show{display:flex;align-items:center;gap:10px}
+.link-input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'SF Mono','Menlo',monospace;background:var(--white);outline:none}
+.link-copy{background:var(--ink);color:var(--lime);border:none;border-radius:8px;padding:8px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}
+.saved-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin:40px 0 14px}
+.saved-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.s-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;transition:all .2s}
+.s-card:hover{border-color:rgba(0,0,0,.18);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.s-card .s-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px}
+.s-card .s-meta{font-size:11px;color:var(--text3);margin-bottom:10px}
+.s-card .s-actions{display:flex;gap:6px}
+.s-copy,.s-del{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.s-copy{background:var(--bg);border:1.5px solid var(--border);color:var(--text2)}
+.s-copy:hover{border-color:var(--lime-dark);color:var(--lime-dark)}
+.s-del{background:transparent;border:1.5px solid rgba(255,92,58,0.2);color:rgba(255,92,58,0.5)}
+.s-del:hover{border-color:var(--coral);color:var(--coral)}
+.empty-msg{font-size:13px;color:var(--text3);font-style:italic}
+@media(max-width:640px){nav{padding:0 20px}.page{padding:24px 20px 60px}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-circle">THE<br>REAL<br>SUM<br>SHADY</div>
+    <div><span class="nav-logo-text">Reveal Graphing</span><span class="nav-logo-sub">by The Real Sum Shady</span></div>
+  </a>
+  <a href="dashboard.html" class="nav-back">&#8592; Back to Dashboard</a>
+</nav>
+<div class="page">
+  <h1>Create Graphing Activity</h1>
+  <div class="sub">Pick a picture, set the difficulty, and share a link with your students</div>
+
+  <div class="step-label">Choose a picture</div>
+  <div class="cards" id="constellationCards"></div>
+
+  <div class="settings" id="settings">
+    <div class="step-label" style="margin-top:0">Configure</div>
+    <div class="field">
+      <label>Activity title</label>
+      <input type="text" id="titleInput" placeholder="e.g. Plot the House">
+    </div>
+    <div class="field">
+      <label>Number of points to plot</label>
+      <div class="prob-btns" id="probBtns"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px" id="probNote"></div>
+    </div>
+    <div class="field">
+      <label>Student hint</label>
+      <div class="toggle-row">
+        <div class="toggle-track" id="hintToggle"><span class="toggle-knob"></span></div>
+        <span class="toggle-label">Show coordinates on hover (first 3 points only)</span>
+      </div>
+    </div>
+    <button class="save-btn" id="saveBtn" onclick="saveActivity()">Save &amp; Get Link</button>
+    <div class="link-box" id="linkBox">
+      <input class="link-input" id="linkInput" readonly>
+      <button class="link-copy" id="linkCopy" onclick="copyLink()">Copy link</button>
+    </div>
+  </div>
+
+  <div class="saved-title">My Graphing Activities</div>
+  <div class="saved-grid" id="savedGrid"><div class="empty-msg">No saved graphing activities yet.</div></div>
+</div>
+
+<script>
+var SB_URL='https://zionhfdaksktpwcvjnde.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+var token=null,userId=null;
+
+var LIBRARY=[
+  {id:'star',name:'Star',gridMin:0,gridMax:10,quadrants:1,
+    points:[{x:5,y:9},{x:7,y:3},{x:1,y:6},{x:9,y:6},{x:3,y:3}],
+    edges:[[0,1],[1,2],[2,3],[3,4],[4,0]]},
+  {id:'fish',name:'Fish',gridMin:0,gridMax:10,quadrants:1,
+    points:[{x:1,y:5},{x:3,y:7},{x:6,y:7},{x:8,y:5},{x:6,y:3},{x:3,y:3},{x:10,y:7},{x:10,y:3}],
+    edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[3,6],[6,7],[7,3]]},
+  {id:'house',name:'House',gridMin:0,gridMax:10,quadrants:1,
+    points:[{x:2,y:2},{x:8,y:2},{x:8,y:6},{x:2,y:6},{x:5,y:9},{x:4,y:2},{x:4,y:4},{x:6,y:4},{x:6,y:2}],
+    edges:[[0,1],[1,2],[2,3],[3,0],[3,4],[4,2],[5,6],[6,7],[7,8]]},
+  {id:'sailboat',name:'Sailboat',gridMin:0,gridMax:10,quadrants:1,
+    points:[{x:1,y:3},{x:9,y:3},{x:8,y:1},{x:2,y:1},{x:5,y:3},{x:5,y:9},{x:2,y:8},{x:8,y:7}],
+    edges:[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,4],[5,7],[7,4]]},
+  {id:'rocket',name:'Rocket',gridMin:0,gridMax:10,quadrants:1,
+    points:[{x:4,y:3},{x:6,y:3},{x:6,y:7},{x:5,y:9},{x:4,y:7},{x:2,y:1},{x:4,y:1},{x:8,y:1},{x:6,y:1}],
+    edges:[[0,1],[1,2],[2,3],[3,4],[4,0],[0,5],[5,6],[6,0],[1,7],[7,8],[8,1]]},
+  {id:'cat',name:'Cat',gridMin:0,gridMax:10,quadrants:1,
+    points:[{x:3,y:3},{x:7,y:3},{x:8,y:5},{x:8,y:7},{x:7,y:9},{x:6,y:7},{x:4,y:7},{x:3,y:9},{x:2,y:7},{x:2,y:5}],
+    edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,0]]},
+  {id:'star4q',name:'Star (4Q)',gridMin:-5,gridMax:5,quadrants:4,
+    points:[{x:0,y:5},{x:3,y:-4},{x:-5,y:1},{x:5,y:1},{x:-3,y:-4}],
+    edges:[[0,1],[1,2],[2,3],[3,4],[4,0]]},
+  {id:'diamond',name:'Diamond (4Q)',gridMin:-5,gridMax:5,quadrants:4,
+    points:[{x:0,y:4},{x:3,y:1},{x:3,y:-2},{x:0,y:-4},{x:-3,y:-2},{x:-3,y:1}],
+    edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]]},
+  {id:'arrow',name:'Arrow (4Q)',gridMin:-5,gridMax:5,quadrants:4,
+    points:[{x:-4,y:1},{x:0,y:1},{x:0,y:3},{x:4,y:0},{x:0,y:-3},{x:0,y:-1},{x:-4,y:-1}],
+    edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0]]}
+];
+
+var selConstellation=null,selNumProbs=0,showHint=false,lastSavedId=null;
+
+// ── AUTH ──
+async function init(){
+  token=localStorage.getItem('sb_access_token');
+  if(!token){window.location.href='login.html';return;}
+  try{
+    var r=await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}});
+    if(!r.ok){localStorage.removeItem('sb_access_token');window.location.href='login.html';return;}
+    var user=await r.json();userId=user.id;
+  }catch(e){console.log('Auth error',e);return;}
+  document.body.classList.add('ready');
+  buildCards();
+  loadSaved();
+}
+
+// ── CONSTELLATION CARDS ──
+function buildCards(){
+  var container=document.getElementById('constellationCards');
+  container.innerHTML='';
+  LIBRARY.forEach(function(c){
+    var div=document.createElement('div');
+    div.className='c-card';div.dataset.id=c.id;
+    var badge=c.quadrants===1?'Q1 · 0–'+c.gridMax:'4Q · '+c.gridMin+' to '+c.gridMax;
+    div.innerHTML='<div class="c-name">'+c.name+'</div><div class="c-meta">'+c.points.length+' pts · '+badge+'</div>';
+    div.addEventListener('click',function(){selectConstellation(c.id);});
+    container.appendChild(div);
+  });
+}
+
+function selectConstellation(id){
+  selConstellation=LIBRARY.find(function(c){return c.id===id;});
+  if(!selConstellation)return;
+  // highlight
+  document.querySelectorAll('.c-card').forEach(function(el){el.classList.toggle('selected',el.dataset.id===id);});
+  // show settings
+  document.getElementById('settings').classList.add('show');
+  document.getElementById('titleInput').value='Plot the '+selConstellation.name.replace(/ \(4Q\)/,'');
+  // problem count buttons
+  buildProbBtns();
+  // reset
+  document.getElementById('linkBox').classList.remove('show');
+  document.getElementById('saveBtn').disabled=false;
+  lastSavedId=null;
+}
+
+function buildProbBtns(){
+  var container=document.getElementById('probBtns');
+  container.innerHTML='';
+  var min=selConstellation.points.length;
+  var options=[min];
+  if(min+3<=26)options.push(min+3);
+  if(min+6<=26)options.push(min+6);
+  if(min+10<=26)options.push(min+10);
+  selNumProbs=min;
+  options.forEach(function(n,i){
+    var btn=document.createElement('button');
+    btn.className='prob-btn'+(i===0?' active':'');
+    btn.textContent=n+' points';
+    btn.addEventListener('click',function(){
+      selNumProbs=n;
+      document.querySelectorAll('.prob-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      updateProbNote();
+    });
+    container.appendChild(btn);
+  });
+  updateProbNote();
+  // hint toggle
+  showHint=false;
+  var tog=document.getElementById('hintToggle');
+  tog.className='toggle-track';
+  tog.onclick=function(){showHint=!showHint;tog.className='toggle-track'+(showHint?' on':'');};
+}
+
+function updateProbNote(){
+  var min=selConstellation.points.length;
+  var extra=selNumProbs-min;
+  var note=document.getElementById('probNote');
+  if(extra>0) note.textContent=min+' form the picture + '+extra+' extra practice points (shuffled randomly)';
+  else note.textContent='All '+min+' points form the picture';
+}
+
+// ── FILLER POINT GENERATION ──
+function generateFillerPoints(constellation,count){
+  var existing=constellation.points.map(function(p){return p.x+','+p.y;});
+  var fillers=[];
+  var attempts=0;
+  while(fillers.length<count&&attempts<1000){
+    attempts++;
+    var x=Math.floor(Math.random()*(constellation.gridMax-constellation.gridMin-1))+constellation.gridMin+1;
+    var y=Math.floor(Math.random()*(constellation.gridMax-constellation.gridMin-1))+constellation.gridMin+1;
+    var key=x+','+y;
+    if(existing.indexOf(key)===-1){
+      existing.push(key);
+      fillers.push({x:x,y:y});
+    }
+  }
+  return fillers;
+}
+
+function buildActivityData(){
+  var c=selConstellation;
+  var fillerCount=selNumProbs-c.points.length;
+  var fillers=fillerCount>0?generateFillerPoints(c,fillerCount):[];
+
+  // combine: constellation points get constellationIndex, fillers get -1
+  var all=[];
+  c.points.forEach(function(p,i){all.push({x:p.x,y:p.y,ci:i});});
+  fillers.forEach(function(p){all.push({x:p.x,y:p.y,ci:-1});});
+
+  // shuffle (Fisher-Yates)
+  for(var i=all.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=all[i];all[i]=all[j];all[j]=tmp;
+  }
+
+  // assign labels
+  var labels='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  var points=all.map(function(p,i){return{label:labels[i],x:p.x,y:p.y,isStar:p.ci>=0};});
+
+  // rebuild edges with new labels
+  var ciToLabel={};
+  all.forEach(function(p,i){if(p.ci>=0)ciToLabel[p.ci]=labels[i];});
+  var edges=c.edges.map(function(e){return[ciToLabel[e[0]],ciToLabel[e[1]]];});
+
+  return{points:points,edges:edges};
+}
+
+// ── SAVE ──
+async function saveActivity(){
+  if(!selConstellation||!token)return;
+  var btn=document.getElementById('saveBtn');
+  btn.disabled=true;btn.textContent='Saving...';
+
+  var data=buildActivityData();
+  var title=document.getElementById('titleInput').value.trim()||'Untitled';
+
+  var body={
+    user_id:userId,
+    title:title,
+    constellation_id:selConstellation.id,
+    grid_min:selConstellation.gridMin,
+    grid_max:selConstellation.gridMax,
+    quadrants:selConstellation.quadrants,
+    show_coords:showHint,
+    num_problems:selNumProbs,
+    points:data.points,
+    edges:data.edges
+  };
+
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/graphing_activities',{
+      method:'POST',
+      headers:{
+        'apikey':SB_KEY,'Authorization':'Bearer '+token,
+        'Content-Type':'application/json','Prefer':'return=representation'
+      },
+      body:JSON.stringify(body)
+    });
+    if(!r.ok){alert('Save failed. Try again.');btn.disabled=false;btn.textContent='Save & Get Link';return;}
+    var result=await r.json();
+    var saved=Array.isArray(result)?result[0]:result;
+    lastSavedId=saved.id;
+
+    var link=window.location.origin+'/graphing.html?id='+saved.id;
+    document.getElementById('linkInput').value=link;
+    document.getElementById('linkBox').classList.add('show');
+    btn.textContent='Saved!';
+    loadSaved();
+  }catch(e){
+    alert('Save failed. Try again.');btn.disabled=false;btn.textContent='Save & Get Link';
+  }
+}
+
+function copyLink(){
+  var input=document.getElementById('linkInput');
+  input.select();
+  navigator.clipboard.writeText(input.value).then(function(){
+    document.getElementById('linkCopy').textContent='Copied!';
+    setTimeout(function(){document.getElementById('linkCopy').textContent='Copy link';},1500);
+  });
+}
+
+// ── SAVED ACTIVITIES ──
+async function loadSaved(){
+  if(!token||!userId)return;
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/graphing_activities?user_id=eq.'+userId+'&select=id,title,constellation_id,num_problems,quadrants,created_at&order=created_at.desc',{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}
+    });
+    var acts=await r.json();
+    var grid=document.getElementById('savedGrid');
+    if(!Array.isArray(acts)||acts.length===0){grid.innerHTML='<div class="empty-msg">No saved graphing activities yet.</div>';return;}
+    grid.innerHTML='';
+    acts.forEach(function(a){
+      var card=document.createElement('div');card.className='s-card';
+      var date=new Date(a.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      var qLabel=a.quadrants===1?'Q1':'4Q';
+      card.innerHTML='<div class="s-title">'+a.title+'</div>'+
+        '<div class="s-meta">'+a.num_problems+' pts · '+qLabel+' · '+date+'</div>'+
+        '<div class="s-actions">'+
+          '<button class="s-copy" onclick="copySavedLink(\''+a.id+'\',this)">Copy Link</button>'+
+          '<button class="s-del" onclick="deleteSaved(\''+a.id+'\',this)">Delete</button>'+
+        '</div>';
+      grid.appendChild(card);
+    });
+  }catch(e){console.log('Load saved failed',e);}
+}
+
+function copySavedLink(id,btn){
+  var link=window.location.origin+'/graphing.html?id='+id;
+  navigator.clipboard.writeText(link).then(function(){
+    btn.textContent='Copied!';
+    setTimeout(function(){btn.textContent='Copy Link';},1500);
+  });
+}
+
+async function deleteSaved(id,btn){
+  if(!confirm('Delete this graphing activity?'))return;
+  try{
+    await fetch(SB_URL+'/rest/v1/graphing_activities?id=eq.'+id,{
+      method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token,'Prefer':'return=minimal'}
+    });
+    loadSaved();
+  }catch(e){alert('Delete failed.');}
+}
+
+// ── INIT ──
+init();
+</script>
+</body>
+</html>
