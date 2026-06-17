@@ -71,6 +71,8 @@ body.ready{opacity:1}
 .toast.err{background:var(--coral)}
 /* fireworks canvas */
 #fireworks{position:fixed;inset:0;z-index:90;pointer-events:none;display:none}
+.float-dl{display:none;position:fixed;bottom:28px;right:28px;z-index:80;padding:14px 28px;border:none;border-radius:14px;background:var(--ink);color:var(--lime);font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .2s;animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+.float-dl:hover{transform:scale(1.05)}
 /* completion */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;align-items:center;justify-content:center;overflow-y:auto;padding:20px}
 .overlay.show{display:flex;animation:fadein .35s ease}
@@ -129,8 +131,10 @@ body.ready{opacity:1}
 </div>
 <div class="toast" id="toast"></div>
 <canvas id="fireworks"></canvas>
+<button class="float-dl" id="floatDl" onclick="showCompletion()">Download My Work</button>
 <div class="overlay" id="overlay">
-  <div class="complete-card">
+  <div class="complete-card" style="position:relative;">
+    <button onclick="document.getElementById('overlay').classList.remove('show')" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;line-height:1;">&times;</button>
     <h2 id="completeTitle">Picture Revealed!</h2>
     <p id="completeSub">You plotted every point correctly.</p>
     <div class="stat-grid">
@@ -141,7 +145,6 @@ body.ready{opacity:1}
     </div>
     <div class="name-row"><label>Enter your name</label><input class="name-input" id="studentName" placeholder="First and Last Name" autocomplete="off"></div>
     <button class="dl-btn" id="dlBtn" onclick="downloadResult()" disabled>Download</button>
-    <button class="btn-again" id="againBtn">&#8592; Try another</button>
   </div>
 </div>
 
@@ -208,7 +211,6 @@ function backToMenu(){
   history.pushState({},'',window.location.pathname);act=null;
 }
 document.getElementById('backBtn').addEventListener('click',backToMenu);
-document.getElementById('againBtn').addEventListener('click',backToMenu);
 
 // ═══ GRID ═══
 function calcSize(){var pW=window.innerWidth<=500?0:window.innerWidth<=700?220:280;var aW=window.innerWidth-pW-80;var aH=window.innerWidth<=500?window.innerHeight*0.6:window.innerHeight-80;return Math.max(300,Math.min(560,Math.min(aW,aH)));}
@@ -353,7 +355,12 @@ function startFireworks(){
     fwAnim=requestAnimationFrame(frame);
   }
   fwAnim=requestAnimationFrame(frame);
-  setTimeout(function(){cancelAnimationFrame(fwAnim);canvas.style.display='none';showCompletion();},15000);
+  setTimeout(function(){cancelAnimationFrame(fwAnim);canvas.style.display='none';showDownloadButton();},10000);
+}
+
+// ═══ SHOW DOWNLOAD BUTTON (after fireworks) ═══
+function showDownloadButton(){
+  document.getElementById('floatDl').style.display='block';
 }
 
 // ═══ COMPLETION ═══
