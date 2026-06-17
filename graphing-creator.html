@@ -91,7 +91,7 @@
           <span style="font-size:12px;color:#1a1a24;min-width:90px;font-weight:700;">Grid lines:</span>
           <div style="display:flex;gap:4px;flex-wrap:wrap;" id="gridSizeBtns"></div>
         </div>
-        <div style="font-size:10px;color:#888;margin-top:6px;" id="gridSizeNote">10 x 10 grid (default)</div>
+        <div style="font-size:10px;color:#888;margin-top:6px;" id="gridSizeNote">10 x 10 grid (axes 0 to 10)</div>
       </div>
     </div>
 
@@ -143,7 +143,7 @@
         <span style="font-size:13px;color:#444;">Label every tick mark on the axes</span>
         <label class="toggle-switch"><input type="checkbox" id="label-toggle" checked onchange="labelAllTicks=this.checked"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
       </div>
-      <div style="font-size:11px;color:#888;margin-top:4px;">When off, only every other tick mark is labeled — useful for smaller scales like 0.5 to keep the grid clean.</div>
+      <div style="font-size:11px;color:#888;margin-top:4px;">Turn off for larger grids (15 or 20 lines) to prevent numbers from overlapping on the axes.</div>
     </div>
 
     <button class="gen-btn" onclick="generatePreview()">Preview my Graphing Activity →</button>
@@ -344,9 +344,8 @@ function buildScaleBtns(){
 
 function updateScaleNote(){
   var note=document.getElementById('scaleNote');
-  if(selScale===1)note.textContent='Axis counts by 1 (default)';
-  else if(selScale<1)note.textContent='Axis counts by '+selScale+' — coordinates will be decimals';
-  else note.textContent='Axis counts by '+selScale+' — coordinates go up to '+(selConst?getGridBounds().gridMax*selScale:'?');
+  var maxVal=selConst?Math.round(getGridBounds().gridMax*selScale*1000)/1000:'?';
+  note.textContent='Axis counts by '+selScale+' \u2014 coordinates go up to '+maxVal;
 }
 
 function getGridBounds(){
