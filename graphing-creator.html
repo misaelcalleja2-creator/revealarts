@@ -121,7 +121,7 @@
       <div style="font-size:11px;color:#888;margin-top:4px;">Students see the coordinate label when hovering, but only for the first 3 points. After that, they're on their own.</div>
     </div>
 
-    <button class="gen-btn" onclick="generateAndSave()">Save & get student link →</button>
+    <button class="gen-btn" onclick="generatePreview()">Preview my Graphing Activity →</button>
 
     <div class="step-nav" style="margin-top:0;">
       <button class="step-back-btn" onclick="goToStep(1)">← Back to skills</button>
@@ -333,47 +333,61 @@ function buildActivityData(){
 }
 
 // ═══════════════════════════════════════════════════
-//  GENERATE & SAVE
+//  GENERATE PREVIEW (no save yet)
 // ═══════════════════════════════════════════════════
-async function generateAndSave(){
+var pendingData=null,pendingBody=null;
+
+function generatePreview(){
   if(!selConst||!token)return;
   var title=document.getElementById('act-title').value.trim();
   if(!title){document.getElementById('vm').textContent='Give your activity a name';document.getElementById('vm').style.display='block';return;}
   document.getElementById('vm').style.display='none';
 
-  // show loading
   document.getElementById('lo').classList.add('active');
 
-  var data=buildActivityData();
+  pendingData=buildActivityData();
   var showHintVal=document.getElementById('hint-toggle').checked;
 
-  var body={
+  pendingBody={
     user_id:userId,title:title,
     constellation_id:selConst.id,
     grid_min:selConst.gridMin,grid_max:selConst.gridMax,
     quadrants:selConst.quadrants,
     show_coords:showHintVal,
     num_problems:selNumProbs,
-    points:data.points,edges:data.edges
+    points:pendingData.points,edges:pendingData.edges
   };
+
+  setTimeout(function(){
+    document.getElementById('lo').classList.remove('active');
+    showPreview(pendingData);
+  },400);
+}
+
+// ═══════════════════════════════════════════════════
+//  SAVE TO SUPABASE
+// ═══════════════════════════════════════════════════
+async function saveActivity(){
+  if(!pendingBody)return;
+  var btn=document.getElementById('save-btn');
+  btn.disabled=true;btn.textContent='Saving...';
 
   try{
     var r=await fetch(SB_URL+'/rest/v1/graphing_activities',{
       method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json','Prefer':'return=representation'},
-      body:JSON.stringify(body)
+      body:JSON.stringify(pendingBody)
     });
-    if(!r.ok){alert('Save failed. Try again.');document.getElementById('lo').classList.remove('active');return;}
-    var result=await r.json();
-    var saved=Array.isArray(result)?result[0]:result;
-    document.getElementById('lo').classList.remove('active');
-    showPreview(saved,data);
-  }catch(e){alert('Save failed.');document.getElementById('lo').classList.remove('active');}
+    if(!r.ok){alert('Save failed. Try again.');btn.disabled=false;btn.textContent='Save to Dashboard';return;}
+    btn.textContent='✓ Saved!';btn.style.background='var(--lime-dark)';btn.style.color='#fff';
+    // show go to dashboard button
+    document.getElementById('dash-btn').style.display='';
+  }catch(e){alert('Save failed.');btn.disabled=false;btn.textContent='Save to Dashboard';}
 }
 
 // ═══════════════════════════════════════════════════
 //  PREVIEW
 // ═══════════════════════════════════════════════════
-function showPreview(saved,data){
+function showPreview(data){
   document.getElementById('pe').style.display='none';
   var pc=document.getElementById('pc');pc.style.display='flex';
 
@@ -384,12 +398,10 @@ function showPreview(saved,data){
   var svg=document.getElementById('prevGrid');
   svg.setAttribute('width',sz);svg.setAttribute('height',sz);svg.setAttribute('viewBox','0 0 '+sz+' '+sz);
   var h='<rect width="'+sz+'" height="'+sz+'" fill="var(--bg2)" rx="8"/>';
-  // grid lines
   for(var i=c.gridMin;i<=c.gridMax;i++){
     h+='<line x1="'+sx(i)+'" y1="'+pad+'" x2="'+sx(i)+'" y2="'+(pad+range*cell)+'" stroke="#ddd" stroke-width="1"/>';
     h+='<line x1="'+pad+'" y1="'+sy(i)+'" x2="'+(pad+range*cell)+'" y2="'+sy(i)+'" stroke="#ddd" stroke-width="1"/>';
   }
-  // axes
   if(c.quadrants===1){
     h+='<line x1="'+sx(c.gridMin)+'" y1="'+sy(c.gridMin)+'" x2="'+sx(c.gridMax)+'" y2="'+sy(c.gridMin)+'" stroke="#0a0a0f" stroke-width="2"/>';
     h+='<line x1="'+sx(c.gridMin)+'" y1="'+sy(c.gridMin)+'" x2="'+sx(c.gridMin)+'" y2="'+sy(c.gridMax)+'" stroke="#0a0a0f" stroke-width="2"/>';
@@ -397,12 +409,10 @@ function showPreview(saved,data){
     h+='<line x1="'+pad+'" y1="'+sy(0)+'" x2="'+(pad+range*cell)+'" y2="'+sy(0)+'" stroke="#0a0a0f" stroke-width="2"/>';
     h+='<line x1="'+sx(0)+'" y1="'+pad+'" x2="'+sx(0)+'" y2="'+(pad+range*cell)+'" stroke="#0a0a0f" stroke-width="2"/>';
   }
-  // constellation edges (faint preview)
   data.edges.forEach(function(e){
     var a=data.points.find(function(p){return p.label===e[0];}),b=data.points.find(function(p){return p.label===e[1];});
     if(a&&b)h+='<line x1="'+sx(a.x)+'" y1="'+sy(a.y)+'" x2="'+sx(b.x)+'" y2="'+sy(b.y)+'" stroke="rgba(122,170,0,0.3)" stroke-width="2" stroke-dasharray="4"/>';
   });
-  // all points
   data.points.forEach(function(p){
     var col=p.isStar?'#7aaa00':'#bbb';
     h+='<circle cx="'+sx(p.x)+'" cy="'+sy(p.y)+'" r="5" fill="'+col+'"/>';
@@ -411,10 +421,9 @@ function showPreview(saved,data){
   svg.innerHTML=h;
 
   // buttons
-  var link=window.location.origin+'/graphing.html?id='+saved.id;
   document.getElementById('dl-btns').innerHTML=
-    '<button class="dl-btn" onclick="copyToClip(\''+link+'\',this)">📋 Copy student link</button>'+
-    '<button class="dl-btn" style="background:var(--white);color:var(--ink);border:1.5px solid var(--border);" onclick="window.location.href=\'dashboard.html\'">← Back to Dashboard</button>';
+    '<button class="dl-btn" id="save-btn" onclick="saveActivity()">Save to Dashboard</button>'+
+    '<button class="dl-btn" id="dash-btn" style="display:none;background:var(--white);color:var(--ink);border:1.5px solid var(--border);" onclick="window.location.href=\'dashboard.html\'">Go to Dashboard →</button>';
 }
 
 function copyToClip(text,btn){

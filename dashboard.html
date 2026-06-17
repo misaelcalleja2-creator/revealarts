@@ -274,10 +274,10 @@ footer {
   </div>
 
   <div class="product-tabs">
-    <a href="#" class="product-tab active" onclick="return false;">
+    <a href="#" class="product-tab active" id="tab-arts" onclick="switchTab('arts');return false;">
       🎨 Reveal Arts <span class="tab-badge">Active</span>
     </a>
-    <a href="graphing-creator.html" class="product-tab">
+    <a href="#" class="product-tab" id="tab-graphing" onclick="switchTab('graphing');return false;">
       📐 Reveal Graphing <span class="tab-badge">New</span>
     </a>
     <span class="product-tab coming">
@@ -285,7 +285,7 @@ footer {
     </span>
   </div>
 
-  <div class="quick-actions">
+  <div class="quick-actions" id="qa-arts">
     <a href="creator.html" class="action-card">
       <div class="action-title">Create New Activity</div>
       <div class="action-desc">Pick an image. Choose from built-in problems or type your own.</div>
@@ -297,6 +297,14 @@ footer {
       <div id="spiral-disabled-note" style="font-size:10px;color:#888;margin-top:2px;">Save at least 2 activities to unlock</div>
       <span class="action-btn" style="opacity:0.4;">Create spiral →</span>
     </div>
+  </div>
+
+  <div class="quick-actions" id="qa-graphing" style="display:none;">
+    <a href="graphing-creator.html" class="action-card">
+      <div class="action-title">Create Graphing Activity</div>
+      <div class="action-desc">Pick a constellation. Students plot coordinates to reveal the picture.</div>
+      <span class="action-btn">Create now →</span>
+    </a>
   </div>
 
   <div class="section-header">
@@ -756,6 +764,24 @@ function signOut() {
   localStorage.removeItem('sb_access_token');
   localStorage.removeItem('sb_refresh_token');
   window.location.href = 'login.html';
+}
+
+function switchTab(tab) {
+  var artsTab = document.getElementById('tab-arts');
+  var graphTab = document.getElementById('tab-graphing');
+  var qaArts = document.getElementById('qa-arts');
+  var qaGraph = document.getElementById('qa-graphing');
+  if (tab === 'graphing') {
+    artsTab.classList.remove('active');
+    graphTab.classList.add('active');
+    qaArts.style.display = 'none';
+    qaGraph.style.display = '';
+  } else {
+    artsTab.classList.add('active');
+    graphTab.classList.remove('active');
+    qaArts.style.display = '';
+    qaGraph.style.display = 'none';
+  }
 }
 
 // ── TIPS ──────────────────────────────────────────────────────────────────────
