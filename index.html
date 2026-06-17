@@ -708,8 +708,8 @@ function checkAnswer() {
   if (val === problems[currentProblem].a) {
     feedbackMsg.textContent = '✓ Correct!';
     feedbackMsg.className = 'feedback-msg correct';
-    revealTiles(tilesPerCorrect);
     currentProblem++;
+    revealTiles(tilesPerCorrect);
     if (currentProblem >= problems.length) {
       setTimeout(resetDemo, 7000);
     } else {
