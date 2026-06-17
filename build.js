@@ -156,11 +156,25 @@ ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-tit
         <span class="brand-name">Reveal Arts</span>
       </div>
       <div class="saved-badge" id="sb2">✓ Saved</div>
-      <button class="dl-btn" id="dl-btn" onclick="doDownload()">⬇ Download Result</button>
+      <button class="dl-btn" id="dl-btn" onclick="doDownload()">Download My Work</button>
     </div>
   </div>
   <div class="prob-col-hidden" id="rc2"></div>
 </div>
+<div id="dl-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:10000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:20px;padding:36px 40px;text-align:center;max-width:400px;width:90%;position:relative;animation:dlpop .4s cubic-bezier(.34,1.56,.64,1);">
+    <button onclick="document.getElementById('dl-overlay').style.display='none'" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:24px;color:#888;cursor:pointer;line-height:1;">&times;</button>
+    <h2 style="font-family:Fredoka One,cursive;font-size:22px;color:#0a0a0f;margin-bottom:6px;">Download My Work</h2>
+    <p style="font-size:13px;color:#888;margin-bottom:14px;">Great job finishing this activity!</p>
+    <div id="dl-stat-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;text-align:left;"></div>
+    <div style="text-align:left;margin-bottom:14px;">
+      <label style="display:block;font-size:11px;color:#888;margin-bottom:4px;font-weight:700;">Enter your name</label>
+      <input id="dl-name" type="text" placeholder="First and Last Name" autocomplete="off" style="width:100%;padding:10px 14px;border:1.5px solid rgba(0,0,0,0.09);border-radius:10px;font-size:14px;font-family:Nunito,sans-serif;outline:none;">
+    </div>
+    <button id="dl-go" onclick="executeDownload()" disabled style="width:100%;padding:12px;border:none;border-radius:12px;background:#0a0a0f;color:#b8e030;font-family:Fredoka One,cursive;font-size:14px;cursor:pointer;opacity:0.4;">Download</button>
+  </div>
+</div>
+<style>@keyframes dlpop{from{transform:scale(.75);opacity:0}to{transform:scale(1);opacity:1}}</style>
 <script>
 const PROBS=${JSON.stringify(problems.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra})))};
 const ANCHORS=${JSON.stringify(anchors)},TOTAL=${N};
@@ -419,9 +433,6 @@ function launchFireworks(){
   },15000);
 }
 function doDownload(){
-  var name=prompt('Enter your name for the download:');
-  if(!name)return;
-  name=name.trim();if(!name)return;
   var td=document.getElementById('td');
   var timeLabel='';
   if(td&&TIMER_MINS>0){
@@ -431,10 +442,35 @@ function doDownload(){
   } else {
     var el=Math.floor((Date.now()-pageStart)/1000);
     var em=Math.floor(el/60),es=el%60;
-    timeLabel='Elapsed: '+(em<10?'0'+em:em)+':'+(es<10?'0'+es:es);
+    timeLabel=(em<10?'0'+em:em)+':'+(es<10?'0'+es:es);
   }
   var wrongCount=wrongAttempts.size;
-  var sc=solved.size+' / '+TOTAL+' correct'+(wrongCount>0?' ('+wrongCount+' question'+(wrongCount===1?'':'s')+' answered wrong at least once)':'');
+  var now=new Date();
+  var ts=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  var sg=document.getElementById('dl-stat-grid');
+  sg.innerHTML='<div style="background:#f7f6f2;border-radius:10px;padding:10px 14px;"><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Time</div><div style="font-family:Fredoka One,cursive;font-size:15px;">'+timeLabel+'</div></div>'
+    +'<div style="background:#f7f6f2;border-radius:10px;padding:10px 14px;"><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Wrong Attempts</div><div style="font-family:Fredoka One,cursive;font-size:15px;">'+wrongCount+'</div></div>'
+    +'<div style="background:#f7f6f2;border-radius:10px;padding:10px 14px;"><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Score</div><div style="font-family:Fredoka One,cursive;font-size:15px;">'+solved.size+'/'+TOTAL+'</div></div>'
+    +'<div style="background:#f7f6f2;border-radius:10px;padding:10px 14px;"><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Completed</div><div style="font-family:Fredoka One,cursive;font-size:15px;">'+ts+'</div></div>';
+  document.getElementById('dl-name').value='';
+  document.getElementById('dl-go').disabled=true;
+  document.getElementById('dl-go').style.opacity='0.4';
+  document.getElementById('dl-overlay').style.display='flex';
+  document.getElementById('dl-name').oninput=function(){
+    var ok=this.value.trim().length>=1;
+    document.getElementById('dl-go').disabled=!ok;
+    document.getElementById('dl-go').style.opacity=ok?'1':'0.4';
+  };
+}
+function executeDownload(){
+  var name=document.getElementById('dl-name').value.trim();if(!name)return;
+  document.getElementById('dl-overlay').style.display='none';
+  var td=document.getElementById('td');
+  var timeLabel='';
+  if(td&&TIMER_MINS>0){var txt=td.textContent;if(txt.indexOf('⚠')>-1)timeLabel='Overtime: +'+txt.replace(/[^0-9:]/g,'').trim();else timeLabel='Time remaining: '+txt.replace(/[^0-9:]/g,'').trim();}
+  else{var el=Math.floor((Date.now()-pageStart)/1000);var em=Math.floor(el/60),es=el%60;timeLabel=(em<10?'0'+em:em)+':'+(es<10?'0'+es:es);}
+  var wrongCount=wrongAttempts.size;
+  var sc=solved.size+'/'+TOTAL+' correct'+(wrongCount>0?' ('+wrongCount+' wrong)':'');
   var now=new Date();
   var ts=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
   if(typeof html2canvas==='undefined'){alert('Download loading, please try again.');return;}
@@ -456,8 +492,8 @@ function doDownload(){
     c2.fillText(timeLabel+'  •  '+ts+'  •  Reveal Arts by The Real Sum Shady',20,cap.height+38);
     var a=document.createElement('a');
     var safe=name.replace(/[^a-zA-Z0-9]/g,'-');
-    a.download=safe+'-reveal-arts.png';
-    a.href=out.toDataURL('image/png');
+    a.download=safe+'-reveal-arts.jpg';
+    a.href=out.toDataURL('image/jpeg',0.92);
     a.click();
   });
 }
