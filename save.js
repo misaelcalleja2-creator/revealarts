@@ -187,7 +187,12 @@ async function saveActivity(html, title) {
     }
 
     const settings = captureSettings();
-    const subject = curCat === 'alg' ? 'Algebra' : 'Operations';
+    const subjectMap = {
+      'addition':'Addition','subtraction':'Subtraction','multiplication':'Multiplication',
+      'division':'Division','fractions':'Fractions','pemdas':'PEMDAS',
+      'exponents':'Exponents','percents':'Percents','proportions':'Proportions','geometry':'Geometry'
+    };
+    const subject = curCat === 'alg' ? 'Algebra' : (subjectMap[curOp] || 'Skills');
 
     // If editing existing activity — UPDATE instead of INSERT
     if (editingActivityId) {

@@ -740,7 +740,7 @@ async function initEditMode(id) {
 // ── NAV ──────────────────────────────────────────────────────────────────────
 function confirmDashboard() {
   if (Object.keys(selectedActivityMap).length > 0 || spiralCustomProbs.length > 0) {
-    if (!confirm('Leave without saving? Your selections will be lost.')) return;
+    if (!confirm('Leave without saving? Your current activity won\'t be saved.')) return;
   }
   window.location.href = 'dashboard.html';
 }
