@@ -414,22 +414,36 @@ function generateFillerPoints(c,count){
 function buildActivityData(){
   var c=selConst;
   var b=getGridBounds();
-  // Center constellation in expanded grid
+  // Scale constellation proportionally to fill the expanded grid
   var origRange=c.gridMax-c.gridMin;
   var newRange=b.gridMax-b.gridMin;
-  var offsetX=0,offsetY=0;
-  if(newRange>origRange){
+  var scaleFactor=newRange/origRange;
+  // Scale constellation points
+  var scaledPts=c.points.map(function(p,i){
+    var sx,sy;
     if(c.quadrants===1){
-      offsetX=Math.round((newRange-origRange)/2);
-      offsetY=offsetX;
+      sx=Math.round(p.x*scaleFactor);
+      sy=Math.round(p.y*scaleFactor);
+    }else{
+      sx=Math.round(p.x*scaleFactor);
+      sy=Math.round(p.y*scaleFactor);
     }
-    // Q4: constellation already centered around origin, minimal offset needed
-  }
+    sx=Math.max(b.gridMin,Math.min(b.gridMax,sx));
+    sy=Math.max(b.gridMin,Math.min(b.gridMax,sy));
+    return{x:sx,y:sy,ci:i};
+  });
+  // Generate fillers across full grid, avoiding scaled constellation points
+  var existing=scaledPts.map(function(p){return p.x+','+p.y;});
   var fillerCount=selNumProbs-c.points.length;
-  var fillers=fillerCount>0?generateFillerPoints(c,fillerCount):[];
-  var all=[];
-  c.points.forEach(function(p,i){all.push({x:p.x+offsetX,y:p.y+offsetY,ci:i});});
-  fillers.forEach(function(p){all.push({x:p.x,y:p.y,ci:-1});});
+  var fillers=[],attempts=0;
+  while(fillers.length<fillerCount&&attempts<2000){
+    attempts++;
+    var fx=Math.floor(Math.random()*(b.gridMax-b.gridMin-1))+b.gridMin+1;
+    var fy=Math.floor(Math.random()*(b.gridMax-b.gridMin-1))+b.gridMin+1;
+    var key=fx+','+fy;
+    if(existing.indexOf(key)===-1){existing.push(key);fillers.push({x:fx,y:fy,ci:-1});}
+  }
+  var all=scaledPts.concat(fillers);
   // Fisher-Yates shuffle
   for(var i=all.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=all[i];all[i]=all[j];all[j]=tmp;}
   var labels='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
