@@ -715,7 +715,7 @@ function setCat(cat) {
   } else {
     calcEnabled = false;
     var ct2 = document.getElementById('calc-toggle'); if (ct2) ct2.checked = false;
-    curMode = 'manual';
+    curMode = 'custom';
     curCustomSubCat = 'ops';
     _styleSubBtns('ops');
     _applySelViewMode(false);

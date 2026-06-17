@@ -192,7 +192,7 @@ async function saveActivity(html, title) {
       'division':'Division','fractions':'Fractions','pemdas':'PEMDAS',
       'exponents':'Exponents','percents':'Percents','proportions':'Proportions','geometry':'Geometry'
     };
-    const subject = curCat === 'alg' ? 'Algebra' : (curMode === 'custom' ? 'Custom' : (subjectMap[curOp] || 'Skills'));
+    const subject = curCat === 'alg' ? 'Algebra' : (curMode === 'custom' || !subjectMap[curOp] ? 'Custom' : subjectMap[curOp]);
 
     // If editing existing activity — UPDATE instead of INSERT
     if (editingActivityId) {
