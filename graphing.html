@@ -122,6 +122,7 @@ body.ready{opacity:1}
     <div class="panel-back" id="backBtn">&#8592; Back</div>
     <div class="panel-logo"><div class="panel-logo-circle">THE<br>REAL<br>SUM<br>SHADY</div><span class="panel-logo-text">Reveal Graphing</span></div>
     <div class="panel-title" id="actTitle"></div>
+    <div id="timerDisplay" style="display:none;font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:var(--ink);letter-spacing:1px;background:var(--bg2);border-radius:8px;padding:4px 12px;margin-bottom:8px;text-align:center;"></div>
     <div class="panel-sub">Plot each point on the grid</div>
     <div class="progress-track"><div class="progress-fill" id="bar"></div></div>
     <div class="stats-row"><span id="counter">0 / 0</span><span id="attempts">0 wrong</span></div>
@@ -182,7 +183,7 @@ var LIBRARY=[
   {id:'arrow',name:'Arrow',gridMin:-5,gridMax:5,quadrants:4,points:[{label:'A',x:-4,y:1},{label:'B',x:0,y:1},{label:'C',x:0,y:3},{label:'D',x:4,y:0},{label:'E',x:0,y:-3},{label:'F',x:0,y:-1},{label:'G',x:-4,y:-1}],edges:[['A','B'],['B','C'],['C','D'],['D','E'],['E','F'],['F','G'],['G','A']]}
 ];
 
-var act=null,cur=0,wrongCount=0,showCoords=false,toastTimer=null,startTime=null,supabaseId=null;
+var act=null,cur=0,wrongCount=0,showCoords=false,toastTimer=null,startTime=null,supabaseId=null,actTimerEnabled=false,actTimerMins=5,timerInterval=null;
 var SB_URL='https://zionhfdaksktpwcvjnde.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 var PAD=44,SIZE,CELL,RANGE,SVG;
@@ -208,12 +209,15 @@ function buildMenu(){
 function startActivity(id){
   act=LIBRARY.find(function(c){return c.id===id;});if(!act)return;
   cur=0;wrongCount=0;supabaseId=null;startTime=Date.now();
+  actTimerEnabled=false;actTimerMins=5;
   history.pushState({c:id},'',window.location.pathname+'?c='+id+(showCoords?'&coords=true':''));
   launchActivity(act.name);
 }
 function startFromDB(data){
   act={id:data.id,name:data.title,gridMin:data.grid_min,gridMax:data.grid_max,quadrants:data.quadrants,points:data.points,edges:data.edges};
   showCoords=data.show_coords;supabaseId=data.id;cur=0;wrongCount=0;startTime=Date.now();
+  actTimerEnabled=data.timer_enabled||false;
+  actTimerMins=data.timer_mins||5;
   launchActivity(data.title);
 }
 function launchActivity(title){
@@ -223,6 +227,20 @@ function launchActivity(title){
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('actTitle').textContent=title;
   RANGE=act.gridMax-act.gridMin;drawGrid();renderList();updateStats();
+  // Timer
+  if(timerInterval)clearInterval(timerInterval);
+  var td=document.getElementById('timerDisplay');
+  if(actTimerEnabled&&actTimerMins>0){
+    td.style.display='block';
+    var total=actTimerMins*60;
+    function tick(){
+      var elapsed=Math.floor((Date.now()-startTime)/1000);
+      var rem=total-elapsed;
+      if(rem>=0){var m=Math.floor(rem/60),s=rem%60;td.textContent='\u23F1 '+(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);td.style.color='var(--ink)';td.style.background='var(--bg2)';}
+      else{var over=Math.abs(rem);var m=Math.floor(over/60),s=over%60;td.textContent='\u26A0 +'+(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);td.style.color='var(--coral)';td.style.background='rgba(255,92,58,0.08)';}
+    }
+    tick();timerInterval=setInterval(tick,1000);
+  }else{td.style.display='none';}
 }
 function backToMenu(){
   document.getElementById('activityScreen').classList.remove('show');
