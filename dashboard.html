@@ -92,6 +92,8 @@ nav {
   text-decoration: none; transition: border-color .2s, transform .2s, box-shadow .2s; cursor: pointer;
 }
 .action-card:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+.action-card-disabled { opacity: 0.45; cursor: default; }
+.action-card-disabled:hover { border-color: var(--border); transform: none; box-shadow: none; }
 .action-icon { font-size: 26px; }
 .action-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); }
 .action-desc { font-size: 12px; color: var(--text3); line-height: 1.5; }
@@ -282,11 +284,12 @@ footer {
       <div class="action-desc">Pick an image and a skill — we generate the problems for you</div>
       <span class="action-btn">Create now →</span>
     </a>
-    <a href="spiral-creator.html" class="action-card">
+    <div class="action-card action-card-disabled" id="spiral-action-card">
       <div class="action-title">Create Spiral Review</div>
       <div class="action-desc">Blend problems from your saved activities into one mixed review</div>
-      <span class="action-btn">Create spiral →</span>
-    </a>
+      <div id="spiral-disabled-note" style="font-size:10px;color:#888;margin-top:2px;">Save at least 2 activities to unlock</div>
+      <span class="action-btn" style="opacity:0.4;">Create spiral →</span>
+    </div>
   </div>
 
   <div class="section-header">
@@ -311,7 +314,6 @@ footer {
       <div class="empty-icon">🎨</div>
       <div class="empty-title">No saved activities yet</div>
       <div class="empty-desc">Create and download an activity — it will automatically save here for easy re-download anytime.</div>
-      <a href="creator.html" class="empty-btn">Create your first activity →</a>
     </div>
     <div class="activities-grid" id="activities-grid" style="display:none;"></div>
     <div class="save-limit" id="save-limit" style="margin-top:12px;"></div>
@@ -456,6 +458,24 @@ async function loadActivities(token, userId, profile) {
     document.getElementById('save-limit').innerHTML =
       '<span>' + acts.length + '</span> of <span>' + limit + '</span> activities saved' +
       (isPaid ? '' : ' · <a href="plans.html" style="color:var(--lime-dark);font-weight:600;">Upgrade for more</a>');
+
+    // Unlock spiral card if 2+ activities have problem data
+    var spiralCard = document.getElementById('spiral-action-card');
+    if (spiralCard) {
+      var withProbs = acts.filter(function(a) { return a.problems && Array.isArray(a.problems) && a.problems.length > 0; });
+      if (withProbs.length >= 2) {
+        spiralCard.classList.remove('action-card-disabled');
+        spiralCard.style.cursor = 'pointer';
+        spiralCard.onclick = function() { window.location.href = 'spiral-creator.html'; };
+        var note = document.getElementById('spiral-disabled-note');
+        if (note) note.style.display = 'none';
+        var btn = spiralCard.querySelector('.action-btn');
+        if (btn) btn.style.opacity = '';
+      } else if (acts.length >= 2) {
+        var note = document.getElementById('spiral-disabled-note');
+        if (note) note.textContent = 'Re-save your activities to unlock';
+      }
+    }
 
   } catch(e) {
     console.log('Activities fetch failed', e);
