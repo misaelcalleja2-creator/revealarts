@@ -1,5 +1,5 @@
 function confirmDashboard() {
-  if (confirm("Leave the creator? Your current activity won't be saved.")) {
+  if (confirm("Leave without saving? Your current activity won't be saved.")) {
     window.location.href = 'dashboard.html';
   }
 }
