@@ -449,31 +449,84 @@ function downloadResult(){
   var svgUrl=URL.createObjectURL(svgBlob);
   var img=new Image();
   img.onload=function(){
+    // Canvas dimensions: wider to fit points list on left
+    var w=1400,h=980;
     var canvas=document.createElement('canvas');
-    var w=1200,h=960;canvas.width=w;canvas.height=h;
+    canvas.width=w;canvas.height=h;
     var ctx=canvas.getContext('2d');
+
     // background
     ctx.fillStyle='#f7f6f2';ctx.fillRect(0,0,w,h);
-    // white card area
-    ctx.fillStyle='#ffffff';roundRect(ctx,40,40,w-80,h-80,16);ctx.fill();
-    ctx.strokeStyle='#e5e5ea';ctx.lineWidth=1;roundRect(ctx,40,40,w-80,h-80,16);ctx.stroke();
-    // title
-    ctx.fillStyle='#1a1a24';ctx.font='bold 30px Syne,sans-serif';ctx.textAlign='center';
-    ctx.fillText(name,w/2,100);
-    // subtitle
-    ctx.fillStyle='#888';ctx.font='15px DM Sans,sans-serif';
-    ctx.fillText((act.name||'Graphing Activity')+' — '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}),w/2,128);
-    // stats
+    // white card
+    ctx.fillStyle='#ffffff';roundRect(ctx,32,32,w-64,h-64,16);ctx.fill();
+    ctx.strokeStyle='#e5e5ea';ctx.lineWidth=1;roundRect(ctx,32,32,w-64,h-64,16);ctx.stroke();
+
+    // ─── HEADER ───
+    // Activity name (left-aligned above list)
+    ctx.fillStyle='#1a1a24';ctx.font='bold 26px Syne,sans-serif';ctx.textAlign='left';
+    ctx.fillText(act.name||'Graphing Activity',60,88);
+    // Student name (right-aligned, same line)
+    ctx.fillStyle='#555';ctx.font='bold 20px Syne,sans-serif';ctx.textAlign='right';
+    ctx.fillText(name,w-60,88);
+    // Date + stats below
     var elapsed=Math.floor((Date.now()-startTime)/1000);
     var mins=Math.floor(elapsed/60),secs=elapsed%60;
-    ctx.fillStyle='#555';ctx.font='13px DM Sans,sans-serif';
-    ctx.fillText('Time: '+mins+':'+(secs<10?'0':'')+secs+'   |   Wrong Attempts: '+wrongCount+'   |   Points Plotted: '+act.points.length,w/2,156);
-    // grid
-    var gridSize=Math.min(680,h-260);
-    ctx.drawImage(img,(w-gridSize)/2,180,gridSize,gridSize);
+    ctx.fillStyle='#888';ctx.font='13px DM Sans,sans-serif';ctx.textAlign='left';
+    ctx.fillText(new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
+      +'   ·   Time: '+mins+':'+(secs<10?'0':'')+secs
+      +'   ·   Wrong Attempts: '+wrongCount
+      +'   ·   Points Plotted: '+act.points.length,
+      60,116);
+
+    // thin divider
+    ctx.strokeStyle='#e5e4e0';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(60,128);ctx.lineTo(w-60,128);ctx.stroke();
+
+    // ─── LEFT: POINTS LIST ───
+    var listX=60,listY=148,listW=230,rowH=28;
+    ctx.fillStyle='#0a0a0f';ctx.font='bold 11px Syne,sans-serif';ctx.textAlign='left';
+    ctx.fillText('POINTS',listX,listY);
+    listY+=14;
+
+    act.points.forEach(function(p,i){
+      var y=listY+i*rowH;
+      // row bg
+      ctx.fillStyle=i<cur?'rgba(67,160,71,0.06)':'#f7f6f2';
+      roundRect(ctx,listX,y,listW,rowH-2,6);ctx.fill();
+      if(i<cur){ctx.strokeStyle='rgba(67,160,71,0.25)';}else{ctx.strokeStyle='#e8e8e4';}
+      ctx.lineWidth=1;roundRect(ctx,listX,y,listW,rowH-2,6);ctx.stroke();
+
+      // number
+      ctx.fillStyle='#ccc';ctx.font='700 8px DM Sans,sans-serif';ctx.textAlign='left';
+      ctx.fillText(i+1,listX+6,y+rowH/2+3);
+
+      // badge circle
+      var bx=listX+24,by=y+rowH/2;
+      ctx.beginPath();ctx.arc(bx,by,10,0,Math.PI*2);
+      ctx.fillStyle=i<cur?'#7aaa00':'#e5e4e0';ctx.fill();
+      ctx.fillStyle=i<cur?'#fff':'#999';ctx.font='bold 10px Syne,sans-serif';ctx.textAlign='center';
+      ctx.fillText(p.label,bx,by+4);
+
+      // coordinate
+      ctx.fillStyle=i<cur?'#2e7d32':'#1a1a24';ctx.font='bold 12px Menlo,monospace';ctx.textAlign='left';
+      var nx=p.x<0?'\u2212'+Math.abs(p.x):''+p.x;
+      var ny=p.y<0?'\u2212'+Math.abs(p.y):''+p.y;
+      ctx.fillText('('+nx+', '+ny+')',listX+40,y+rowH/2+4);
+
+      // checkmark
+      if(i<cur){ctx.fillStyle='#43a047';ctx.font='bold 13px sans-serif';ctx.textAlign='right';ctx.fillText('\u2713',listX+listW-8,y+rowH/2+4);}
+    });
+
+    // ─── RIGHT: GRID ───
+    var gridSize=Math.min(700,h-180);
+    var gridX=listX+listW+28;
+    var gridY=148;
+    ctx.drawImage(img,gridX,gridY,gridSize,gridSize);
+
     // watermark
-    ctx.fillStyle='#ccc';ctx.font='11px DM Sans,sans-serif';
-    ctx.fillText('\u00A9 The Real Sum Shady — therealsumshady.com',w/2,h-55);
+    ctx.fillStyle='#ccc';ctx.font='11px DM Sans,sans-serif';ctx.textAlign='center';
+    ctx.fillText('\u00A9 The Real Sum Shady \u2014 therealsumshady.com',w/2,h-40);
+
     // download
     canvas.toBlob(function(blob){
       var a=document.createElement('a');a.href=URL.createObjectURL(blob);
