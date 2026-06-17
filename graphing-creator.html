@@ -135,7 +135,7 @@
   <div class="prev-header">Preview</div>
   <div class="prev-empty" id="pe">
     <div class="prev-empty-icon">📐</div>
-    <div class="prev-empty-text">Choose a constellation and click "Save & get student link" to preview.</div>
+    <div class="prev-empty-text">Choose a constellation and click "Preview my Graphing Activity" to see it here.</div>
   </div>
   <div id="pc" style="display:none;flex-direction:column;gap:14px;">
     <div class="preview-grid-wrap"><svg id="prevGrid"></svg></div>
@@ -368,21 +368,19 @@ function generatePreview(){
 // ═══════════════════════════════════════════════════
 //  SAVE TO SUPABASE
 // ═══════════════════════════════════════════════════
-async function saveActivity(){
+async function saveAndRedirect(){
   if(!pendingBody)return;
   var btn=document.getElementById('save-btn');
   btn.disabled=true;btn.textContent='Saving...';
 
   try{
     var r=await fetch(SB_URL+'/rest/v1/graphing_activities',{
-      method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json','Prefer':'return=representation'},
+      method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json','Prefer':'return=minimal'},
       body:JSON.stringify(pendingBody)
     });
-    if(!r.ok){alert('Save failed. Try again.');btn.disabled=false;btn.textContent='Save to Dashboard';return;}
-    btn.textContent='✓ Saved!';btn.style.background='var(--lime-dark)';btn.style.color='#fff';
-    // show go to dashboard button
-    document.getElementById('dash-btn').style.display='';
-  }catch(e){alert('Save failed.');btn.disabled=false;btn.textContent='Save to Dashboard';}
+    if(!r.ok){alert('Save failed. Try again.');btn.disabled=false;btn.textContent='Save & Go to Dashboard';return;}
+    window.location.href='dashboard.html';
+  }catch(e){alert('Save failed.');btn.disabled=false;btn.textContent='Save & Go to Dashboard';}
 }
 
 // ═══════════════════════════════════════════════════
@@ -421,10 +419,9 @@ function showPreview(data){
   });
   svg.innerHTML=h;
 
-  // buttons
+  // buttons — single save + redirect button
   document.getElementById('dl-btns').innerHTML=
-    '<button class="dl-btn" id="save-btn" onclick="saveActivity()">Save to Dashboard</button>'+
-    '<button class="dl-btn" id="dash-btn" style="display:none;background:var(--white);color:var(--ink);border:1.5px solid var(--border);" onclick="window.location.href=\'dashboard.html\'">Go to Dashboard →</button>';
+    '<button class="dl-btn" id="save-btn" onclick="saveAndRedirect()">Save &amp; Go to Dashboard</button>';
 }
 
 function copyToClip(text,btn){

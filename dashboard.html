@@ -315,6 +315,16 @@ footer {
     <button class="select-mode-btn" id="select-mode-btn" onclick="toggleSelectMode()">Select</button>
   </div>
 
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text3);font-weight:600;">Filter:</span>
+    <button class="select-mode-btn active" id="filter-all" onclick="filterActivities('all')">All</button>
+    <button class="select-mode-btn" id="filter-art" onclick="filterActivities('art')">Reveal Arts</button>
+    <button class="select-mode-btn" id="filter-graphing" onclick="filterActivities('graphing')">Graphing</button>
+    <span style="margin-left:auto;font-size:12px;color:var(--text3);font-weight:600;">Sort:</span>
+    <button class="select-mode-btn active" id="sort-date" onclick="sortActivities('date')">Newest</button>
+    <button class="select-mode-btn" id="sort-type" onclick="sortActivities('type')">By Type</button>
+  </div>
+
   <!-- TIPS SECTION -->
   <div id="tips-section" style="margin-bottom:24px;">
     <button id="tips-toggle" onclick="toggleTips()" style="display:flex;align-items:center;gap:7px;background:none;border:none;cursor:pointer;padding:0;margin-bottom:0;font-family:'DM Sans',sans-serif;">
@@ -870,6 +880,36 @@ function switchTab(tab) {
     qaArts.style.display = '';
     qaGraph.style.display = 'none';
   }
+}
+
+function filterActivities(type) {
+  document.getElementById('filter-all').classList.toggle('active', type === 'all');
+  document.getElementById('filter-art').classList.toggle('active', type === 'art');
+  document.getElementById('filter-graphing').classList.toggle('active', type === 'graphing');
+  var cards = document.querySelectorAll('.act-card');
+  cards.forEach(function(card) {
+    var cardType = card.dataset.actType;
+    if (type === 'all') card.style.display = '';
+    else if (type === cardType) card.style.display = '';
+    else card.style.display = 'none';
+  });
+}
+
+function sortActivities(by) {
+  document.getElementById('sort-date').classList.toggle('active', by === 'date');
+  document.getElementById('sort-type').classList.toggle('active', by === 'type');
+  var grid = document.getElementById('activities-grid');
+  var cards = Array.from(grid.children);
+  cards.sort(function(a, b) {
+    if (by === 'type') {
+      var tA = a.dataset.actType || '';
+      var tB = b.dataset.actType || '';
+      if (tA !== tB) return tA < tB ? -1 : 1;
+    }
+    // secondary sort always by date (newest first, using DOM order as proxy since they're already date-sorted)
+    return 0;
+  });
+  cards.forEach(function(card) { grid.appendChild(card); });
 }
 
 // ── TIPS ──────────────────────────────────────────────────────────────────────
