@@ -313,7 +313,7 @@ function drawGrid(){
   if(isQ4){[{t:'I',x:.6,y:.6},{t:'II',x:-.6,y:.6},{t:'III',x:-.6,y:-.6},{t:'IV',x:.6,y:-.6}].forEach(function(q){var mx=act.gridMax*q.x,my=act.gridMax*q.y;var t=el('text',{x:sx(mx),y:sy(my),'text-anchor':'middle','font-size':'16','font-family':"'Syne',sans-serif",fill:'#e5e4e0','font-weight':'700'});t.textContent=q.t;SVG.appendChild(t);});}
   // hover
   var hg=el('g',{id:'hover',opacity:0});
-  hg.appendChild(el('circle',{id:'hCirc',r:7,fill:'rgba(122,170,0,0.15)',stroke:'var(--lime-dark)','stroke-width':1.5}));
+  hg.appendChild(el('circle',{id:'hCirc',r:10,fill:'rgba(122,170,0,0.2)',stroke:'var(--lime-dark)','stroke-width':2}));
   var ht=el('text',{id:'hText','text-anchor':'middle','font-size':'11','font-family':"'SF Mono','Menlo',monospace",fill:'var(--lime-dark)','font-weight':'600',dy:'-14'});
   hg.appendChild(ht);SVG.appendChild(hg);
   SVG.appendChild(el('g',{id:'dots'}));SVG.appendChild(el('g',{id:'lines'}));
@@ -345,14 +345,15 @@ function svgCoords(e){var r=document.getElementById('grid').getBoundingClientRec
 document.getElementById('grid').addEventListener('pointermove',function(e){
   if(!act||cur>=act.points.length)return;var c=svgCoords(e),m=toMath(c.px,c.py);
   var hg=document.getElementById('hover');
-  if(m.x<act.gridMin||m.x>act.gridMax||m.y<act.gridMin||m.y>act.gridMax){hg.setAttribute('opacity','0');return;}
+  if(m.x<act.gridMin||m.x>act.gridMax||m.y<act.gridMin||m.y>act.gridMax){hg.setAttribute('opacity','0');document.getElementById('grid').style.cursor='crosshair';return;}
   hg.setAttribute('opacity','1');
   document.getElementById('hCirc').setAttribute('cx',sx(m.x));document.getElementById('hCirc').setAttribute('cy',sy(m.y));
   var ht=document.getElementById('hText');ht.setAttribute('x',sx(m.x));ht.setAttribute('y',sy(m.y));
   if(showCoords&&cur<3){ht.textContent='('+m.x+', '+m.y+')';ht.setAttribute('opacity','1');}
   else{ht.textContent='';ht.setAttribute('opacity','0');}
+  document.getElementById('grid').style.cursor='pointer';
 });
-document.getElementById('grid').addEventListener('pointerleave',function(){var hg=document.getElementById('hover');if(hg)hg.setAttribute('opacity','0');});
+document.getElementById('grid').addEventListener('pointerleave',function(){var hg=document.getElementById('hover');if(hg)hg.setAttribute('opacity','0');document.getElementById('grid').style.cursor='crosshair';});
 
 // ═══ CLICK ═══
 document.getElementById('grid').addEventListener('pointerup',function(e){
