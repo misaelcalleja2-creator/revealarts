@@ -1078,6 +1078,8 @@ function toggleTips() {
 
 init();
 renderTips();
+// Auto-switch tab if returning from a specific creator
+(function(){var p=new URLSearchParams(window.location.search);var t=p.get('tab');if(t==='graphing')switchTab('graphing');})();
 </script>
 </body>
 </html>
