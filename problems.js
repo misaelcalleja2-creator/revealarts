@@ -495,6 +495,11 @@ function setOp(op,btn){
   if(op==='multiplication')buildMulTableGrid();
   if(op==='division')buildDivTableGrid();
   if(op==='pemdas')buildPemdasLvTabs();
+  // Show calculator option for skills that benefit from it
+  var calcOps=['fractions','percents','proportions','geometry'];
+  var cs=document.getElementById('calc-section');
+  if(cs)cs.style.display=calcOps.indexOf(op)>=0?'block':'none';
+  if(calcOps.indexOf(op)<0){calcEnabled=false;var ct=document.getElementById('calc-toggle');if(ct)ct.checked=false;}
   renderProblems();
 }
 function setMode(m,btn){
@@ -696,7 +701,7 @@ function setCat(cat) {
   document.getElementById('ops-section').style.display = cat === 'ops' ? 'block' : 'none';
   document.getElementById('alg-section').style.display = cat === 'alg' ? 'block' : 'none';
   document.getElementById('custom-section').style.display = cat === 'custom' ? 'block' : 'none';
-  document.getElementById('calc-section').style.display = cat === 'alg' ? 'block' : 'none';
+  document.getElementById('calc-section').style.display = (cat === 'alg' || cat === 'custom') ? 'block' : 'none';
   if (modeRow) modeRow.style.display = cat === 'custom' ? 'none' : '';
   var reBtn = document.getElementById('rerandomize-btn');
   if (reBtn) reBtn.style.display = 'none';
