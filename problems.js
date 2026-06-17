@@ -718,8 +718,6 @@ function setCat(cat) {
     renderAlgProblems();
     _applySelViewMode(false);
   } else {
-    calcEnabled = false;
-    var ct2 = document.getElementById('calc-toggle'); if (ct2) ct2.checked = false;
     curMode = 'custom';
     curCustomSubCat = 'ops';
     _styleSubBtns('ops');
@@ -754,7 +752,7 @@ function setCustomSubCat(cat, btn) {
     // Hide generated bank UI, show the selection list
     document.getElementById('ops-section').style.display = 'none';
     document.getElementById('alg-section').style.display = 'none';
-    document.getElementById('calc-section').style.display = 'none';
+    document.getElementById('calc-section').style.display = 'block';
     _applySelViewMode(true);
     return;
   }
@@ -762,7 +760,7 @@ function setCustomSubCat(cat, btn) {
   _applySelViewMode(false);
   document.getElementById('ops-section').style.display = cat === 'ops' ? 'block' : 'none';
   document.getElementById('alg-section').style.display = cat === 'alg' ? 'block' : 'none';
-  document.getElementById('calc-section').style.display = cat === 'alg' ? 'block' : 'none';
+  document.getElementById('calc-section').style.display = 'block'; // always visible in custom
   if (cat === 'ops') {
     _showOpSubSections();
     allProbs = genOpsBank();
