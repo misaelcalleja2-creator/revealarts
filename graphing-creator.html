@@ -77,6 +77,14 @@
         </div>
         <div style="font-size:10px;color:#888;margin-top:6px;" id="probNote"></div>
       </div>
+
+      <div id="scale-row" style="background:rgba(0,122,255,0.04);border:1.5px solid rgba(0,122,255,0.12);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:12px;color:#1a1a24;min-width:90px;font-weight:700;">Scale factor:</span>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;" id="scaleBtns"></div>
+        </div>
+        <div style="font-size:10px;color:#888;margin-top:6px;" id="scaleNote">Axis counts by 1 (default)</div>
+      </div>
     </div>
 
     <div class="step-nav">
@@ -119,6 +127,15 @@
         <label class="toggle-switch"><input type="checkbox" id="hint-toggle"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
       </div>
       <div style="font-size:11px;color:#888;margin-top:4px;">Students see the coordinate label when hovering, but only for the first 3 points. After that, they're on their own.</div>
+    </div>
+
+    <div class="finish-field">
+      <label class="finish-label">Axis labels <span class="finish-optional">optional</span></label>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:#444;">Label every tick mark on the axes</span>
+        <label class="toggle-switch"><input type="checkbox" id="label-toggle" checked onchange="labelAllTicks=this.checked"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+      <div style="font-size:11px;color:#888;margin-top:4px;">When off, only every other tick mark is labeled — useful for smaller scales like 0.5 to keep the grid clean.</div>
     </div>
 
     <button class="gen-btn" onclick="generatePreview()">Preview my Graphing Activity →</button>
@@ -179,7 +196,7 @@ var LIBRARY=[
 // ═══════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════
-var currentStep=1,selConst=null,selQuad='q1',selNumProbs=0,timerEnabled=false,timerMins=5;
+var currentStep=1,selConst=null,selQuad='q1',selNumProbs=0,timerEnabled=false,timerMins=5,selScale=1,labelAllTicks=true;
 
 // ═══════════════════════════════════════════════════
 //  AUTH
@@ -265,6 +282,7 @@ function selectConst(id){
   if(!selConst)return;
   document.querySelectorAll('.const-card').forEach(function(el){el.classList.toggle('selected',el.dataset.id===id);});
   buildProbBtns();
+  buildScaleBtns();
 }
 
 function buildProbBtns(){
@@ -289,6 +307,31 @@ function buildProbBtns(){
     container.appendChild(btn);
   });
   updateProbNote();
+}
+
+function buildScaleBtns(){
+  var container=document.getElementById('scaleBtns');container.innerHTML='';
+  var options=[0.5,1,2,5,10,15,20,100];
+  options.forEach(function(s){
+    var btn=document.createElement('button');
+    btn.className='prob-count-btn'+(s===selScale?' active':'');
+    btn.textContent=s;
+    btn.addEventListener('click',function(){
+      selScale=s;
+      document.querySelectorAll('#scaleBtns .prob-count-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      updateScaleNote();
+    });
+    container.appendChild(btn);
+  });
+  updateScaleNote();
+}
+
+function updateScaleNote(){
+  var note=document.getElementById('scaleNote');
+  if(selScale===1)note.textContent='Axis counts by 1 (default)';
+  else if(selScale<1)note.textContent='Axis counts by '+selScale+' — coordinates will be decimals';
+  else note.textContent='Axis counts by '+selScale+' — coordinates go up to '+(selConst?selConst.gridMax*selScale:'?');
 }
 
 function updateProbNote(){
@@ -369,6 +412,8 @@ function generatePreview(){
     num_problems:selNumProbs,
     timer_enabled:timerEnabled,
     timer_mins:timerEnabled?timerMins:5,
+    scale:selScale,
+    label_all_ticks:labelAllTicks,
     points:pendingData.points,edges:pendingData.edges
   };
 
@@ -399,6 +444,8 @@ async function saveAndRedirect(){
 // ═══════════════════════════════════════════════════
 //  PREVIEW
 // ═══════════════════════════════════════════════════
+function fmtScale(gridVal){var v=Math.round(gridVal*selScale*1000)/1000;return v<0?'\u2212'+Math.abs(v):''+v;}
+
 function showPreview(data){
   document.getElementById('pe').style.display='none';
   var pc=document.getElementById('pc');pc.style.display='flex';
@@ -422,7 +469,7 @@ function showPreview(data){
     row.innerHTML=
       '<span style="font-size:9px;font-weight:800;color:#ccc;min-width:14px;">'+(i+1)+'</span>'+
       '<span style="width:22px;height:22px;border-radius:50%;background:'+(p.isStar?'var(--lime-dark)':'#ddd')+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:'+(p.isStar?'#fff':'#999')+';font-family:Syne,sans-serif;flex-shrink:0;">'+p.label+'</span>'+
-      '<span style="font-family:\'SF Mono\',monospace;font-size:11px;font-weight:700;color:#1a1a24;">('+p.x+', '+p.y+')</span>';
+      '<span style="font-family:\'SF Mono\',monospace;font-size:11px;font-weight:700;color:#1a1a24;">('+fmtScale(p.x)+', '+fmtScale(p.y)+')</span>';
     ptList.appendChild(row);
   });
 
@@ -453,11 +500,15 @@ function showPreview(data){
   var xAxisY=isQ4?sy(0):sy(c.gridMin);
   var yAxisX=isQ4?sx(0):sx(c.gridMin);
   for(var i=c.gridMin;i<=c.gridMax;i++){
-    h+='<text x="'+sx(i)+'" y="'+(xAxisY+14)+'" text-anchor="middle" font-size="9" font-family="DM Sans,sans-serif" fill="#aaa">'+i+'</text>';
+    if(!labelAllTicks&&(i-c.gridMin)%2!==0)continue;
+    var lbl=Math.round(i*selScale*1000)/1000;
+    h+='<text x="'+sx(i)+'" y="'+(xAxisY+14)+'" text-anchor="middle" font-size="9" font-family="DM Sans,sans-serif" fill="#aaa">'+lbl+'</text>';
   }
   for(var i=c.gridMin;i<=c.gridMax;i++){
     if(i===c.gridMin&&!isQ4)continue;if(i===0&&isQ4)continue;
-    h+='<text x="'+(yAxisX-10)+'" y="'+(sy(i)+3)+'" text-anchor="middle" font-size="9" font-family="DM Sans,sans-serif" fill="#aaa">'+i+'</text>';
+    if(!labelAllTicks&&(i-c.gridMin)%2!==0)continue;
+    var lbl=Math.round(i*selScale*1000)/1000;
+    h+='<text x="'+(yAxisX-10)+'" y="'+(sy(i)+3)+'" text-anchor="middle" font-size="9" font-family="DM Sans,sans-serif" fill="#aaa">'+lbl+'</text>';
   }
   // constellation edges (dashed hint)
   data.edges.forEach(function(e){

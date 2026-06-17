@@ -842,8 +842,11 @@ async function downloadGraphingWorksheet(id, btn) {
       for (let c = 0; c < 3; c++) {
         const p = pts[i + c];
         if (p) {
-          const nx = p.x < 0 ? '\u2212' + Math.abs(p.x) : p.x;
-          const ny = p.y < 0 ? '\u2212' + Math.abs(p.y) : p.y;
+          var sc = act.scale || 1;
+          var svx = Math.round(p.x * sc * 1000) / 1000;
+          var svy = Math.round(p.y * sc * 1000) / 1000;
+          const nx = svx < 0 ? '\u2212' + Math.abs(svx) : svx;
+          const ny = svy < 0 ? '\u2212' + Math.abs(svy) : svy;
           probRows += '<td class="prob">' + (i + c + 1) + '. ' + p.label + ': (' + nx + ', ' + ny + ')</td>';
         } else {
           probRows += '<td></td>';
@@ -881,13 +884,17 @@ async function downloadGraphingWorksheet(id, btn) {
     let svgLabels = '';
     const xAxisY = isQ4 ? sy(0) : sy(gMin);
     for (let i = gMin; i <= gMax; i++) {
-      svgLabels += '<text x="' + sx(i) + '" y="' + (xAxisY + 16) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + i + '</text>';
+      var wsc = act.scale || 1;
+      var labAll = act.label_all_ticks !== false;
+      if (!labAll && (i - gMin) % 2 !== 0) continue;
+      svgLabels += '<text x="' + sx(i) + '" y="' + (xAxisY + 16) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + Math.round(i * wsc * 1000) / 1000 + '</text>';
     }
     const yAxisX = isQ4 ? sx(0) : sx(gMin);
     for (let i = gMin; i <= gMax; i++) {
       if (i === gMin && !isQ4) continue;
       if (i === 0 && isQ4) continue;
-      svgLabels += '<text x="' + (yAxisX - 10) + '" y="' + (sy(i) + 3) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + i + '</text>';
+      if (!labAll && (i - gMin) % 2 !== 0) continue;
+      svgLabels += '<text x="' + (yAxisX - 10) + '" y="' + (sy(i) + 3) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + Math.round(i * wsc * 1000) / 1000 + '</text>';
     }
     // axis titles
     svgLabels += '<text x="' + (pad + range * cell + 14) + '" y="' + (xAxisY + 5) + '" font-size="12" font-family="sans-serif" font-weight="700" font-style="italic" fill="#888">x</text>';
