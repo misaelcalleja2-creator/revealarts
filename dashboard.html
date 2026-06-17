@@ -853,7 +853,7 @@ async function downloadGraphingWorksheet(id, btn) {
     }
 
     // Build SVG grid
-    const svgW = 480, svgH = 480, pad = 32;
+    const svgW = 640, svgH = 640, pad = 36;
     const cell = (svgW - pad * 2) / range;
     function sx(x) { return pad + (x - gMin) * cell; }
     function sy(y) { return pad + (range - (y - gMin)) * cell; }
@@ -862,6 +862,12 @@ async function downloadGraphingWorksheet(id, btn) {
     for (let i = gMin; i <= gMax; i++) {
       svgLines += '<line x1="' + sx(i) + '" y1="' + pad + '" x2="' + sx(i) + '" y2="' + (pad + range * cell) + '" stroke="#ddd" stroke-width="0.5"/>';
       svgLines += '<line x1="' + pad + '" y1="' + sy(i) + '" x2="' + (pad + range * cell) + '" y2="' + sy(i) + '" stroke="#ddd" stroke-width="0.5"/>';
+    }
+    // snap dots at intersections
+    for (let gx = gMin; gx <= gMax; gx++) {
+      for (let gy = gMin; gy <= gMax; gy++) {
+        svgLines += '<circle cx="' + sx(gx) + '" cy="' + sy(gy) + '" r="1.5" fill="#ccc"/>';
+      }
     }
     // axes
     if (isQ4) {
@@ -894,9 +900,10 @@ async function downloadGraphingWorksheet(id, btn) {
       '.info-label { font-size:9px; color:#888; letter-spacing:0.5px; text-transform:uppercase; white-space:nowrap; }' +
       '.info-field { border-bottom:1px solid #ccc; width:110px; min-height:16px; }' +
       '.directions { font-size:12px; color:#555; background:#f8f8f8; padding:7px 12px; margin-bottom:12px; border-radius:5px; margin-top:8px; }' +
-      'table.probs { width:100%; border-collapse:collapse; margin-bottom:16px; }' +
-      'table.probs td.prob { padding:5px 8px; font-size:13px; font-weight:700; width:33%; }' +
+      'table.probs { width:100%; border-collapse:collapse; margin-bottom:12px; }' +
+      'table.probs td.prob { padding:3px 6px; font-size:12px; font-weight:700; width:33%; }' +
       '.grid-wrap { display:flex; justify-content:center; }' +
+      '.grid-wrap svg { width:100%; max-width:640px; height:auto; }' +
       '.footer { margin-top:16px; text-align:center; font-size:10px; color:#aaa; border-top:1px solid #ddd; padding-top:8px; }' +
       '@media print { body { padding:16px 24px; } @page { margin:0.5in; } }' +
       '</style></head><body>' +
