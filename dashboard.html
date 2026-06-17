@@ -320,9 +320,6 @@ footer {
     <button class="select-mode-btn active" id="filter-all" onclick="filterActivities('all')">All</button>
     <button class="select-mode-btn" id="filter-art" onclick="filterActivities('art')">Reveal Arts</button>
     <button class="select-mode-btn" id="filter-graphing" onclick="filterActivities('graphing')">Graphing</button>
-    <span style="margin-left:auto;font-size:12px;color:var(--text3);font-weight:600;">Sort:</span>
-    <button class="select-mode-btn active" id="sort-date" onclick="sortActivities('date')">Newest</button>
-    <button class="select-mode-btn" id="sort-type" onclick="sortActivities('type')">By Type</button>
   </div>
 
   <!-- TIPS SECTION -->
@@ -485,6 +482,9 @@ async function loadActivities(token, userId, profile) {
               <button class="act-copy" onclick="copyGraphingLink('${act.id}', this)">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 Copy Link
+              </button>
+              <button class="act-pdf" onclick="downloadGraphingWorksheet('${act.id}', this)" title="Worksheet">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               </button>
               <button class="act-del" onclick="deleteGraphingActivity('${act.id}', this)" title="Delete">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
@@ -822,6 +822,111 @@ async function downloadWorksheet(id, btn) {
   }
 }
 
+async function downloadGraphingWorksheet(id, btn) {
+  const token = localStorage.getItem('sb_access_token');
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/graphing_activities?id=eq.' + id + '&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const data = await r.json();
+    if (!Array.isArray(data) || !data[0]) { alert('Activity not found.'); return; }
+    const act = data[0];
+    const pts = act.points || [];
+    const gMin = act.grid_min, gMax = act.grid_max, range = gMax - gMin;
+    const isQ4 = act.quadrants === 4;
+
+    // Build coordinate problem rows (3 columns)
+    let probRows = '';
+    for (let i = 0; i < pts.length; i += 3) {
+      probRows += '<tr>';
+      for (let c = 0; c < 3; c++) {
+        const p = pts[i + c];
+        if (p) {
+          const nx = p.x < 0 ? '\u2212' + Math.abs(p.x) : p.x;
+          const ny = p.y < 0 ? '\u2212' + Math.abs(p.y) : p.y;
+          probRows += '<td class="prob">' + (i + c + 1) + '. ' + p.label + ': (' + nx + ', ' + ny + ')</td>';
+        } else {
+          probRows += '<td></td>';
+        }
+      }
+      probRows += '</tr>';
+    }
+
+    // Build SVG grid
+    const svgW = 480, svgH = 480, pad = 32;
+    const cell = (svgW - pad * 2) / range;
+    function sx(x) { return pad + (x - gMin) * cell; }
+    function sy(y) { return pad + (range - (y - gMin)) * cell; }
+
+    let svgLines = '';
+    for (let i = gMin; i <= gMax; i++) {
+      svgLines += '<line x1="' + sx(i) + '" y1="' + pad + '" x2="' + sx(i) + '" y2="' + (pad + range * cell) + '" stroke="#ddd" stroke-width="0.5"/>';
+      svgLines += '<line x1="' + pad + '" y1="' + sy(i) + '" x2="' + (pad + range * cell) + '" y2="' + sy(i) + '" stroke="#ddd" stroke-width="0.5"/>';
+    }
+    // axes
+    if (isQ4) {
+      svgLines += '<line x1="' + pad + '" y1="' + sy(0) + '" x2="' + (pad + range * cell) + '" y2="' + sy(0) + '" stroke="#000" stroke-width="1.5"/>';
+      svgLines += '<line x1="' + sx(0) + '" y1="' + pad + '" x2="' + sx(0) + '" y2="' + (pad + range * cell) + '" stroke="#000" stroke-width="1.5"/>';
+    } else {
+      svgLines += '<line x1="' + sx(gMin) + '" y1="' + sy(gMin) + '" x2="' + sx(gMax) + '" y2="' + sy(gMin) + '" stroke="#000" stroke-width="1.5"/>';
+      svgLines += '<line x1="' + sx(gMin) + '" y1="' + sy(gMin) + '" x2="' + sx(gMin) + '" y2="' + sy(gMax) + '" stroke="#000" stroke-width="1.5"/>';
+    }
+    // labels
+    let svgLabels = '';
+    for (let i = gMin; i <= gMax; i++) {
+      svgLabels += '<text x="' + sx(i) + '" y="' + (sy(gMin) + 16) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + i + '</text>';
+      if (i === gMin && !isQ4) continue;
+      if (i === 0 && isQ4) continue;
+      const yAnchor = isQ4 ? sx(0) - 10 : sx(gMin) - 10;
+      svgLabels += '<text x="' + yAnchor + '" y="' + (sy(i) + 3) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + i + '</text>';
+    }
+
+    const worksheet = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + act.title + ' — Worksheet</title>' +
+      '<style>' +
+      "@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');" +
+      '* { box-sizing: border-box; margin: 0; padding: 0; }' +
+      'body { font-family: Nunito, sans-serif; background: #fff; color: #111; padding: 24px 32px; }' +
+      '.header { display:flex; align-items:center; gap:12px; margin-bottom:10px; border-bottom:2px solid #111; padding-bottom:10px; }' +
+      '.avatar-img { width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0; }' +
+      '.header-title { font-size:16px; font-weight:800; flex:1; }' +
+      '.info-row { display:flex; gap:16px; }' +
+      '.info-item { display:flex; align-items:baseline; gap:4px; }' +
+      '.info-label { font-size:9px; color:#888; letter-spacing:0.5px; text-transform:uppercase; white-space:nowrap; }' +
+      '.info-field { border-bottom:1px solid #ccc; width:110px; min-height:16px; }' +
+      '.directions { font-size:12px; color:#555; background:#f8f8f8; padding:7px 12px; margin-bottom:12px; border-radius:5px; margin-top:8px; }' +
+      'table.probs { width:100%; border-collapse:collapse; margin-bottom:16px; }' +
+      'table.probs td.prob { padding:5px 8px; font-size:13px; font-weight:700; width:33%; }' +
+      '.grid-wrap { display:flex; justify-content:center; }' +
+      '.footer { margin-top:16px; text-align:center; font-size:10px; color:#aaa; border-top:1px solid #ddd; padding-top:8px; }' +
+      '@media print { body { padding:16px 24px; } @page { margin:0.5in; } }' +
+      '</style></head><body>' +
+      '<div class="header">' +
+      '<img class="avatar-img" src="https://therealsumshady.com/avatar.png" alt="Reveal Arts">' +
+      '<div class="header-title">' + act.title + '</div>' +
+      '<div class="info-row">' +
+      '<div class="info-item"><div class="info-label">Name</div><div class="info-field">&nbsp;</div></div>' +
+      '<div class="info-item"><div class="info-label">Date</div><div class="info-field">&nbsp;</div></div>' +
+      '<div class="info-item"><div class="info-label">Period</div><div class="info-field">&nbsp;</div></div>' +
+      '</div></div>' +
+      '<div class="directions">Plot each coordinate point on the grid below. Label each point with its letter.</div>' +
+      '<table class="probs"><tbody>' + probRows + '</tbody></table>' +
+      '<div class="grid-wrap"><svg width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '">' +
+      '<rect width="' + svgW + '" height="' + svgH + '" fill="#fff" stroke="#ccc" stroke-width="1" rx="4"/>' +
+      svgLines + svgLabels +
+      '</svg></div>' +
+      '<div class="footer">\u00a9 The Real Sum Shady \u2014 therealsumshady.com</div>' +
+      '<script>window.onload = function() { window.print(); }<\/script>' +
+      '</body></html>';
+
+    const blob = new Blob([worksheet], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (!win) alert('Please allow popups to download the worksheet.');
+  } catch(e) {
+    alert('Worksheet generation failed. Please try again.');
+  }
+}
+
 async function renameActivity(id, btn) {
   const card = btn.closest('.act-card');
   const oldTitle = card.dataset.title || '';
@@ -893,23 +998,6 @@ function filterActivities(type) {
     else if (type === cardType) card.style.display = '';
     else card.style.display = 'none';
   });
-}
-
-function sortActivities(by) {
-  document.getElementById('sort-date').classList.toggle('active', by === 'date');
-  document.getElementById('sort-type').classList.toggle('active', by === 'type');
-  var grid = document.getElementById('activities-grid');
-  var cards = Array.from(grid.children);
-  cards.sort(function(a, b) {
-    if (by === 'type') {
-      var tA = a.dataset.actType || '';
-      var tB = b.dataset.actType || '';
-      if (tA !== tB) return tA < tB ? -1 : 1;
-    }
-    // secondary sort always by date (newest first, using DOM order as proxy since they're already date-sorted)
-    return 0;
-  });
-  cards.forEach(function(card) { grid.appendChild(card); });
 }
 
 // ── TIPS ──────────────────────────────────────────────────────────────────────
