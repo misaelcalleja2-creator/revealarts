@@ -138,7 +138,18 @@
     <div class="prev-empty-text">Choose a constellation and click "Preview my Graphing Activity" to see it here.</div>
   </div>
   <div id="pc" style="display:none;flex-direction:column;gap:14px;">
-    <div class="preview-grid-wrap"><svg id="prevGrid"></svg></div>
+    <!-- Activity header mock -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div style="font-family:Syne,sans-serif;font-size:15px;font-weight:800;color:var(--ink);" id="prevTitle">Activity Title</div>
+      <div id="prevTimer" style="display:none;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--ink);background:var(--bg2);border-radius:8px;padding:3px 10px;letter-spacing:1px;">⏱ 05:00</div>
+    </div>
+    <!-- Two-column: points list + grid -->
+    <div style="display:flex;gap:10px;min-height:320px;">
+      <!-- Points list -->
+      <div style="width:140px;flex-shrink:0;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px;overflow-y:auto;max-height:380px;" id="prevPtList"></div>
+      <!-- Grid -->
+      <div class="preview-grid-wrap" style="flex:1;"><svg id="prevGrid"></svg></div>
+    </div>
     <div class="dl-btns" id="dl-btns"></div>
     <div class="dl-note">Saved to dashboard · Share via Google Classroom · Works on any device</div>
   </div>
@@ -392,36 +403,76 @@ function showPreview(data){
   document.getElementById('pe').style.display='none';
   var pc=document.getElementById('pc');pc.style.display='flex';
 
-  // draw preview grid
-  var c=selConst,sz=400,pad=36,range=c.gridMax-c.gridMin,cell=(sz-pad*2)/range;
+  // title
+  var title=document.getElementById('act-title').value.trim()||'Plot the '+selConst.name;
+  document.getElementById('prevTitle').textContent=title;
+
+  // timer
+  var timerEl=document.getElementById('prevTimer');
+  if(timerEnabled&&timerMins>0){
+    timerEl.style.display='block';
+    timerEl.textContent='\u23F1 '+(timerMins<10?'0'+timerMins:timerMins)+':00';
+  }else{timerEl.style.display='none';}
+
+  // points list
+  var ptList=document.getElementById('prevPtList');ptList.innerHTML='';
+  data.points.forEach(function(p,i){
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 4px;border-radius:8px;margin-bottom:3px;background:#f7f6f2;border:1.5px solid #e5e4e0;';
+    row.innerHTML=
+      '<span style="font-size:9px;font-weight:800;color:#ccc;min-width:14px;">'+(i+1)+'</span>'+
+      '<span style="width:22px;height:22px;border-radius:50%;background:'+(p.isStar?'var(--lime-dark)':'#ddd')+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:'+(p.isStar?'#fff':'#999')+';font-family:Syne,sans-serif;flex-shrink:0;">'+p.label+'</span>'+
+      '<span style="font-family:\'SF Mono\',monospace;font-size:11px;font-weight:700;color:#1a1a24;">('+p.x+', '+p.y+')</span>';
+    ptList.appendChild(row);
+  });
+
+  // draw grid
+  var c=selConst,sz=360,pad=32,range=c.gridMax-c.gridMin,cell=(sz-pad*2)/range;
   function sx(x){return pad+(x-c.gridMin)*cell;}
   function sy(y){return pad+(range-(y-c.gridMin))*cell;}
   var svg=document.getElementById('prevGrid');
   svg.setAttribute('width',sz);svg.setAttribute('height',sz);svg.setAttribute('viewBox','0 0 '+sz+' '+sz);
-  var h='<rect width="'+sz+'" height="'+sz+'" fill="var(--bg2)" rx="8"/>';
+  var h='<rect width="'+sz+'" height="'+sz+'" fill="transparent" rx="8"/>';
+  // grid lines
   for(var i=c.gridMin;i<=c.gridMax;i++){
-    h+='<line x1="'+sx(i)+'" y1="'+pad+'" x2="'+sx(i)+'" y2="'+(pad+range*cell)+'" stroke="#ddd" stroke-width="1"/>';
-    h+='<line x1="'+pad+'" y1="'+sy(i)+'" x2="'+(pad+range*cell)+'" y2="'+sy(i)+'" stroke="#ddd" stroke-width="1"/>';
+    h+='<line x1="'+sx(i)+'" y1="'+pad+'" x2="'+sx(i)+'" y2="'+(pad+range*cell)+'" stroke="#e5e4e0" stroke-width="1"/>';
+    h+='<line x1="'+pad+'" y1="'+sy(i)+'" x2="'+(pad+range*cell)+'" y2="'+sy(i)+'" stroke="#e5e4e0" stroke-width="1"/>';
   }
-  if(c.quadrants===1){
+  // grid dots
+  for(var gx=c.gridMin;gx<=c.gridMax;gx++)for(var gy=c.gridMin;gy<=c.gridMax;gy++)h+='<circle cx="'+sx(gx)+'" cy="'+sy(gy)+'" r="1.5" fill="#ccc"/>';
+  // axes
+  var isQ4=c.quadrants===4;
+  if(!isQ4){
     h+='<line x1="'+sx(c.gridMin)+'" y1="'+sy(c.gridMin)+'" x2="'+sx(c.gridMax)+'" y2="'+sy(c.gridMin)+'" stroke="#0a0a0f" stroke-width="2"/>';
     h+='<line x1="'+sx(c.gridMin)+'" y1="'+sy(c.gridMin)+'" x2="'+sx(c.gridMin)+'" y2="'+sy(c.gridMax)+'" stroke="#0a0a0f" stroke-width="2"/>';
   }else{
     h+='<line x1="'+pad+'" y1="'+sy(0)+'" x2="'+(pad+range*cell)+'" y2="'+sy(0)+'" stroke="#0a0a0f" stroke-width="2"/>';
     h+='<line x1="'+sx(0)+'" y1="'+pad+'" x2="'+sx(0)+'" y2="'+(pad+range*cell)+'" stroke="#0a0a0f" stroke-width="2"/>';
   }
+  // axis labels
+  var xAxisY=isQ4?sy(0):sy(c.gridMin);
+  var yAxisX=isQ4?sx(0):sx(c.gridMin);
+  for(var i=c.gridMin;i<=c.gridMax;i++){
+    h+='<text x="'+sx(i)+'" y="'+(xAxisY+14)+'" text-anchor="middle" font-size="9" font-family="DM Sans,sans-serif" fill="#aaa">'+i+'</text>';
+  }
+  for(var i=c.gridMin;i<=c.gridMax;i++){
+    if(i===c.gridMin&&!isQ4)continue;if(i===0&&isQ4)continue;
+    h+='<text x="'+(yAxisX-10)+'" y="'+(sy(i)+3)+'" text-anchor="middle" font-size="9" font-family="DM Sans,sans-serif" fill="#aaa">'+i+'</text>';
+  }
+  // constellation edges (dashed hint)
   data.edges.forEach(function(e){
     var a=data.points.find(function(p){return p.label===e[0];}),b=data.points.find(function(p){return p.label===e[1];});
-    if(a&&b)h+='<line x1="'+sx(a.x)+'" y1="'+sy(a.y)+'" x2="'+sx(b.x)+'" y2="'+sy(b.y)+'" stroke="rgba(122,170,0,0.3)" stroke-width="2" stroke-dasharray="4"/>';
+    if(a&&b)h+='<line x1="'+sx(a.x)+'" y1="'+sy(a.y)+'" x2="'+sx(b.x)+'" y2="'+sy(b.y)+'" stroke="rgba(122,170,0,0.25)" stroke-width="1.5" stroke-dasharray="3"/>';
   });
+  // points
   data.points.forEach(function(p){
     var col=p.isStar?'#7aaa00':'#bbb';
     h+='<circle cx="'+sx(p.x)+'" cy="'+sy(p.y)+'" r="5" fill="'+col+'"/>';
-    h+='<text x="'+sx(p.x)+'" y="'+(sy(p.y)-9)+'" text-anchor="middle" font-size="10" font-weight="700" font-family="Syne,sans-serif" fill="#333">'+p.label+'</text>';
+    h+='<text x="'+sx(p.x)+'" y="'+(sy(p.y)-8)+'" text-anchor="middle" font-size="10" font-weight="700" font-family="Syne,sans-serif" fill="#333">'+p.label+'</text>';
   });
   svg.innerHTML=h;
 
-  // buttons — single save + redirect button
+  // save button
   document.getElementById('dl-btns').innerHTML=
     '<button class="dl-btn" id="save-btn" onclick="saveAndRedirect()">Save &amp; Go to Dashboard</button>';
 }

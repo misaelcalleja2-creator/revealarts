@@ -132,6 +132,7 @@ body{background:#f7f6f2;min-height:100vh;font-family:'Nunito',sans-serif;color:#
 <div class="act-header">
   <div class="act-title">${title}</div>
   ${hasTimer||hasHints?`<div class="top-bar">${hasTimer?`<div class="timer-display" id="td">⏱ ${timerStart}</div>`:''}${hasHints?`<div class="hint-bar">${hintList.map((h,i)=>`<button class="hint-btn" id="hb${i}" onclick="openHint(${i})">💡 Hint ${i+1}</button>`).join('')}</div>`:''}</div>`:''}
+  <div id="student-name-display" style="display:none;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#555;white-space:nowrap;margin-left:auto;padding-left:12px;"></div>
 </div>
 ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-title">💡 Hint</h3><p id="hmt"></p><button class="hint-close" onclick="closeHint()">Got it!</button></div></div>`:''}
 <div class="layout" id="layout">
@@ -140,7 +141,7 @@ ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-tit
   <div class="resize-handle" id="rsh"></div>
   <div class="img-panel">
     <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;padding:0 2px;">
-      <img src="https://therealsumshady.com/avatar.png" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid rgba(0,0,0,0.08);flex-shrink:0;">
+      <img id="avatar-img" src="" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid rgba(0,0,0,0.08);flex-shrink:0;" data-html2canvas-ignore="false">
       <div style="font-family:'Fredoka One',cursive;font-size:13px;color:#888;line-height:1.2;">by The Real<br>Sum Shady</div>
     </div>
     <div class="canvas-wrap">
@@ -470,26 +471,41 @@ function executeDownload(){
   if(td&&TIMER_MINS>0){var txt=td.textContent;if(txt.indexOf('⚠')>-1)timeLabel='Overtime: +'+txt.replace(/[^0-9:]/g,'').trim();else timeLabel='Time remaining: '+txt.replace(/[^0-9:]/g,'').trim();}
   else{var el=Math.floor((Date.now()-pageStart)/1000);var em=Math.floor(el/60),es=el%60;timeLabel=(em<10?'0'+em:em)+':'+(es<10?'0'+es:es);}
   var wrongCount=wrongAttempts.size;
-  var sc=solved.size+'/'+TOTAL+' correct'+(wrongCount>0?' ('+wrongCount+' wrong)':'');
   var now=new Date();
   var ts=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
   if(typeof html2canvas==='undefined'){alert('Download loading, please try again.');return;}
-  html2canvas(document.body,{useCORS:true,allowTaint:true,scale:1.5,logging:false}).then(function(cap){
+
+  // Show student name in header for screenshot
+  var nameEl=document.getElementById('student-name-display');
+  if(nameEl){nameEl.textContent=name;nameEl.style.display='block';}
+
+  // Hide fireworks so they don't appear in screenshot
+  var fw=document.getElementById('fw-canvas');
+  var fwWasVisible=fw&&fw.style.display!=='none';
+  if(fw)fw.style.display='none';
+
+  html2canvas(document.body,{useCORS:true,allowTaint:false,scale:1.5,logging:false,ignoreElements:function(el){return el.id==='fw-canvas'||el.id==='dl-overlay';}}).then(function(cap){
+    // Restore UI state
+    if(nameEl)nameEl.style.display='none';
+    if(fw&&fwWasVisible)fw.style.display='block';
+
     var out=document.createElement('canvas');
-    var bh=56;
+    var bh=40;
     out.width=cap.width;out.height=cap.height+bh;
     var c2=out.getContext('2d');
     c2.drawImage(cap,0,0);
+    // Bottom strip: score + timestamp watermark
     c2.fillStyle='#0a0a0f';
     c2.fillRect(0,cap.height,out.width,bh);
-    c2.fillStyle='#b8e030';
-    c2.font='bold 18px Nunito,sans-serif';
+    c2.fillStyle='rgba(184,224,48,0.9)';
+    c2.font='bold 13px Nunito,sans-serif';
     c2.textBaseline='middle';
     c2.textAlign='left';
-    c2.fillText(name+' — '+sc,20,cap.height+16);
-    c2.fillStyle='rgba(255,255,255,0.6)';
-    c2.font='13px Nunito,sans-serif';
-    c2.fillText(timeLabel+'  •  '+ts+'  •  Reveal Arts by The Real Sum Shady',20,cap.height+38);
+    var sc=solved.size+'/'+TOTAL+' correct'+(wrongCount>0?' ('+wrongCount+' wrong)':'')+'  •  '+timeLabel;
+    c2.fillText(sc,16,cap.height+14);
+    c2.fillStyle='rgba(255,255,255,0.4)';
+    c2.font='11px Nunito,sans-serif';
+    c2.fillText(ts+'  •  Reveal Arts by The Real Sum Shady',16,cap.height+30);
     var a=document.createElement('a');
     var safe=name.replace(/[^a-zA-Z0-9]/g,'-');
     a.download=safe+'-reveal-arts.jpg';
@@ -505,6 +521,21 @@ function resetAll(){
 }
 buildUI();drawAll();
 const pageStart=Date.now();
+// Load avatar as data URL to avoid html2canvas CORS taint
+(function(){
+  var av=document.getElementById('avatar-img');
+  if(!av)return;
+  var tmp=new Image();tmp.crossOrigin='anonymous';
+  tmp.onload=function(){
+    try{
+      var cv=document.createElement('canvas');cv.width=tmp.width;cv.height=tmp.height;
+      cv.getContext('2d').drawImage(tmp,0,0);
+      av.src=cv.toDataURL('image/png');
+    }catch(e){av.src='https://therealsumshady.com/avatar.png';}
+  };
+  tmp.onerror=function(){av.src='https://therealsumshady.com/avatar.png';};
+  tmp.src='https://therealsumshady.com/avatar.png';
+})();
 // Resize handle for problem panel
 (function(){
   var h=document.getElementById('rsh'),ly=document.getElementById('layout'),pn=document.getElementById('lc');
