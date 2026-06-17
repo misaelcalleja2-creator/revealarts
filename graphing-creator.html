@@ -72,7 +72,7 @@
 
       <div id="prob-count-row" style="background:rgba(122,170,0,0.05);border:1.5px solid rgba(122,170,0,0.15);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <span style="font-size:12px;color:#1a1a24;min-width:110px;font-weight:700;">Points per activity:</span>
+          <span style="font-size:12px;color:#1a1a24;min-width:110px;font-weight:700;">Coordinate points per activity:</span>
           <div style="display:flex;gap:4px;flex-wrap:wrap;" id="probBtns"></div>
         </div>
         <div style="font-size:10px;color:#888;margin-top:6px;" id="probNote"></div>
@@ -84,6 +84,14 @@
           <div style="display:flex;gap:4px;flex-wrap:wrap;" id="scaleBtns"></div>
         </div>
         <div style="font-size:10px;color:#888;margin-top:6px;" id="scaleNote">Axis counts by 1 (default)</div>
+      </div>
+
+      <div id="gridsize-row" style="background:rgba(255,152,0,0.05);border:1.5px solid rgba(255,152,0,0.15);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:12px;color:#1a1a24;min-width:90px;font-weight:700;">Grid lines:</span>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;" id="gridSizeBtns"></div>
+        </div>
+        <div style="font-size:10px;color:#888;margin-top:6px;" id="gridSizeNote">10 x 10 grid (default)</div>
       </div>
     </div>
 
@@ -196,7 +204,7 @@ var LIBRARY=[
 // ═══════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════
-var currentStep=1,selConst=null,selQuad='q1',selNumProbs=0,timerEnabled=false,timerMins=5,selScale=1,labelAllTicks=true;
+var currentStep=1,selConst=null,selQuad='q1',selNumProbs=0,timerEnabled=false,timerMins=5,selScale=1,labelAllTicks=true,selGridSize=10;
 
 // ═══════════════════════════════════════════════════
 //  AUTH
@@ -283,6 +291,7 @@ function selectConst(id){
   document.querySelectorAll('.const-card').forEach(function(el){el.classList.toggle('selected',el.dataset.id===id);});
   buildProbBtns();
   buildScaleBtns();
+  buildGridSizeBtns();
 }
 
 function buildProbBtns(){
@@ -331,9 +340,34 @@ function updateScaleNote(){
   var note=document.getElementById('scaleNote');
   if(selScale===1)note.textContent='Axis counts by 1 (default)';
   else if(selScale<1)note.textContent='Axis counts by '+selScale+' — coordinates will be decimals';
-  else note.textContent='Axis counts by '+selScale+' — coordinates go up to '+(selConst?selConst.gridMax*selScale:'?');
+  else note.textContent='Axis counts by '+selScale+' — coordinates go up to '+(selConst?getGridBounds().gridMax*selScale:'?');
 }
 
+function getGridBounds(){
+  var isQ4=selConst&&selConst.quadrants===4;
+  if(isQ4)return{gridMin:-Math.floor(selGridSize/2),gridMax:Math.ceil(selGridSize/2)};
+  return{gridMin:0,gridMax:selGridSize};
+}
+function buildGridSizeBtns(){
+  var container=document.getElementById('gridSizeBtns');container.innerHTML='';
+  [10,15,20].forEach(function(s){
+    var btn=document.createElement('button');
+    btn.className='prob-count-btn'+(s===selGridSize?' active':'');
+    btn.textContent=s;
+    btn.addEventListener('click',function(){
+      selGridSize=s;
+      document.querySelectorAll('#gridSizeBtns .prob-count-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      updateGridSizeNote();
+    });
+    container.appendChild(btn);
+  });
+  updateGridSizeNote();
+}
+function updateGridSizeNote(){
+  var b=getGridBounds();
+  document.getElementById('gridSizeNote').textContent=selGridSize+' x '+selGridSize+' grid (axes '+b.gridMin+' to '+b.gridMax+')';
+}
 function updateProbNote(){
   var min=selConst.points.length,extra=selNumProbs-min;
   var note=document.getElementById('probNote');
@@ -358,12 +392,13 @@ function setTimer(m,btn){
 //  FILLER POINT GENERATION
 // ═══════════════════════════════════════════════════
 function generateFillerPoints(c,count){
+  var b=getGridBounds();
   var existing=c.points.map(function(p){return p.x+','+p.y;});
   var fillers=[],attempts=0;
   while(fillers.length<count&&attempts<1000){
     attempts++;
-    var x=Math.floor(Math.random()*(c.gridMax-c.gridMin-1))+c.gridMin+1;
-    var y=Math.floor(Math.random()*(c.gridMax-c.gridMin-1))+c.gridMin+1;
+    var x=Math.floor(Math.random()*(b.gridMax-b.gridMin-1))+b.gridMin+1;
+    var y=Math.floor(Math.random()*(b.gridMax-b.gridMin-1))+b.gridMin+1;
     var key=x+','+y;
     if(existing.indexOf(key)===-1){existing.push(key);fillers.push({x:x,y:y});}
   }
@@ -406,7 +441,7 @@ function generatePreview(){
   pendingBody={
     user_id:userId,title:title,
     constellation_id:selConst.id,
-    grid_min:selConst.gridMin,grid_max:selConst.gridMax,
+    grid_min:getGridBounds().gridMin,grid_max:getGridBounds().gridMax,
     quadrants:selConst.quadrants,
     show_coords:showHintVal,
     num_problems:selNumProbs,
@@ -474,7 +509,7 @@ function showPreview(data){
   });
 
   // draw grid
-  var c=selConst,sz=360,pad=32,range=c.gridMax-c.gridMin,cell=(sz-pad*2)/range;
+  var gb=getGridBounds(),c={gridMin:gb.gridMin,gridMax:gb.gridMax,quadrants:selConst.quadrants},sz=360,pad=32,range=c.gridMax-c.gridMin,cell=(sz-pad*2)/range;
   function sx(x){return pad+(x-c.gridMin)*cell;}
   function sy(y){return pad+(range-(y-c.gridMin))*cell;}
   var svg=document.getElementById('prevGrid');
@@ -510,6 +545,11 @@ function showPreview(data){
     var lbl=Math.round(i*selScale*1000)/1000;
     h+='<text x="'+(yAxisX-10)+'" y="'+(sy(i)+3)+'" text-anchor="middle" font-size="9" font-family="DM Sans,sans-serif" fill="#aaa">'+lbl+'</text>';
   }
+  // axis titles
+  var xt_x=pad+range*cell+10,xt_y=isQ4?sy(0)+4:sy(c.gridMin)+4;
+  h+='<text x="'+xt_x+'" y="'+xt_y+'" font-size="12" font-weight="700" font-family="Syne,sans-serif" fill="#aaa" font-style="italic">x</text>';
+  var yt_x=isQ4?sx(0):sx(c.gridMin),yt_y=pad-10;
+  h+='<text x="'+yt_x+'" y="'+yt_y+'" text-anchor="middle" font-size="12" font-weight="700" font-family="Syne,sans-serif" fill="#aaa" font-style="italic">y</text>';
   // constellation edges (dashed hint)
   data.edges.forEach(function(e){
     var a=data.points.find(function(p){return p.label===e[0];}),b=data.points.find(function(p){return p.label===e[1];});
