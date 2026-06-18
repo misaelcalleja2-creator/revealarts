@@ -315,7 +315,7 @@ function buildProbBtns(){
     btn.textContent=n;
     btn.addEventListener('click',function(){
       selNumProbs=n;
-      document.querySelectorAll('.prob-count-btn').forEach(function(b){b.classList.remove('active');});
+      document.querySelectorAll('#probBtns .prob-count-btn').forEach(function(b){b.classList.remove('active');});
       btn.classList.add('active');
       updateProbNote();
     });
