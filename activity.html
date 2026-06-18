@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loading Activity — Reveal Arts</title>
+<title>Loading Activity — Reveal Art</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,9 +74,9 @@ body {
 
 <div id="loading-screen">
   <div class="logo">
-    <div class="logo-circle">THE<br>REAL<br>SUM<br>SHADY</div>
+    <div class="logo-circle" style="overflow:hidden;">THE<br>REAL<br>SUM<br>SHADY</div>
     <div>
-      <span class="logo-text">Reveal Arts</span>
+      <span class="logo-text">Reveal Art</span>
       <span class="logo-sub">by The Real Sum Shady</span>
     </div>
   </div>
@@ -109,7 +109,7 @@ async function loadActivity() {
     const data = await r.json();
     if (!Array.isArray(data) || !data[0] || !data[0].html) { showError(); return; }
     const { html, title } = data[0];
-    if (title) document.title = title + ' — Reveal Arts';
+    if (title) document.title = title + ' — Reveal Art';
     const blob = new Blob([html], { type: 'text/html' });
     const blobUrl = URL.createObjectURL(blob);
     const frame = document.getElementById('activity-frame');
