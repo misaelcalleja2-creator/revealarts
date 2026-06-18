@@ -65,6 +65,18 @@ body.ready{opacity:1}
 .brand-circle{width:26px;height:26px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .brand-text-inner{color:var(--lime);font-size:4.5px;font-weight:800;line-height:1.3;text-align:center;display:block;font-family:'Syne',sans-serif}
 .brand-name{font-size:11px;color:#bbb;font-style:italic}
+#graphing-loading{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px;position:fixed;inset:0;background:#f7f6f2;z-index:200}
+#graphing-loading .g-load-logo{display:flex;align-items:center;gap:10px}
+#graphing-loading .g-load-circle{width:40px;height:40px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:7px;font-weight:800;color:#b8e030;line-height:1.2;text-align:center;overflow:hidden}
+#graphing-loading .g-load-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--ink)}
+#graphing-loading .g-load-sub{font-size:11px;color:#888;display:block}
+#graphing-loading .g-spin{width:36px;height:36px;border:3px solid rgba(122,170,0,0.2);border-top-color:#7aaa00;border-radius:50%;animation:gspin 0.8s linear infinite}
+#graphing-loading .g-load-txt{font-size:13px;color:#888}
+@keyframes gspin{to{transform:rotate(360deg)}}
+#graphing-error{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;text-align:center;padding:32px;position:fixed;inset:0;background:#f7f6f2;z-index:200}
+.gerr-icon{font-size:48px}.gerr-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--ink)}
+.gerr-desc{font-size:14px;color:#888;max-width:400px;line-height:1.6}
+.gerr-btn{background:var(--ink);color:#b8e030;border:none;border-radius:10px;padding:12px 24px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block}
 .pt-card{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;transition:all .2s;margin-bottom:5px}
 .pt-card:hover{border-color:rgba(0,0,0,0.18);background:var(--white)}
 .pt-card.active{background:rgba(184,224,48,0.08);border-color:rgba(122,170,0,0.4)}
@@ -112,6 +124,25 @@ body.ready{opacity:1}
 </style>
 </head>
 <body>
+<div id="graphing-loading">
+  <div class="g-load-logo">
+    <div class="g-load-circle">THE<br>REAL<br>SUM<br>SHADY</div>
+    <div>
+      <span class="g-load-name">Reveal Graphing</span>
+      <span class="g-load-sub">by The Real Sum Shady</span>
+    </div>
+  </div>
+  <div class="g-spin"></div>
+  <div class="g-load-txt">Loading your activity...</div>
+</div>
+
+<div id="graphing-error">
+  <div class="gerr-icon">😕</div>
+  <div class="gerr-title">Activity not found</div>
+  <div class="gerr-desc">This activity link may have expired or been deleted by the teacher. Ask your teacher for an updated link.</div>
+  <a href="index.html" class="gerr-btn">Go home →</a>
+</div>
+
 <nav class="nav" id="navBar">
   <a href="index.html" class="nav-logo">
     <div class="nav-logo-circle">THE<br>REAL<br>SUM<br>SHADY</div>
@@ -582,7 +613,7 @@ function toast(msg,type){var t=document.getElementById('toast');t.textContent=ms
 
 // ═══ INIT ═══
 buildMenu();
-if(paramId){(async function(){try{var r=await fetch(SB_URL+'/rest/v1/graphing_activities?id=eq.'+paramId+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});if(!r.ok){document.body.classList.add('ready');return;}var data=await r.json();if(Array.isArray(data)&&data[0])startFromDB(data[0]);}catch(e){console.log('Load failed',e);}document.body.classList.add('ready');})();}
+if(paramId){document.getElementById('graphing-loading').style.display='flex';document.getElementById('navBar').style.display='none';document.getElementById('menuScreen').style.display='none';(async function(){try{var r=await fetch(SB_URL+'/rest/v1/graphing_activities?id=eq.'+paramId+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});if(!r.ok){document.getElementById('graphing-loading').style.display='none';document.getElementById('graphing-error').style.display='flex';document.body.classList.add('ready');return;}var data=await r.json();if(Array.isArray(data)&&data[0]){document.getElementById('graphing-loading').style.display='none';startFromDB(data[0]);}else{document.getElementById('graphing-loading').style.display='none';document.getElementById('graphing-error').style.display='flex';}}catch(e){console.log('Load failed',e);document.getElementById('graphing-loading').style.display='none';document.getElementById('graphing-error').style.display='flex';}document.body.classList.add('ready');})();}
 else if(paramC){var found=LIBRARY.find(function(c){return c.id===paramC;});if(found)startActivity(found.id);}
 window.addEventListener('resize',function(){if(!act)return;drawGrid();for(var i=0;i<cur;i++)placeDot(act.points[i]);});
 (function(){
