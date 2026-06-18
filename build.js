@@ -154,7 +154,7 @@ ${hasHints?`<div class="hint-modal" id="hm"><div class="hint-box"><h3 id="hm-tit
     <div class="btm-row">
       <div class="brand-strip">
         <div class="brand-circle"><span class="brand-text-inner">THE<br>REAL<br>SUM<br>SHADY</span></div>
-        <span class="brand-name">Reveal Arts</span>
+        <span class="brand-name">Reveal Art</span>
       </div>
       <div class="saved-badge" id="sb2">✓ Saved</div>
       <button class="dl-btn" id="dl-btn" onclick="doDownload()">Download My Work</button>
@@ -281,7 +281,7 @@ function drawCover(){
   ctx.shadowOffsetY=1;
   ctx.fillStyle='rgba(255,255,255,0.82)';
   ctx.textAlign='right';ctx.textBaseline='bottom';
-  ctx.fillText('Reveal Arts',IW-10,IH-10);
+  ctx.fillText('Reveal Art',IW-10,IH-10);
   ctx.restore();
 }
 function drawAll(){ctx.clearRect(0,0,IW,IH);if(img.complete&&img.naturalWidth>0)ctx.drawImage(img,0,0,IW,IH);drawCover();}
@@ -505,7 +505,7 @@ function executeDownload(){
     c2.fillText(sc,16,cap.height+14);
     c2.fillStyle='rgba(255,255,255,0.4)';
     c2.font='11px Nunito,sans-serif';
-    c2.fillText(ts+'  •  Reveal Arts by The Real Sum Shady',16,cap.height+30);
+    c2.fillText(ts+'  •  Reveal Art by The Real Sum Shady',16,cap.height+30);
     var a=document.createElement('a');
     var safe=name.replace(/[^a-zA-Z0-9]/g,'-');
     a.download=safe+'-reveal-arts.jpg';

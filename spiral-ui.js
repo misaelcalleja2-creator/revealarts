@@ -141,10 +141,19 @@ function renderActivityGrid(acts) {
       ? '<img class="spiral-act-thumb" src="' + act.thumbnail + '" alt="' + (act.title||'') + '">'
       : '<div class="spiral-act-thumb-ph">🎨</div>';
 
+    var tagLabel = '';
+    if (act.settings && act.settings.mode === 'custom') {
+      tagLabel = 'Custom';
+    } else if (act.subject) {
+      tagLabel = act.subject;
+    }
+    var tagHtml = tagLabel ? '<span class="spiral-act-tag">' + tagLabel + '</span>' : '';
+
     card.innerHTML = thumbHtml +
       '<div class="spiral-act-check">' + (selectedActivityMap[act.id] ? '✓' : '') + '</div>' +
       '<div class="spiral-act-body">' +
         '<div class="spiral-act-title">' + (act.title||'Untitled') + '</div>' +
+        tagHtml +
         '<div class="spiral-act-meta">' +
           (hasProbs
             ? '<span class="spiral-act-badge has-probs">' + probCount + ' problems</span>'
