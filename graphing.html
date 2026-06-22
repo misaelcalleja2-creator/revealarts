@@ -254,14 +254,20 @@ function buildMenu(){
 // ═══ START / STOP ═══
 function startActivity(id){
   act=LIBRARY.find(function(c){return c.id===id;});if(!act)return;
-  cur=0;wrongCount=0;supabaseId=null;startTime=Date.now();
+  cur=0;wrongCount=0;supabaseId=null;
+  // Timer: persist start time so a page refresh doesn't reset the clock
+  var tsKey='graph_ts_demo';
+  try{var saved=localStorage.getItem(tsKey);startTime=saved?parseInt(saved):Date.now();if(!saved)localStorage.setItem(tsKey,startTime);}catch(e){startTime=Date.now();}
   actTimerEnabled=false;actTimerMins=5;actScale=1;actLabelAll=true;
   history.pushState({c:id},'',window.location.pathname+'?c='+id+(showCoords?'&coords=true':''));
   launchActivity(act.name);
 }
 function startFromDB(data){
   act={id:data.id,name:data.title,gridMin:data.grid_min,gridMax:data.grid_max,quadrants:data.quadrants,points:data.points,edges:data.edges};
-  showCoords=data.show_coords;supabaseId=data.id;cur=0;wrongCount=0;startTime=Date.now();
+  showCoords=data.show_coords;supabaseId=data.id;cur=0;wrongCount=0;
+  // Timer: persist start time keyed by activity id so a refresh doesn't reset the clock
+  var tsKey='graph_ts_'+data.id;
+  try{var saved=localStorage.getItem(tsKey);startTime=saved?parseInt(saved):Date.now();if(!saved)localStorage.setItem(tsKey,startTime);}catch(e){startTime=Date.now();}
   actTimerEnabled=data.timer_enabled||false;
   actTimerMins=data.timer_mins||5;
   actScale=data.scale||1;

@@ -278,7 +278,7 @@ var EQ_FORM='slope-intercept'; // or 'standard'
 // ═══════════════════════════════════════════
 //  MATH HELPERS
 // ═══════════════════════════════════════════
-function nearEqual(a,b){return Math.abs(a-b)<0.001;}
+function nearEqual(a,b){return Math.abs(a-b)<0.01;}
 
 function fmtNum(n){
   if(Number.isInteger(n))return ''+n;
@@ -365,7 +365,10 @@ function svgToGrid(svgX,svgY){
   CELL=(SVG_SIZE-PAD*2)/range;
   var gx=(svgX-PAD)/CELL+GRID_MIN;
   var gy=range-((svgY-PAD)/CELL)+GRID_MIN;
-  return{x:Math.round(gx),y:Math.round(gy)};
+  // Snap to nearest 1/SCALE increment so scale>1 allows sub-integer clicks
+  // e.g. scale=2: grid pos 0.5 = labeled value 1, grid pos 1 = labeled value 2
+  var snap=SCALE>1?1/SCALE:1;
+  return{x:Math.round(gx/snap)*snap,y:Math.round(gy/snap)*snap};
 }
 
 function svgPoint(svg,clientX,clientY){
@@ -772,23 +775,22 @@ function doReveal(){
 // ═══════════════════════════════════════════
 //  TIMER
 // ═══════════════════════════════════════════
-function startTimer(mins){
+function startTimer(mins,actId){
   timerSec=mins*60;timerUp=false;
+  var tsKey='lines_ts_'+(actId||'demo');
+  // Persist start time across refreshes
+  var startTs;
+  try{var saved=localStorage.getItem(tsKey);startTs=saved?parseInt(saved):Date.now();if(!saved)localStorage.setItem(tsKey,startTs);}catch(e){startTs=Date.now();}
+  var totalSecs=mins*60;
   var disp=document.getElementById('timerDisp');
   disp.style.display='block';
-  updateTimerDisplay();
-  timerInterval=setInterval(function(){
-    timerSec--;
-    if(timerSec<=0&&!timerUp){timerUp=true;timerSec=0;disp.classList.add('overtime');}
-    if(timerUp)timerSec++;
-    updateTimerDisplay();
-  },1000);
-}
-
-function updateTimerDisplay(){
-  var s=Math.abs(timerSec);
-  var m=Math.floor(s/60);var sec=s%60;
-  document.getElementById('timerDisp').textContent=(timerUp?'−':'⏱ ')+(m<10?'0'+m:m)+':'+(sec<10?'0'+sec:sec);
+  function tick(){
+    var elapsed=Math.floor((Date.now()-startTs)/1000);
+    var rem=totalSecs-elapsed;
+    if(rem>=0){var m=Math.floor(rem/60),s=rem%60;disp.textContent='\u23F1 '+(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);disp.classList.remove('overtime');}
+    else{var over=Math.abs(rem);var m=Math.floor(over/60),s=over%60;disp.textContent='\u26A0 +'+(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);disp.classList.add('overtime');}
+  }
+  tick();timerInterval=setInterval(tick,1000);
 }
 
 // ═══════════════════════════════════════════
@@ -861,7 +863,7 @@ function initActivity(data){
   if(HINTS.coeffLabels)badges.innerHTML+='<span class="hint-badge">Coefficient labels</span>';
 
   // Timer
-  if(data.timer_enabled&&data.timer_mins>0)startTimer(data.timer_mins);
+  if(data.timer_enabled&&data.timer_mins>0)startTimer(data.timer_mins,data.id);
 
   buildGrid();
   buildLineList();
