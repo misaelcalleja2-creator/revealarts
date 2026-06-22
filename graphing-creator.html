@@ -56,7 +56,7 @@
   <div id="step-1" class="wiz-pane">
     <div style="display:flex;gap:8px;margin-bottom:16px;">
       <button id="cat-plotting" onclick="setCat('plotting')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--lime-dark);background:rgba(122,170,0,0.08);color:var(--lime-dark);font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Plotting</button>
-      <button id="cat-lines" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#ccc;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:not-allowed;opacity:.45;">Lines <span style="font-size:9px;font-family:DM Sans,sans-serif;font-weight:400;">coming soon</span></button>
+      <button id="cat-lines" onclick="setCat('lines')" style="flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#888;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Lines</button>
     </div>
 
     <div id="plotting-section">
@@ -95,6 +95,62 @@
       </div>
     </div>
 
+    <!-- ═══ LINES SECTION ═══ -->
+    <div id="lines-section" style="display:none;">
+      <div class="quad-tabs">
+        <button class="quad-tab active" id="lqt-q1" onclick="setLinesQuad('q1')">First Quadrant</button>
+        <button class="quad-tab" id="lqt-q4" onclick="setLinesQuad('q4')">Four Quadrants</button>
+      </div>
+
+      <div style="font-size:11px;color:#888;margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Choose a pattern</div>
+      <div class="const-grid" id="linesPatternGrid"></div>
+
+      <div class="divider"></div>
+
+      <div style="background:rgba(122,170,0,0.05);border:1.5px solid rgba(122,170,0,0.15);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+        <div style="font-size:12px;color:#1a1a24;font-weight:700;margin-bottom:6px;">Equation form</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+          <button class="prob-count-btn active" id="eqf-si" onclick="setEqForm('slope-intercept')">y = mx + b</button>
+          <button class="prob-count-btn" id="eqf-std" onclick="setEqForm('standard')">Standard form</button>
+        </div>
+        <div style="font-size:10px;color:#888;margin-top:6px;" id="eqFormNote">Students graph directly from slope-intercept form</div>
+      </div>
+
+      <div style="background:rgba(0,122,255,0.04);border:1.5px solid rgba(0,122,255,0.12);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+        <div style="font-size:12px;color:#1a1a24;font-weight:700;margin-bottom:6px;">Y-intercept</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+          <button class="prob-count-btn active" id="yint-mixed" onclick="setYInt('mixed')">Mixed values</button>
+          <button class="prob-count-btn" id="yint-zero" onclick="setYInt('zero')">Always 0 (proportional)</button>
+        </div>
+      </div>
+
+      <div style="background:rgba(255,152,0,0.05);border:1.5px solid rgba(255,152,0,0.15);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:12px;color:#1a1a24;font-weight:700;">Allow negative slopes</div>
+            <div style="font-size:10px;color:#888;margin-top:3px;">Patterns with lines in both directions</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="neg-slopes-toggle" checked onchange="linesNegSlopes=this.checked;renderLinesPatterns()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+      </div>
+
+      <div style="background:rgba(0,122,255,0.04);border:1.5px solid rgba(0,122,255,0.12);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:12px;color:#1a1a24;min-width:90px;font-weight:700;">Scale factor:</span>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;" id="linesScaleBtns"></div>
+        </div>
+        <div style="font-size:10px;color:#888;margin-top:6px;" id="linesScaleNote">Axis counts by 1</div>
+      </div>
+
+      <div style="background:rgba(255,152,0,0.05);border:1.5px solid rgba(255,152,0,0.15);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:12px;color:#1a1a24;min-width:90px;font-weight:700;">Grid lines:</span>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;" id="linesGridSizeBtns"></div>
+        </div>
+        <div style="font-size:10px;color:#888;margin-top:6px;" id="linesGridSizeNote">10 x 10 grid</div>
+      </div>
+    </div>
+
     <div class="step-nav">
       <div class="step-nav-hint" id="step1-hint" style="display:none;"></div>
       <button class="step-next-btn" onclick="wizNext(1)">Finish & name →</button>
@@ -128,6 +184,7 @@
       </div>
     </div>
 
+    <div id="plotting-hints">
     <div class="finish-field">
       <label class="finish-label">Student hint <span class="finish-optional">optional</span></label>
       <div class="toggle-row">
@@ -135,6 +192,7 @@
         <label class="toggle-switch"><input type="checkbox" id="hint-toggle"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
       </div>
       <div style="font-size:11px;color:#888;margin-top:4px;">Students see the coordinate label when hovering, but only for the first 3 points. After that, they're on their own.</div>
+    </div>
     </div>
 
     <div class="finish-field">
@@ -144,6 +202,45 @@
         <label class="toggle-switch"><input type="checkbox" id="label-toggle" onchange="labelAllTicks=this.checked"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
       </div>
       <div style="font-size:11px;color:#888;margin-top:4px;">Off by default — every other line is numbered. Turn on for smaller grids where every number fits cleanly.</div>
+    </div>
+
+    <!-- LINES-ONLY HINTS (hidden when plotting) -->
+    <div id="lines-hints" style="display:none;">
+      <div class="finish-field">
+        <label class="finish-label">Require y-intercept start <span class="finish-optional">optional</span></label>
+        <div class="toggle-row">
+          <span style="font-size:13px;color:#444;">First click must be on the y-axis</span>
+          <label class="toggle-switch"><input type="checkbox" id="hint-yint-toggle"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:4px;">Reinforces the habit of starting at the y-intercept before using slope.</div>
+      </div>
+
+      <div class="finish-field">
+        <label class="finish-label">Rise/run guides <span class="finish-optional">optional</span></label>
+        <div class="toggle-row">
+          <span style="font-size:13px;color:#444;">Show dashed staircase after first point</span>
+          <label class="toggle-switch"><input type="checkbox" id="hint-riserun-toggle"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:4px;">After plotting the first point, dotted lines show the rise and run to help students find the second point.</div>
+      </div>
+
+      <div class="finish-field">
+        <label class="finish-label">Coefficient labels <span class="finish-optional">optional</span></label>
+        <div class="toggle-row">
+          <span style="font-size:13px;color:#444;">Label slope and y-intercept in the equation</span>
+          <label class="toggle-switch"><input type="checkbox" id="hint-coeff-toggle"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:4px;">Small tags appear under the equation identifying which number is the slope and which is the y-intercept.</div>
+      </div>
+
+      <div class="finish-field">
+        <label class="finish-label">Fraction button <span class="finish-optional">optional</span></label>
+        <div class="toggle-row">
+          <span style="font-size:13px;color:#444;">Show fraction input helper</span>
+          <label class="toggle-switch"><input type="checkbox" id="hint-frac-toggle" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:4px;">Lets students enter fractions visually (numerator over denominator) instead of using the slash key.</div>
+      </div>
     </div>
 
     <button class="gen-btn" onclick="generatePreview()">Preview my Graphing Activity →</button>
@@ -230,7 +327,10 @@ async function init(){
 //  WIZARD
 // ═══════════════════════════════════════════════════
 function goToStep(n){
-  if(n===2&&!selConst){showHint(1,'Pick a constellation first');return;}
+  if(n===2){
+    if(currentCat==='plotting'&&!selConst){showHint(1,'Pick a constellation first');return;}
+    if(currentCat==='lines'&&!selLinesPattern){showHint(1,'Pick a pattern first');return;}
+  }
   currentStep=n;
   document.getElementById('step-1').style.display=n===1?'':'none';
   document.getElementById('step-2').style.display=n===2?'':'none';
@@ -607,7 +707,281 @@ function copyToClip(text,btn){
 // ═══════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════
-function setCat(c){/* only plotting for now */}
+// ═══════════════════════════════════════════════════
+//  LINES PATTERN LIBRARY
+// ═══════════════════════════════════════════════════
+var LINES_LIBRARY=[
+  // Q1 patterns
+  {id:'sunburst',name:'Sunburst',quadrants:1,gridMin:0,gridMax:10,negSlopes:false,
+   lines:[{m:1/3,b:0,color:'#ff5c3a'},{m:1/2,b:0,color:'#3a8dff'},{m:1,b:0,color:'#b8e030'},{m:3/2,b:0,color:'#ff9f1c'},{m:2,b:0,color:'#e040b8'},{m:3,b:0,color:'#40e0d0'}]},
+  {id:'lattice',name:'Lattice',quadrants:1,gridMin:0,gridMax:10,negSlopes:true,
+   lines:[{m:1,b:0,color:'#ff5c3a'},{m:1,b:4,color:'#ff9f1c'},{m:-1,b:6,color:'#3a8dff'},{m:-1,b:10,color:'#40e0d0'},{m:0,b:3,color:'#b8e030'},{m:0,b:7,color:'#e040b8'}]},
+  {id:'fan',name:'Fan',quadrants:1,gridMin:0,gridMax:10,negSlopes:false,
+   lines:[{m:1/4,b:0,color:'#ff5c3a'},{m:1/2,b:0,color:'#ff9f1c'},{m:3/4,b:0,color:'#b8e030'},{m:1,b:0,color:'#40e0d0'},{m:3/2,b:0,color:'#3a8dff'},{m:2,b:0,color:'#e040b8'},{m:3,b:0,color:'#ff5c3a'},{m:4,b:0,color:'#3a8dff'}]},
+  {id:'peaks',name:'Peaks',quadrants:1,gridMin:0,gridMax:10,negSlopes:true,
+   lines:[{m:1,b:0,color:'#ff5c3a'},{m:-1,b:5,color:'#3a8dff'},{m:1,b:-5,color:'#ff9f1c'},{m:-1,b:10,color:'#40e0d0'},{m:0,b:2,color:'#b8e030'},{m:0,b:8,color:'#e040b8'}]},
+  {id:'horizon',name:'Horizon',quadrants:1,gridMin:0,gridMax:10,negSlopes:false,
+   lines:[{m:0,b:2,color:'#ff5c3a'},{m:0,b:5,color:'#ff9f1c'},{m:0,b:8,color:'#b8e030'},{m:1/2,b:0,color:'#3a8dff'},{m:1,b:0,color:'#40e0d0'},{m:2,b:0,color:'#e040b8'}]},
+  // Q4 patterns
+  {id:'starburst4',name:'Starburst',quadrants:4,gridMin:-5,gridMax:5,negSlopes:true,
+   lines:[{m:1,b:0,color:'#ff5c3a'},{m:-1,b:0,color:'#3a8dff'},{m:2,b:0,color:'#ff9f1c'},{m:-2,b:0,color:'#40e0d0'},{m:1/2,b:0,color:'#b8e030'},{m:-1/2,b:0,color:'#e040b8'},{m:3,b:0,color:'#ff5c3a'},{m:-1/3,b:0,color:'#3a8dff'}]},
+  {id:'diamond4',name:'Diamond',quadrants:4,gridMin:-5,gridMax:5,negSlopes:true,
+   lines:[{m:1,b:2,color:'#ff5c3a'},{m:1,b:-2,color:'#3a8dff'},{m:-1,b:2,color:'#b8e030'},{m:-1,b:-2,color:'#ff9f1c'}]},
+  {id:'snowflake',name:'Snowflake',quadrants:4,gridMin:-5,gridMax:5,negSlopes:true,
+   lines:[{m:1,b:0,color:'#ff5c3a'},{m:-1,b:0,color:'#3a8dff'},{m:1/3,b:0,color:'#40e0d0'},{m:-1/3,b:0,color:'#ff9f1c'},{m:3,b:0,color:'#b8e030'},{m:-3,b:0,color:'#e040b8'}]},
+  {id:'window4',name:'Window',quadrants:4,gridMin:-5,gridMax:5,negSlopes:true,
+   lines:[{m:0,b:3,color:'#ff5c3a'},{m:0,b:-3,color:'#3a8dff'},{m:1,b:0,color:'#b8e030'},{m:-1,b:0,color:'#ff9f1c'},{m:1,b:3,color:'#40e0d0'},{m:-1,b:-3,color:'#e040b8'}]},
+  {id:'compass4',name:'Compass',quadrants:4,gridMin:-5,gridMax:5,negSlopes:true,
+   lines:[{m:1,b:0,color:'#ff5c3a'},{m:-1,b:0,color:'#3a8dff'},{m:3,b:0,color:'#b8e030'},{m:-1/3,b:0,color:'#ff9f1c'}]}
+];
+
+// ═══════════════════════════════════════════════════
+//  LINES STATE
+// ═══════════════════════════════════════════════════
+var currentCat='plotting'; // 'plotting' or 'lines'
+var selLinesPattern=null,linesQuad='q1',linesEqForm='slope-intercept',linesYInt='mixed',linesNegSlopes=true;
+var linesScale=1,linesGridSize=10;
+
+// ═══════════════════════════════════════════════════
+//  CATEGORY TOGGLE
+// ═══════════════════════════════════════════════════
+function setCat(c){
+  currentCat=c;
+  var pBtn=document.getElementById('cat-plotting'),lBtn=document.getElementById('cat-lines');
+  if(c==='plotting'){
+    pBtn.style.cssText='flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--lime-dark);background:rgba(122,170,0,0.08);color:var(--lime-dark);font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;';
+    lBtn.style.cssText='flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#888;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;';
+    document.getElementById('plotting-section').style.display='';
+    document.getElementById('lines-section').style.display='none';
+    document.getElementById('lines-hints').style.display='none';
+    document.getElementById('plotting-hints').style.display='';
+  }else{
+    lBtn.style.cssText='flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--lime-dark);background:rgba(122,170,0,0.08);color:var(--lime-dark);font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;';
+    pBtn.style.cssText='flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);color:#888;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;';
+    document.getElementById('plotting-section').style.display='none';
+    document.getElementById('lines-section').style.display='';
+    document.getElementById('lines-hints').style.display='';
+    document.getElementById('plotting-hints').style.display='none';
+    renderLinesPatterns();
+    buildLinesScaleBtns();
+    buildLinesGridSizeBtns();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  LINES FUNCTIONS
+// ═══════════════════════════════════════════════════
+function setLinesQuad(q){
+  linesQuad=q;selLinesPattern=null;
+  document.getElementById('lqt-q1').className='quad-tab'+(q==='q1'?' active':'');
+  document.getElementById('lqt-q4').className='quad-tab'+(q==='q4'?' active':'');
+  renderLinesPatterns();
+}
+
+function renderLinesPatterns(){
+  var grid=document.getElementById('linesPatternGrid');grid.innerHTML='';
+  var qVal=linesQuad==='q1'?1:4;
+  LINES_LIBRARY.filter(function(p){
+    if(p.quadrants!==qVal)return false;
+    if(!linesNegSlopes&&p.negSlopes)return false;
+    return true;
+  }).forEach(function(p){
+    var card=document.createElement('div');card.className='const-card'+(selLinesPattern&&selLinesPattern.id===p.id?' selected':'');
+    card.dataset.id=p.id;
+    // SVG preview showing the lines
+    var sz=80,pad=8,range=p.gridMax-p.gridMin;
+    function lx(x){return pad+(x-p.gridMin)/range*(sz-pad*2);}
+    function ly(y){return pad+(range-(y-p.gridMin))/range*(sz-pad*2);}
+    var svg='<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'">';
+    p.lines.forEach(function(line){
+      // Compute line endpoints at grid edges
+      var pts=[];
+      if(line.m===0){pts=[{x:p.gridMin,y:line.b},{x:p.gridMax,y:line.b}];}
+      else{
+        var yL=line.m*p.gridMin+line.b,yR=line.m*p.gridMax+line.b;
+        var xB=(p.gridMin-line.b)/line.m,xT=(p.gridMax-line.b)/line.m;
+        if(yL>=p.gridMin-0.1&&yL<=p.gridMax+0.1)pts.push({x:p.gridMin,y:yL});
+        if(yR>=p.gridMin-0.1&&yR<=p.gridMax+0.1)pts.push({x:p.gridMax,y:yR});
+        if(xB>=p.gridMin-0.1&&xB<=p.gridMax+0.1)pts.push({x:xB,y:p.gridMin});
+        if(xT>=p.gridMin-0.1&&xT<=p.gridMax+0.1)pts.push({x:xT,y:p.gridMax});
+        // Dedup
+        var u=[];pts.forEach(function(pt){if(!u.some(function(q){return Math.abs(q.x-pt.x)<0.01&&Math.abs(q.y-pt.y)<0.01;}))u.push(pt);});
+        pts=u.slice(0,2);
+      }
+      if(pts.length>=2)svg+='<line x1="'+lx(pts[0].x)+'" y1="'+ly(pts[0].y)+'" x2="'+lx(pts[1].x)+'" y2="'+ly(pts[1].y)+'" stroke="'+line.color+'" stroke-width="1.5" stroke-linecap="round"/>';
+    });
+    svg+='</svg>';
+    card.innerHTML=svg+'<div class="c-name">'+p.name+'</div><div class="c-meta">'+p.lines.length+' lines</div>';
+    card.addEventListener('click',function(){selectLinesPattern(p.id);});
+    grid.appendChild(card);
+  });
+}
+
+function selectLinesPattern(id){
+  selLinesPattern=LINES_LIBRARY.find(function(p){return p.id===id;});
+  document.querySelectorAll('#linesPatternGrid .const-card').forEach(function(el){el.classList.toggle('selected',el.dataset.id===id);});
+}
+
+function setEqForm(f){
+  linesEqForm=f;
+  document.getElementById('eqf-si').classList.toggle('active',f==='slope-intercept');
+  document.getElementById('eqf-std').classList.toggle('active',f==='standard');
+  document.getElementById('eqFormNote').textContent=f==='standard'?'Students convert to slope-intercept form first, then graph':'Students graph directly from slope-intercept form';
+}
+
+function setYInt(t){
+  linesYInt=t;
+  document.getElementById('yint-mixed').classList.toggle('active',t==='mixed');
+  document.getElementById('yint-zero').classList.toggle('active',t==='zero');
+}
+
+function buildLinesScaleBtns(){
+  var c=document.getElementById('linesScaleBtns');c.innerHTML='';
+  [0.5,1,2,5,10].forEach(function(s){
+    var btn=document.createElement('button');btn.className='prob-count-btn'+(s===linesScale?' active':'');btn.textContent=s;
+    btn.addEventListener('click',function(){
+      linesScale=s;
+      document.querySelectorAll('#linesScaleBtns .prob-count-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      document.getElementById('linesScaleNote').textContent='Axis counts by '+s;
+    });
+    c.appendChild(btn);
+  });
+}
+
+function buildLinesGridSizeBtns(){
+  var c=document.getElementById('linesGridSizeBtns');c.innerHTML='';
+  [10,15,20].forEach(function(s){
+    var btn=document.createElement('button');btn.className='prob-count-btn'+(s===linesGridSize?' active':'');btn.textContent=s;
+    btn.addEventListener('click',function(){
+      linesGridSize=s;
+      document.querySelectorAll('#linesGridSizeBtns .prob-count-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      var isQ4=linesQuad==='q4';
+      var gmin=isQ4?-Math.floor(s/2):0,gmax=isQ4?Math.ceil(s/2):s;
+      document.getElementById('linesGridSizeNote').textContent=s+' x '+s+' grid (axes '+gmin+' to '+gmax+')';
+    });
+    c.appendChild(btn);
+  });
+}
+
+// Override wizNext for lines
+var _origWizNext=wizNext;
+wizNext=function(from){
+  if(from===1&&currentCat==='lines'){
+    if(!selLinesPattern){showHint(1,'Pick a pattern first');return;}
+    document.getElementById('act-title').value='Graph the '+selLinesPattern.name;
+    goToStep(2);
+    return;
+  }
+  _origWizNext(from);
+};
+
+// Override generatePreview for lines
+var _origGenPreview=generatePreview;
+generatePreview=function(){
+  if(currentCat==='lines'){generateLinesPreview();return;}
+  _origGenPreview();
+};
+
+function generateLinesPreview(){
+  if(!selLinesPattern||!token)return;
+  var title=document.getElementById('act-title').value.trim();
+  if(!title){document.getElementById('vm').textContent='Give your activity a name';document.getElementById('vm').style.display='block';return;}
+  document.getElementById('vm').style.display='none';
+  document.getElementById('lo').classList.add('active');
+
+  var isQ4=linesQuad==='q4';
+  var gmin=isQ4?-Math.floor(linesGridSize/2):0;
+  var gmax=isQ4?Math.ceil(linesGridSize/2):linesGridSize;
+
+  // Filter lines by yInt setting
+  var patternLines=selLinesPattern.lines;
+  if(linesYInt==='zero')patternLines=patternLines.filter(function(l){return l.b===0;});
+
+  pendingBody={
+    user_id:userId,title:title,type:'lines',
+    constellation_id:selLinesPattern.id,
+    grid_min:gmin,grid_max:gmax,quadrants:selLinesPattern.quadrants,
+    scale:linesScale,label_all_ticks:labelAllTicks,
+    equation_form:linesEqForm,
+    y_intercept_type:linesYInt,
+    allow_negative_slopes:linesNegSlopes,
+    timer_enabled:timerEnabled,timer_mins:timerEnabled?timerMins:5,
+    hint_require_yint:document.getElementById('hint-yint-toggle').checked,
+    hint_rise_run:document.getElementById('hint-riserun-toggle').checked,
+    hint_coeff_labels:document.getElementById('hint-coeff-toggle').checked,
+    hint_fraction_btn:document.getElementById('hint-frac-toggle').checked,
+    lines:patternLines.map(function(l){return{m:l.m,b:l.b,color:l.color};})
+  };
+
+  setTimeout(function(){
+    document.getElementById('lo').classList.remove('active');
+    showLinesPreview(pendingBody);
+  },400);
+}
+
+function showLinesPreview(data){
+  document.getElementById('pe').style.display='none';
+  var pc=document.getElementById('pc');pc.style.display='flex';
+  document.getElementById('prevTitle').textContent=data.title;
+  // Timer
+  var timerEl=document.getElementById('prevTimer');
+  if(data.timer_enabled)timerEl.style.display='block';else timerEl.style.display='none';
+  // Points list → show equations instead
+  var ptList=document.getElementById('prevPtList');ptList.innerHTML='<div style="font-size:10px;font-weight:700;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.3px;">Equations</div>';
+  data.lines.forEach(function(l,i){
+    var row=document.createElement('div');
+    row.style.cssText='padding:5px 4px;border-radius:8px;margin-bottom:3px;background:#f7f6f2;border:1.5px solid #e5e4e0;font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px;';
+    var dot='<span style="width:10px;height:10px;border-radius:50%;background:'+l.color+';flex-shrink:0;"></span>';
+    var ms=Math.abs(l.m);var mStr=ms===1?'':ms+'';
+    var eq='y = '+(l.m<0?'−':'')+mStr+'x';
+    if(l.b>0)eq+=' + '+l.b;else if(l.b<0)eq+=' − '+Math.abs(l.b);
+    if(l.m===0)eq='y = '+l.b;
+    row.innerHTML=dot+'<span>'+(i+1)+'. '+eq+'</span>';
+    ptList.appendChild(row);
+  });
+  // Draw preview grid with lines
+  var gmin=data.grid_min,gmax=data.grid_max,sz=360,pad=32,range=gmax-gmin,cell=(sz-pad*2)/range;
+  function sx(x){return pad+(x-gmin)*cell;}function sy(y){return pad+(range-(y-gmin))*cell;}
+  var svg=document.getElementById('prevGrid');
+  svg.setAttribute('width',sz);svg.setAttribute('height',sz);svg.setAttribute('viewBox','0 0 '+sz+' '+sz);
+  var h='';
+  for(var i=gmin;i<=gmax;i++){
+    h+='<line x1="'+sx(i)+'" y1="'+pad+'" x2="'+sx(i)+'" y2="'+(pad+range*cell)+'" stroke="#e5e4e0" stroke-width="1"/>';
+    h+='<line x1="'+pad+'" y1="'+sy(i)+'" x2="'+(pad+range*cell)+'" y2="'+sy(i)+'" stroke="#e5e4e0" stroke-width="1"/>';
+  }
+  // Axes
+  var isQ4=gmin<0;
+  if(!isQ4){
+    h+='<line x1="'+sx(gmin)+'" y1="'+sy(gmin)+'" x2="'+sx(gmax)+'" y2="'+sy(gmin)+'" stroke="#0a0a0f" stroke-width="2"/>';
+    h+='<line x1="'+sx(gmin)+'" y1="'+sy(gmin)+'" x2="'+sx(gmin)+'" y2="'+sy(gmax)+'" stroke="#0a0a0f" stroke-width="2"/>';
+  }else{
+    h+='<line x1="'+pad+'" y1="'+sy(0)+'" x2="'+(pad+range*cell)+'" y2="'+sy(0)+'" stroke="#0a0a0f" stroke-width="2"/>';
+    h+='<line x1="'+sx(0)+'" y1="'+pad+'" x2="'+sx(0)+'" y2="'+(pad+range*cell)+'" stroke="#0a0a0f" stroke-width="2"/>';
+  }
+  // Lines
+  data.lines.forEach(function(l){
+    var pts=[];
+    if(l.m===0){pts=[{x:gmin,y:l.b},{x:gmax,y:l.b}];}
+    else{
+      var yL=l.m*gmin+l.b,yR=l.m*gmax+l.b;
+      var xB=(gmin-l.b)/l.m,xT=(gmax-l.b)/l.m;
+      if(yL>=gmin-0.1&&yL<=gmax+0.1)pts.push({x:gmin,y:yL});
+      if(yR>=gmin-0.1&&yR<=gmax+0.1)pts.push({x:gmax,y:yR});
+      if(xB>=gmin-0.1&&xB<=gmax+0.1)pts.push({x:xB,y:gmin});
+      if(xT>=gmin-0.1&&xT<=gmax+0.1)pts.push({x:xT,y:gmax});
+      var u=[];pts.forEach(function(pt){if(!u.some(function(q){return Math.abs(q.x-pt.x)<0.01&&Math.abs(q.y-pt.y)<0.01;}))u.push(pt);});
+      pts=u.slice(0,2);
+    }
+    if(pts.length>=2)h+='<line x1="'+sx(pts[0].x)+'" y1="'+sy(pts[0].y)+'" x2="'+sx(pts[1].x)+'" y2="'+sy(pts[1].y)+'" stroke="'+l.color+'" stroke-width="2" stroke-linecap="round"/>';
+  });
+  svg.innerHTML=h;
+  // Save button
+  document.getElementById('dl-btns').innerHTML='<button class="dl-btn" id="save-btn" onclick="saveAndRedirect()">Save &amp; Go to Dashboard</button>';
+}
+
+function setCat_old(c){/* only plotting for now */}
 init();
 </script>
 </body>
