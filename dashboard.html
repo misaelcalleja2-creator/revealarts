@@ -279,9 +279,6 @@ footer {
     <a href="#" class="product-tab" id="tab-graphing" onclick="switchTab('graphing');return false;">
       📐 Reveal Graphing <span class="tab-badge">Active</span>
     </a>
-    <a href="#" class="product-tab" id="tab-lines" onclick="switchTab('lines');return false;">
-      📈 Reveal Lines <span class="tab-badge">Active</span>
-    </a>
     <span class="product-tab coming">
       🔐 Escape Rooms <span class="tab-badge">Coming soon</span>
     </span>
@@ -307,15 +304,13 @@ footer {
       <div class="action-desc">Pick a constellation. Students plot coordinates to reveal the picture.</div>
       <span class="action-btn">Create now →</span>
     </a>
-  </div>
-
-  <div class="quick-actions" id="qa-lines" style="display:none;">
     <a href="graphing-lines-creator.html" class="action-card">
       <div class="action-title">Create Lines Activity</div>
-      <div class="action-desc">Build a set of linear equations. Students graph each line to reveal the picture.</div>
+      <div class="action-desc">Build a set of equations. Students graph each line to reveal the picture.</div>
       <span class="action-btn">Create now →</span>
     </a>
   </div>
+
 
   <div class="section-header">
     <div>
@@ -330,7 +325,6 @@ footer {
     <button class="select-mode-btn active" id="filter-all" onclick="filterActivities('all')">All</button>
     <button class="select-mode-btn" id="filter-art" onclick="filterActivities('art')">Reveal Art</button>
     <button class="select-mode-btn" id="filter-graphing" onclick="filterActivities('graphing')">Graphing</button>
-    <button class="select-mode-btn" id="filter-lines" onclick="filterActivities('lines')">Lines</button>
   </div>
 
   <!-- TIPS SECTION -->
@@ -1270,22 +1264,15 @@ function signOut() {
 function switchTab(tab) {
   var artsTab  = document.getElementById('tab-arts');
   var graphTab = document.getElementById('tab-graphing');
-  var linesTab = document.getElementById('tab-lines');
   var qaArts   = document.getElementById('qa-arts');
   var qaGraph  = document.getElementById('qa-graphing');
-  var qaLines  = document.getElementById('qa-lines');
   artsTab.classList.remove('active');
   graphTab.classList.remove('active');
-  if (linesTab) linesTab.classList.remove('active');
   qaArts.style.display  = 'none';
   qaGraph.style.display = 'none';
-  if (qaLines) qaLines.style.display = 'none';
   if (tab === 'graphing') {
     graphTab.classList.add('active');
     qaGraph.style.display = '';
-  } else if (tab === 'lines') {
-    if (linesTab) linesTab.classList.add('active');
-    if (qaLines) qaLines.style.display = '';
   } else {
     artsTab.classList.add('active');
     qaArts.style.display = '';
@@ -1296,12 +1283,12 @@ function filterActivities(type) {
   document.getElementById('filter-all').classList.toggle('active', type === 'all');
   document.getElementById('filter-art').classList.toggle('active', type === 'art');
   document.getElementById('filter-graphing').classList.toggle('active', type === 'graphing');
-  var linesBtn = document.getElementById('filter-lines');
-  if (linesBtn) linesBtn.classList.toggle('active', type === 'lines');
   var cards = document.querySelectorAll('.act-card');
   cards.forEach(function(card) {
     var cardType = card.dataset.actType;
     if (type === 'all') card.style.display = '';
+    // Graphing filter shows both graphing and lines cards
+    else if (type === 'graphing' && (cardType === 'graphing' || cardType === 'lines')) card.style.display = '';
     else if (type === cardType) card.style.display = '';
     else card.style.display = 'none';
   });
@@ -1366,7 +1353,7 @@ function toggleTips() {
 init();
 renderTips();
 // Auto-switch tab if returning from a specific creator
-(function(){var p=new URLSearchParams(window.location.search);var t=p.get('tab');if(t==='graphing')switchTab('graphing');else if(t==='lines')switchTab('lines');})();
+(function(){var p=new URLSearchParams(window.location.search);var t=p.get('tab');if(t==='graphing')switchTab('graphing');})();
 </script>
 </body>
 </html>

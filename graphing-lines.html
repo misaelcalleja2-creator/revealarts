@@ -278,7 +278,7 @@ var EQ_FORM='slope-intercept'; // or 'standard'
 // ═══════════════════════════════════════════
 //  MATH HELPERS
 // ═══════════════════════════════════════════
-function nearEqual(a,b){return Math.abs(a-b)<0.01;}
+function nearEqual(a,b){return Math.abs(a-b)<0.001;}
 
 function fmtNum(n){
   if(Number.isInteger(n))return ''+n;
@@ -365,16 +365,24 @@ function svgToGrid(svgX,svgY){
   CELL=(SVG_SIZE-PAD*2)/range;
   var gx=(svgX-PAD)/CELL+GRID_MIN;
   var gy=range-((svgY-PAD)/CELL)+GRID_MIN;
-  // Snap to nearest 1/SCALE increment so scale>1 allows sub-integer clicks
-  // e.g. scale=2: grid pos 0.5 = labeled value 1, grid pos 1 = labeled value 2
-  var snap=SCALE>1?1/SCALE:1;
-  return{x:Math.round(gx/snap)*snap,y:Math.round(gy/snap)*snap};
+  // Always snap to nearest integer — m/b are stored in internal integer grid coords
+  return{x:Math.round(gx),y:Math.round(gy)};
 }
 
 function svgPoint(svg,clientX,clientY){
-  var pt=svg.createSVGPoint();
-  pt.x=clientX;pt.y=clientY;
-  return pt.matrixTransform(svg.getScreenCTM().inverse());
+  // Prefer getScreenCTM (handles CSS transforms correctly)
+  var ctm=svg.getScreenCTM();
+  if(ctm){
+    var pt=svg.createSVGPoint();
+    pt.x=clientX;pt.y=clientY;
+    return pt.matrixTransform(ctm.inverse());
+  }
+  // Fallback: manual mapping via getBoundingClientRect → viewBox
+  var rect=svg.getBoundingClientRect();
+  var vb=svg.viewBox.baseVal;
+  var scaleX=vb.width/rect.width;
+  var scaleY=vb.height/rect.height;
+  return{x:(clientX-rect.left)*scaleX+vb.x, y:(clientY-rect.top)*scaleY+vb.y};
 }
 
 // ═══════════════════════════════════════════
@@ -493,6 +501,7 @@ function onGridClick(e){
   var fb=document.getElementById('plotFeedback');
 
   // Check if point is on the line
+  console.log('Click: g=',g.x,g.y,' line m=',line.m,'b=',line.b,' expected y=',line.m*g.x+line.b);
   if(!pointOnLine(line.m,line.b,g.x,g.y)){
     fb.textContent='✗ That point is not on the line';
     fb.className='plot-feedback wrong';
@@ -588,42 +597,42 @@ function drawRiseRunGuide(from,to){
   var dx=to.x-from.x;
   var dy=to.y-from.y;
   if(dx===0&&dy===0)return;
-  // Horizontal then vertical
-  var mid={x:to.x,y:from.y};
+  // Vertical first (rise), then horizontal (run)
+  var mid={x:from.x,y:to.y};
   var p1=gToSvg(from.x,from.y);
   var p2=gToSvg(mid.x,mid.y);
   var p3=gToSvg(to.x,to.y);
-  // Horizontal segment
-  var h=document.createElementNS(ns,'line');
-  h.setAttribute('x1',p1.x);h.setAttribute('y1',p1.y);
-  h.setAttribute('x2',p2.x);h.setAttribute('y2',p2.y);
-  h.setAttribute('stroke','rgba(122,170,0,0.4)');h.setAttribute('class','rise-run-guide');
-  riseRunGroup.appendChild(h);
-  // Vertical segment
+  // Vertical segment (rise)
   var v=document.createElementNS(ns,'line');
-  v.setAttribute('x1',p2.x);v.setAttribute('y1',p2.y);
-  v.setAttribute('x2',p3.x);v.setAttribute('y2',p3.y);
+  v.setAttribute('x1',p1.x);v.setAttribute('y1',p1.y);
+  v.setAttribute('x2',p2.x);v.setAttribute('y2',p2.y);
   v.setAttribute('stroke','rgba(122,170,0,0.4)');v.setAttribute('class','rise-run-guide');
   riseRunGroup.appendChild(v);
-  // Run label
+  // Horizontal segment (run)
+  var h=document.createElementNS(ns,'line');
+  h.setAttribute('x1',p2.x);h.setAttribute('y1',p2.y);
+  h.setAttribute('x2',p3.x);h.setAttribute('y2',p3.y);
+  h.setAttribute('stroke','rgba(122,170,0,0.4)');h.setAttribute('class','rise-run-guide');
+  riseRunGroup.appendChild(h);
+  // Rise label (on the vertical segment)
+  if(dy!==0){
+    var riseLabel=document.createElementNS(ns,'text');
+    var riseMid=gToSvg(from.x,(from.y+to.y)/2);
+    riseLabel.setAttribute('x',riseMid.x-14);riseLabel.setAttribute('y',riseMid.y);
+    riseLabel.setAttribute('text-anchor','end');riseLabel.setAttribute('font-size','10');
+    riseLabel.setAttribute('fill','rgba(122,170,0,0.7)');riseLabel.setAttribute('font-weight','700');
+    riseLabel.textContent='rise: '+dy;
+    riseRunGroup.appendChild(riseLabel);
+  }
+  // Run label (on the horizontal segment)
   if(dx!==0){
     var runLabel=document.createElementNS(ns,'text');
-    var runMid=gToSvg((from.x+to.x)/2,from.y);
+    var runMid=gToSvg((from.x+to.x)/2,to.y);
     runLabel.setAttribute('x',runMid.x);runLabel.setAttribute('y',runMid.y+14);
     runLabel.setAttribute('text-anchor','middle');runLabel.setAttribute('font-size','10');
     runLabel.setAttribute('fill','rgba(122,170,0,0.7)');runLabel.setAttribute('font-weight','700');
     runLabel.textContent='run: '+dx;
     riseRunGroup.appendChild(runLabel);
-  }
-  // Rise label
-  if(dy!==0){
-    var riseLabel=document.createElementNS(ns,'text');
-    var riseMid=gToSvg(to.x,(from.y+to.y)/2);
-    riseLabel.setAttribute('x',riseMid.x+14);riseLabel.setAttribute('y',riseMid.y);
-    riseLabel.setAttribute('text-anchor','start');riseLabel.setAttribute('font-size','10');
-    riseLabel.setAttribute('fill','rgba(122,170,0,0.7)');riseLabel.setAttribute('font-weight','700');
-    riseLabel.textContent='rise: '+dy;
-    riseRunGroup.appendChild(riseLabel);
   }
 }
 
