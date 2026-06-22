@@ -791,7 +791,9 @@ function renderLinesPatterns(){
   LINES_LIBRARY.filter(function(p){
     if(p.quadrants!==qVal)return false;
     if(!linesNegSlopes&&p.negSlopes)return false;
-    if(linesYInt==='zero'&&!p.lines.every(function(l){return l.b===0;}))return false;
+    var allZero=p.lines.every(function(l){return l.b===0;});
+    if(linesYInt==='zero'&&!allZero)return false;
+    if(linesYInt==='mixed'&&allZero)return false;
     return true;
   }).forEach(function(p){
     var card=document.createElement('div');card.className='const-card'+(selLinesPattern&&selLinesPattern.id===p.id?' selected':'');
@@ -920,7 +922,8 @@ function generateLinesPreview(){
     hint_rise_run:document.getElementById('hint-riserun-toggle').checked,
     hint_coeff_labels:document.getElementById('hint-coeff-toggle').checked,
     hint_fraction_btn:document.getElementById('hint-frac-toggle').checked,
-    lines:patternLines.map(function(l){return{m:l.m,b:l.b,color:l.color};})
+    lines:patternLines.map(function(l){return{m:l.m,b:l.b,color:l.color};}),
+    points:[],edges:[],show_coords:false,num_problems:0
   };
 
   setTimeout(function(){
