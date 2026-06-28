@@ -254,14 +254,20 @@ function buildMenu(){
 // ═══ START / STOP ═══
 function startActivity(id){
   act=LIBRARY.find(function(c){return c.id===id;});if(!act)return;
-  cur=0;wrongCount=0;supabaseId=null;startTime=Date.now();
+  cur=0;wrongCount=0;supabaseId=null;
+  // Timer: persist start time so a page refresh doesn't reset the clock
+  var tsKey='graph_ts_demo';
+  try{var saved=localStorage.getItem(tsKey);startTime=saved?parseInt(saved):Date.now();if(!saved)localStorage.setItem(tsKey,startTime);}catch(e){startTime=Date.now();}
   actTimerEnabled=false;actTimerMins=5;actScale=1;actLabelAll=true;
   history.pushState({c:id},'',window.location.pathname+'?c='+id+(showCoords?'&coords=true':''));
   launchActivity(act.name);
 }
 function startFromDB(data){
   act={id:data.id,name:data.title,gridMin:data.grid_min,gridMax:data.grid_max,quadrants:data.quadrants,points:data.points,edges:data.edges};
-  showCoords=data.show_coords;supabaseId=data.id;cur=0;wrongCount=0;startTime=Date.now();
+  showCoords=data.show_coords;supabaseId=data.id;cur=0;wrongCount=0;
+  // Timer: persist start time keyed by activity id so a refresh doesn't reset the clock
+  var tsKey='graph_ts_'+data.id;
+  try{var saved=localStorage.getItem(tsKey);startTime=saved?parseInt(saved):Date.now();if(!saved)localStorage.setItem(tsKey,startTime);}catch(e){startTime=Date.now();}
   actTimerEnabled=data.timer_enabled||false;
   actTimerMins=data.timer_mins||5;
   actScale=data.scale||1;
@@ -613,7 +619,7 @@ function toast(msg,type){var t=document.getElementById('toast');t.textContent=ms
 
 // ═══ INIT ═══
 buildMenu();
-if(paramId){document.body.classList.add('ready');document.getElementById('graphing-loading').style.display='flex';document.getElementById('navBar').style.display='none';document.getElementById('menuScreen').style.display='none';(async function(){try{var r=await fetch(SB_URL+'/rest/v1/graphing_activities?id=eq.'+paramId+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});if(!r.ok){document.getElementById('graphing-loading').style.display='none';document.getElementById('graphing-error').style.display='flex';return;}var data=await r.json();if(Array.isArray(data)&&data[0]){document.getElementById('graphing-loading').style.display='none';startFromDB(data[0]);}else{document.getElementById('graphing-loading').style.display='none';document.getElementById('graphing-error').style.display='flex';}}catch(e){console.log('Load failed',e);document.getElementById('graphing-loading').style.display='none';document.getElementById('graphing-error').style.display='flex';}})();}
+if(paramId){document.body.classList.add('ready');document.getElementById('graphing-loading').style.display='flex';document.getElementById('navBar').style.display='none';document.getElementById('menuScreen').style.display='none';(async function(){try{var r=await fetch(SB_URL+'/rest/v1/graphing_activities?id=eq.'+paramId+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});if(!r.ok){document.getElementById('graphing-loading').style.display='none';document.getElementById('graphing-error').style.display='flex';return;}var data=await r.json();if(Array.isArray(data)&&data[0]){if(data[0].type==='lines'){window.location.href='graphing-lines.html?id='+paramId;return;}document.getElementById('graphing-loading').style.display='none';startFromDB(data[0]);}else{document.getElementById('graphing-loading').style.display='none';document.getElementById('graphing-error').style.display='flex';}}catch(e){console.log('Load failed',e);document.getElementById('graphing-loading').style.display='none';document.getElementById('graphing-error').style.display='flex';}})();}
 else if(paramC){var found=LIBRARY.find(function(c){return c.id===paramC;});if(found)startActivity(found.id);}
 window.addEventListener('resize',function(){if(!act)return;drawGrid();for(var i=0;i<cur;i++)placeDot(act.points[i]);});
 (function(){

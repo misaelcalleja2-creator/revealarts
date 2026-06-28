@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reveal Graphing — Lines</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0a0f;--bg:#f7f6f2;--bg2:#eeecea;--white:#ffffff;--lime:#b8e030;--lime-dark:#7aaa00;--coral:#ff5c3a;--text:#1a1a24;--text2:#555560;--text3:#888894;--border:rgba(0,0,0,0.09)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;opacity:0;transition:opacity .25s}
+body.ready{opacity:1}
+
+/* Loading */
+#lines-loading{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px;position:fixed;inset:0;background:#f7f6f2;z-index:200}
+#lines-loading .ll-logo{display:flex;align-items:center;gap:10px}
+#lines-loading .ll-circle{width:40px;height:40px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:7px;font-weight:800;color:#b8e030;line-height:1.2;text-align:center;overflow:hidden}
+#lines-loading .ll-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--ink)}
+#lines-loading .ll-sub{font-size:11px;color:#888;display:block}
+.ll-spin{width:36px;height:36px;border:3px solid rgba(122,170,0,0.2);border-top-color:#7aaa00;border-radius:50%;animation:lspin 0.8s linear infinite}
+@keyframes lspin{to{transform:rotate(360deg)}}
+.ll-txt{font-size:13px;color:#888}
+#lines-error{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;text-align:center;padding:32px;position:fixed;inset:0;background:#f7f6f2;z-index:200}
+
+/* Activity layout */
+.activity{display:none;flex-direction:column;height:100vh}
+.activity.show{display:flex}
+.act-header{padding:10px 16px 8px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--white);border-bottom:1px solid var(--border)}
+.act-title-bar{font-family:'Syne',sans-serif;font-size:clamp(16px,2.5vw,22px);font-weight:800;color:var(--ink)}
+.timer-display{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--ink);letter-spacing:1px;min-width:80px;text-align:center;background:var(--bg2);border-radius:8px;padding:3px 10px}
+.timer-display.overtime{color:var(--coral);background:rgba(255,92,58,0.08);animation:tpulse 1s infinite}
+@keyframes tpulse{0%,100%{opacity:1}50%{opacity:0.6}}
+
+.layout{display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 57px);overflow:hidden}
+
+/* Left panel - equation area */
+.eq-panel{background:var(--white);border-right:1px solid var(--border);overflow-y:auto;padding:20px 16px 60px;display:flex;flex-direction:column;gap:16px}
+.eq-counter{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase}
+.eq-display{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--ink);padding:16px;background:var(--bg);border-radius:12px;text-align:center;line-height:1.4}
+.eq-display .coeff-label{display:block;font-size:9px;font-weight:600;color:var(--lime-dark);letter-spacing:0.5px;text-transform:uppercase;margin-top:2px}
+.eq-instruction{font-size:13px;color:var(--text3);text-align:center;line-height:1.5}
+
+/* Standard form conversion */
+.convert-area{background:var(--bg);border-radius:12px;padding:16px;display:none}
+.convert-label{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px}
+.convert-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--ink)}
+.convert-input{width:70px;padding:8px;border:2px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;text-align:center;outline:none;transition:border-color .2s}
+.convert-input:focus{border-color:var(--lime-dark)}
+.convert-input.correct{border-color:var(--lime-dark);background:rgba(122,170,0,0.05)}
+.convert-input.wrong{border-color:var(--coral);background:rgba(255,92,58,0.05)}
+.convert-check{padding:8px 16px;border:none;border-radius:8px;background:var(--ink);color:var(--lime);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+.convert-feedback{font-size:12px;font-weight:600;margin-top:6px}
+.convert-feedback.correct{color:var(--lime-dark)}
+.convert-feedback.wrong{color:var(--coral)}
+
+/* Fraction button & popup */
+.frac-btn{width:32px;height:32px;border:2px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--text2);transition:border-color .2s}
+.frac-btn:hover{border-color:var(--lime-dark)}
+.frac-popup{position:absolute;background:var(--white);border:2px solid var(--lime-dark);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:50;display:none;flex-direction:column;align-items:center;gap:2px}
+.frac-popup.show{display:flex}
+.frac-num,.frac-den{width:50px;padding:6px;border:1.5px solid var(--border);border-radius:6px;text-align:center;font-size:14px;font-weight:600;outline:none}
+.frac-num:focus,.frac-den:focus{border-color:var(--lime-dark)}
+.frac-line{width:40px;height:2px;background:var(--ink)}
+.frac-ok{padding:4px 12px;border:none;border-radius:6px;background:var(--lime-dark);color:white;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px}
+
+/* Hint badges */
+.hint-badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.hint-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;background:rgba(122,170,0,0.08);color:var(--lime-dark);border:1px solid rgba(122,170,0,0.15)}
+
+/* Plot feedback */
+.plot-feedback{text-align:center;font-size:13px;font-weight:600;min-height:20px}
+.plot-feedback.correct{color:var(--lime-dark)}
+.plot-feedback.wrong{color:var(--coral)}
+.plot-feedback.info{color:var(--text3)}
+
+/* Hide lines toggle */
+.hide-lines-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px}
+.hide-lines-row input{accent-color:var(--lime-dark)}
+.hide-lines-row label{font-size:12px;color:var(--text3);cursor:pointer}
+
+/* Progress list */
+.line-list{display:flex;flex-direction:column;gap:4px}
+.line-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:var(--bg);border:1.5px solid var(--border);font-size:12px}
+.line-item.active{border-color:var(--lime-dark);background:rgba(122,170,0,0.05)}
+.line-item.done{opacity:0.5}
+.line-num{width:20px;height:20px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--text3);flex-shrink:0}
+.line-item.done .line-num{background:var(--lime-dark);color:white}
+.line-item.active .line-num{background:var(--ink);color:var(--lime)}
+.line-eq-text{font-family:'DM Sans',sans-serif;font-weight:600;color:var(--text)}
+
+/* Grid panel */
+.grid-panel{display:flex;flex-direction:column;padding:8px 10px;gap:8px;background:var(--bg);overflow:hidden}
+.canvas-wrap{flex:1;display:flex;align-items:stretch;justify-content:center;min-height:0;overflow:hidden;padding:4px}
+.grid-card{background:var(--white);border-radius:14px;box-shadow:0 6px 28px rgba(0,0,0,0.08);padding:12px;line-height:0;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#grid{cursor:pointer;display:block;width:100%;height:100%}
+
+/* Progress bar */
+.prog-row{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.prog-top{display:flex;justify-content:space-between;align-items:center}
+.prog-text{font-size:11px;color:var(--text3);font-weight:600}
+.prog-pct{font-size:14px;font-weight:800;color:var(--lime-dark)}
+.prog-track{background:rgba(0,0,0,0.08);border-radius:99px;height:7px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--lime),var(--lime-dark));border-radius:99px;width:0%;transition:width .5s ease}
+
+/* Bottom brand */
+.btm-row{display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.brand-strip{display:flex;align-items:center;gap:7px}
+.brand-circle{width:26px;height:26px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.brand-text-inner{color:var(--lime);font-size:4.5px;font-weight:800;line-height:1.3;text-align:center;display:block;font-family:'Syne',sans-serif}
+.brand-name{font-size:11px;color:#bbb;font-style:italic}
+
+/* Rise/run guide */
+.rise-run-guide{stroke-dasharray:4,3;stroke-width:1.5;fill:none;pointer-events:none}
+
+/* SVG styles */
+.g-grid{stroke:#e0e0e0;stroke-width:0.5}
+.g-axis{stroke:#aaa;stroke-width:1.5}
+.g-label{font-size:9px;fill:#aaa;font-family:'DM Sans',sans-serif}
+.g-dot{fill:#d5d5d5}
+.g-hover{fill:transparent;stroke:var(--lime-dark);stroke-width:1.5;pointer-events:none;opacity:0.6}
+.g-point{transition:opacity 0.25s}
+.g-point-label{font-family:'Syne',sans-serif;font-weight:700;font-size:10px;fill:var(--ink)}
+.completed-line{stroke-width:1.5;opacity:0.3;transition:opacity 0.4s}
+.active-line{stroke:var(--lime-dark);stroke-width:2.5}
+.reveal-line{stroke-width:2.5;opacity:1;transition:stroke .4s, opacity .4s}
+
+/* Completion overlay */
+.completion-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:100;align-items:center;justify-content:center}
+.completion-overlay.show{display:flex}
+.completion-card{background:var(--white);border-radius:20px;padding:40px;text-align:center;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.completion-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:8px}
+.completion-sub{font-size:14px;color:var(--text3);margin-bottom:20px}
+.dl-btn{padding:12px 24px;border:none;border-radius:10px;background:var(--ink);color:var(--lime);font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer}
+
+@media(max-width:768px){
+  .layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .eq-panel{max-height:35vh;border-right:none;border-bottom:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="lines-loading">
+  <div class="ll-logo">
+    <div class="ll-circle">THE<br>REAL<br>SUM<br>SHADY</div>
+    <div>
+      <span class="ll-name">Reveal Graphing</span>
+      <span class="ll-sub">by The Real Sum Shady</span>
+    </div>
+  </div>
+  <div class="ll-spin"></div>
+  <div class="ll-txt">Loading your activity...</div>
+</div>
+
+<div id="lines-error" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;text-align:center;padding:32px;position:fixed;inset:0;background:#f7f6f2;z-index:200">
+  <div style="font-size:48px">😕</div>
+  <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;">Activity not found</div>
+  <div style="font-size:14px;color:#888;max-width:400px;line-height:1.6;">This activity link may have expired or been deleted. Ask your teacher for an updated link.</div>
+  <a href="index.html" style="background:var(--ink);color:var(--lime);border:none;border-radius:10px;padding:12px 24px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;text-decoration:none;">Go home →</a>
+</div>
+
+<!-- ACTIVITY -->
+<div class="activity" id="activityView">
+  <div class="act-header">
+    <div class="act-title-bar" id="actTitle">Graph the Lines</div>
+    <div class="timer-display" id="timerDisp" style="display:none">⏱ 05:00</div>
+  </div>
+
+  <div class="layout">
+    <!-- LEFT: Equation + controls -->
+    <div class="eq-panel">
+      <div class="eq-counter" id="eqCounter">Line 1 of 6</div>
+      <div class="eq-display" id="eqDisplay">y = 2x + 3</div>
+
+      <!-- Standard form conversion area -->
+      <div class="convert-area" id="convertArea">
+        <div class="convert-label">Rewrite in slope-intercept form</div>
+        <div class="convert-row">
+          <span>y =</span>
+          <div style="position:relative;display:inline-flex;align-items:center;gap:4px;">
+            <input type="text" class="convert-input" id="convertSlope" placeholder="m">
+            <button class="frac-btn" id="fracBtnSlope" onclick="toggleFrac('slope')" title="Fraction input">⅟</button>
+            <div class="frac-popup" id="fracPopSlope">
+              <input type="number" class="frac-num" id="fracNumSlope" placeholder="top">
+              <div class="frac-line"></div>
+              <input type="number" class="frac-den" id="fracDenSlope" placeholder="btm">
+              <button class="frac-ok" onclick="applyFrac('slope')">OK</button>
+            </div>
+          </div>
+          <span>x +</span>
+          <div style="position:relative;display:inline-flex;align-items:center;gap:4px;">
+            <input type="text" class="convert-input" id="convertB" placeholder="b">
+            <button class="frac-btn" id="fracBtnB" onclick="toggleFrac('b')" title="Fraction input">⅟</button>
+            <div class="frac-popup" id="fracPopB">
+              <input type="number" class="frac-num" id="fracNumB" placeholder="top">
+              <div class="frac-line"></div>
+              <input type="number" class="frac-den" id="fracDenB" placeholder="btm">
+              <button class="frac-ok" onclick="applyFrac('b')">OK</button>
+            </div>
+          </div>
+        </div>
+        <button class="convert-check" id="convertCheckBtn" onclick="checkConversion()">Check →</button>
+        <div class="convert-feedback" id="convertFeedback"></div>
+      </div>
+
+      <div class="eq-instruction" id="eqInstruction">Click two points on the line</div>
+      <div class="plot-feedback" id="plotFeedback"></div>
+
+      <!-- Hint badges -->
+      <div class="hint-badges" id="hintBadges"></div>
+
+      <!-- Hide lines toggle -->
+      <div class="hide-lines-row">
+        <input type="checkbox" id="hideLines" onchange="toggleHideLines()">
+        <label for="hideLines">Hide completed lines</label>
+      </div>
+
+      <!-- Line progress list -->
+      <div class="line-list" id="lineList"></div>
+    </div>
+
+    <!-- RIGHT: Grid -->
+    <div class="grid-panel">
+      <div class="canvas-wrap">
+        <div class="grid-card">
+          <svg id="grid" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-top">
+          <span class="prog-text" id="progText">0 of 6 solved</span>
+          <span class="prog-pct" id="progPct">0%</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+      </div>
+      <div class="btm-row">
+        <div class="brand-strip">
+          <div class="brand-circle"><span class="brand-text-inner">THE<br>REAL<br>SUM<br>SHADY</span></div>
+          <span class="brand-name">Reveal Graphing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════
+var SB_URL='https://zionhfdaksktpwcvjnde.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+var params=new URLSearchParams(window.location.search);
+var paramId=params.get('id');
+
+// ═══════════════════════════════════════════
+//  ACTIVITY STATE
+// ═══════════════════════════════════════════
+var actData=null; // full activity from DB
+var lines=[];     // array of {m, b, color, equation_display, standard_form}
+var currentLine=0;
+var solved=0;
+var point1=null;   // first clicked point {x,y}
+var point2=null;   // second clicked point
+var conversionDone=false; // for standard form
+var hoverCircle=null;
+var riseRunGroup=null;
+var hideCompleted=false;
+var timerInterval=null;
+var timerSec=0;
+var timerUp=false;
+
+// Grid constants - set after loading activity
+var GRID_MIN=0, GRID_MAX=10, SCALE=1, CELL=0, PAD=40, SVG_SIZE=500, LABEL_ALL=false;
+var HINTS={requireYIntercept:false, riseRunGuides:false, coeffLabels:false, fractionBtn:true};
+var EQ_FORM='slope-intercept'; // or 'standard'
+
+// ═══════════════════════════════════════════
+//  MATH HELPERS
+// ═══════════════════════════════════════════
+function nearEqual(a,b){return Math.abs(a-b)<0.001;}
+
+function fmtNum(n){
+  if(Number.isInteger(n))return ''+n;
+  // Check for common fractions
+  var fracs=[[1,3],[1,2],[2,3],[1,4],[3,4],[1,5],[2,5],[3,5],[4,5]];
+  for(var i=0;i<fracs.length;i++){
+    var f=fracs[i][0]/fracs[i][1];
+    if(nearEqual(Math.abs(n),f)){
+      var sign=n<0?'−':'';
+      return sign+fracs[i][0]+'/'+fracs[i][1];
+    }
+  }
+  return Math.round(n*100)/100+'';
+}
+
+function fmtEquation(m,b){
+  var ms=fmtNum(Math.abs(m));
+  var eq='y = ';
+  if(m===0){return 'y = '+fmtNum(b);}
+  if(m===1)eq+='x';
+  else if(m===-1)eq+='−x';
+  else if(m<0)eq+='−'+ms+'x';
+  else eq+=ms+'x';
+  if(b>0)eq+=' + '+fmtNum(b);
+  else if(b<0)eq+=' − '+fmtNum(Math.abs(b));
+  return eq;
+}
+
+function fmtStandard(A,B,C){
+  var eq='';
+  if(A===1)eq='x';
+  else if(A===-1)eq='−x';
+  else eq=A+'x';
+  if(B>0)eq+=' + '+(B===1?'':B)+'y';
+  else if(B<0)eq+=' − '+(B===-1?'':Math.abs(B))+'y';
+  eq+=' = '+C;
+  return eq;
+}
+
+// Get line endpoints at grid boundaries
+function lineEndpoints(m,b){
+  var pts=[];
+  if(m===0){
+    // Horizontal line
+    pts.push({x:GRID_MIN,y:b},{x:GRID_MAX,y:b});
+  } else {
+    // Check all four boundaries
+    var yAtXmin=m*GRID_MIN+b;
+    var yAtXmax=m*GRID_MAX+b;
+    var xAtYmin=(GRID_MIN-b)/m; // y=GRID_MIN boundary (for Q4)
+    var xAtYmax=(GRID_MAX-b)/m; // y=GRID_MAX boundary
+
+    if(yAtXmin>=GRID_MIN-0.01&&yAtXmin<=GRID_MAX+0.01)pts.push({x:GRID_MIN,y:yAtXmin});
+    if(yAtXmax>=GRID_MIN-0.01&&yAtXmax<=GRID_MAX+0.01)pts.push({x:GRID_MAX,y:yAtXmax});
+    if(xAtYmin>=GRID_MIN-0.01&&xAtYmin<=GRID_MAX+0.01)pts.push({x:xAtYmin,y:GRID_MIN});
+    if(xAtYmax>=GRID_MIN-0.01&&xAtYmax<=GRID_MAX+0.01)pts.push({x:xAtYmax,y:GRID_MAX});
+
+    // Deduplicate (corners appear twice)
+    var uniq=[];
+    pts.forEach(function(p){
+      var found=uniq.some(function(u){return nearEqual(u.x,p.x)&&nearEqual(u.y,p.y);});
+      if(!found)uniq.push(p);
+    });
+    pts=uniq;
+  }
+  return pts.slice(0,2);
+}
+
+function pointOnLine(m,b,px,py){
+  return nearEqual(py, m*px+b);
+}
+
+// ═══════════════════════════════════════════
+//  SVG COORDINATE MAPPING
+// ═══════════════════════════════════════════
+function gToSvg(gx,gy){
+  var range=GRID_MAX-GRID_MIN;
+  CELL=(SVG_SIZE-PAD*2)/range;
+  return{x:PAD+(gx-GRID_MIN)*CELL, y:PAD+(range-(gy-GRID_MIN))*CELL};
+}
+
+function svgToGrid(svgX,svgY){
+  var range=GRID_MAX-GRID_MIN;
+  CELL=(SVG_SIZE-PAD*2)/range;
+  var gx=(svgX-PAD)/CELL+GRID_MIN;
+  var gy=range-((svgY-PAD)/CELL)+GRID_MIN;
+  // Always snap to nearest integer — m/b are stored in internal integer grid coords
+  return{x:Math.round(gx),y:Math.round(gy)};
+}
+
+function svgPoint(svg,clientX,clientY){
+  // Prefer getScreenCTM (handles CSS transforms correctly)
+  var ctm=svg.getScreenCTM();
+  if(ctm){
+    var pt=svg.createSVGPoint();
+    pt.x=clientX;pt.y=clientY;
+    return pt.matrixTransform(ctm.inverse());
+  }
+  // Fallback: manual mapping via getBoundingClientRect → viewBox
+  var rect=svg.getBoundingClientRect();
+  var vb=svg.viewBox.baseVal;
+  var scaleX=vb.width/rect.width;
+  var scaleY=vb.height/rect.height;
+  return{x:(clientX-rect.left)*scaleX+vb.x, y:(clientY-rect.top)*scaleY+vb.y};
+}
+
+// ═══════════════════════════════════════════
+//  BUILD GRID
+// ═══════════════════════════════════════════
+function buildGrid(){
+  var svg=document.getElementById('grid');
+  var ns='http://www.w3.org/2000/svg';
+  svg.innerHTML='';
+  var range=GRID_MAX-GRID_MIN;
+  CELL=(SVG_SIZE-PAD*2)/range;
+  var isQ4=GRID_MIN<0;
+
+  function mkEl(tag,attrs){var e=document.createElementNS(ns,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
+
+  // Grid lines + dots
+  for(var i=GRID_MIN;i<=GRID_MAX;i++){
+    var p=gToSvg(i,GRID_MIN);
+    svg.appendChild(mkEl('line',{x1:PAD+(i-GRID_MIN)*CELL,y1:PAD,x2:PAD+(i-GRID_MIN)*CELL,y2:PAD+range*CELL,class:'g-grid'}));
+    svg.appendChild(mkEl('line',{x1:PAD,y1:PAD+(i-GRID_MIN)*CELL,x2:PAD+range*CELL,y2:PAD+(i-GRID_MIN)*CELL,class:'g-grid'}));
+    for(var j=GRID_MIN;j<=GRID_MAX;j++){
+      var dp=gToSvg(i,j);
+      svg.appendChild(mkEl('circle',{cx:dp.x,cy:dp.y,r:1.5,class:'g-dot'}));
+    }
+  }
+
+  // Axes
+  if(!isQ4){
+    var o=gToSvg(GRID_MIN,GRID_MIN);
+    svg.appendChild(mkEl('line',{x1:o.x,y1:o.y,x2:o.x,y2:PAD,'class':'g-axis'}));
+    svg.appendChild(mkEl('line',{x1:o.x,y1:o.y,x2:PAD+range*CELL,y2:o.y,'class':'g-axis'}));
+  }else{
+    var zp=gToSvg(0,0);
+    svg.appendChild(mkEl('line',{x1:zp.x,y1:PAD,x2:zp.x,y2:PAD+range*CELL,'class':'g-axis'}));
+    svg.appendChild(mkEl('line',{x1:PAD,y1:zp.y,x2:PAD+range*CELL,y2:zp.y,'class':'g-axis'}));
+  }
+
+  // Labels
+  var xAxisY=isQ4?gToSvg(0,0).y:gToSvg(GRID_MIN,GRID_MIN).y;
+  var yAxisX=isQ4?gToSvg(0,0).x:gToSvg(GRID_MIN,GRID_MIN).x;
+  for(var i=GRID_MIN;i<=GRID_MAX;i++){
+    if(!LABEL_ALL&&(i-GRID_MIN)%2!==0)continue;
+    var lbl=Math.round(i*SCALE*1000)/1000;
+    var lp=gToSvg(i,GRID_MIN);
+    var t=mkEl('text',{x:lp.x,y:xAxisY+14,'text-anchor':'middle','class':'g-label'});
+    t.textContent=lbl;svg.appendChild(t);
+  }
+  for(var i=GRID_MIN;i<=GRID_MAX;i++){
+    if(i===GRID_MIN&&!isQ4)continue;
+    if(i===0&&isQ4)continue;
+    if(!LABEL_ALL&&(i-GRID_MIN)%2!==0)continue;
+    var lbl=Math.round(i*SCALE*1000)/1000;
+    var lp=gToSvg(GRID_MIN,i);
+    var t=mkEl('text',{x:yAxisX-10,y:lp.y+3,'text-anchor':'middle','class':'g-label'});
+    t.textContent=lbl;svg.appendChild(t);
+  }
+
+  // Axis letters
+  var xEnd=PAD+range*CELL+12;
+  var xLetterY=isQ4?gToSvg(0,0).y+4:gToSvg(GRID_MIN,GRID_MIN).y+4;
+  var xLet=mkEl('text',{x:xEnd,y:xLetterY,'class':'g-label','font-style':'italic','font-size':'11'});
+  xLet.textContent='x';svg.appendChild(xLet);
+  var yLetterX=isQ4?gToSvg(0,0).x:gToSvg(GRID_MIN,GRID_MIN).x;
+  var yLet=mkEl('text',{x:yLetterX+4,y:PAD-8,'class':'g-label','font-style':'italic','font-size':'11'});
+  yLet.textContent='y';svg.appendChild(yLet);
+
+  // Lines group (for completed lines)
+  var linesGroup=document.createElementNS(ns,'g');linesGroup.id='linesGroup';svg.appendChild(linesGroup);
+  // Rise/run group
+  riseRunGroup=document.createElementNS(ns,'g');riseRunGroup.id='riseRunGroup';svg.appendChild(riseRunGroup);
+  // Points group (for clicked points)
+  var ptsGroup=document.createElementNS(ns,'g');ptsGroup.id='ptsGroup';svg.appendChild(ptsGroup);
+  // Hover circle
+  hoverCircle=document.createElementNS(ns,'circle');
+  hoverCircle.setAttribute('r',7);hoverCircle.setAttribute('class','g-hover');
+  hoverCircle.setAttribute('display','none');
+  svg.appendChild(hoverCircle);
+
+  // Events
+  svg.addEventListener('mousemove',onMouseMove);
+  svg.addEventListener('mouseleave',function(){hoverCircle.setAttribute('display','none');});
+  svg.addEventListener('click',onGridClick);
+}
+
+// ═══════════════════════════════════════════
+//  MOUSE / CLICK HANDLERS
+// ═══════════════════════════════════════════
+function onMouseMove(e){
+  if(currentLine>=lines.length)return;
+  if(EQ_FORM==='standard'&&!conversionDone)return;
+  var svg=document.getElementById('grid');
+  var sp=svgPoint(svg,e.clientX,e.clientY);
+  var g=svgToGrid(sp.x,sp.y);
+  if(g.x<GRID_MIN||g.x>GRID_MAX||g.y<GRID_MIN||g.y>GRID_MAX){
+    hoverCircle.setAttribute('display','none');return;
+  }
+  var p=gToSvg(g.x,g.y);
+  hoverCircle.setAttribute('cx',p.x);hoverCircle.setAttribute('cy',p.y);
+  hoverCircle.removeAttribute('display');
+
+  // Rise/run guides after first point
+  if(point1&&!point2&&HINTS.riseRunGuides){
+    drawRiseRunGuide(point1,g);
+  }
+}
+
+function onGridClick(e){
+  if(currentLine>=lines.length)return;
+  if(EQ_FORM==='standard'&&!conversionDone)return;
+  var svg=document.getElementById('grid');
+  var sp=svgPoint(svg,e.clientX,e.clientY);
+  var g=svgToGrid(sp.x,sp.y);
+  if(g.x<GRID_MIN||g.x>GRID_MAX||g.y<GRID_MIN||g.y>GRID_MAX)return;
+
+  var line=lines[currentLine];
+  var fb=document.getElementById('plotFeedback');
+
+  // Check if point is on the line
+  console.log('Click: g=',g.x,g.y,' line m=',line.m,'b=',line.b,' expected y=',line.m*g.x+line.b);
+  if(!pointOnLine(line.m,line.b,g.x,g.y)){
+    fb.textContent='✗ That point is not on the line';
+    fb.className='plot-feedback wrong';
+    setTimeout(function(){fb.textContent='';fb.className='plot-feedback';},1500);
+    return;
+  }
+
+  // Require y-intercept start hint
+  if(!point1&&HINTS.requireYIntercept&&g.x!==0){
+    fb.textContent='Start on the y-intercept';
+    fb.className='plot-feedback info';
+    setTimeout(function(){fb.textContent='';fb.className='plot-feedback';},1500);
+    return;
+  }
+
+  if(!point1){
+    point1=g;
+    plotPoint(g,'P₁');
+    fb.textContent='✓ First point! Click the second';
+    fb.className='plot-feedback correct';
+    setTimeout(function(){
+      if(fb.textContent.indexOf('First')>=0){fb.textContent='Click a second point on the line';fb.className='plot-feedback info';}
+    },1200);
+  } else if(!point2){
+    if(g.x===point1.x&&g.y===point1.y){
+      fb.textContent='Pick a different point';fb.className='plot-feedback info';
+      setTimeout(function(){fb.textContent='';fb.className='plot-feedback';},1200);
+      return;
+    }
+    point2=g;
+    plotPoint(g,'P₂');
+    clearRiseRun();
+    // Draw the line and advance
+    drawCompletedLine(line);
+    fb.textContent='✓ Correct!';fb.className='plot-feedback correct';
+    solved++;
+    updateProgress();
+    markLineDone(currentLine);
+
+    setTimeout(function(){
+      currentLine++;
+      if(currentLine>=lines.length){
+        doReveal();
+      }else{
+        startNextLine();
+      }
+    },900);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  DRAWING FUNCTIONS
+// ═══════════════════════════════════════════
+function plotPoint(g,label){
+  var svg=document.getElementById('grid');
+  var ns='http://www.w3.org/2000/svg';
+  var pg=document.getElementById('ptsGroup');
+  var p=gToSvg(g.x,g.y);
+  var c=document.createElementNS(ns,'circle');
+  c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',5);
+  c.setAttribute('fill','var(--lime-dark)');c.setAttribute('class','g-point');
+  pg.appendChild(c);
+  var t=document.createElementNS(ns,'text');
+  t.setAttribute('x',p.x+8);t.setAttribute('y',p.y-7);
+  t.setAttribute('class','g-point-label');t.textContent=label;
+  pg.appendChild(t);
+}
+
+function drawCompletedLine(line){
+  var svg=document.getElementById('grid');
+  var ns='http://www.w3.org/2000/svg';
+  var lg=document.getElementById('linesGroup');
+  var ep=lineEndpoints(line.m,line.b);
+  if(ep.length<2)return;
+  var p1=gToSvg(ep[0].x,ep[0].y);
+  var p2=gToSvg(ep[1].x,ep[1].y);
+  var l=document.createElementNS(ns,'line');
+  l.setAttribute('x1',p1.x);l.setAttribute('y1',p1.y);
+  l.setAttribute('x2',p2.x);l.setAttribute('y2',p2.y);
+  l.setAttribute('stroke',line.color);
+  l.setAttribute('class','completed-line');
+  l.setAttribute('data-line-idx',currentLine);
+  lg.appendChild(l);
+  // Clear active points
+  document.getElementById('ptsGroup').innerHTML='';
+}
+
+function drawRiseRunGuide(from,to){
+  clearRiseRun();
+  var ns='http://www.w3.org/2000/svg';
+  var line=lines[currentLine];
+  // Draw staircase from point1 to cursor grid point
+  var dx=to.x-from.x;
+  var dy=to.y-from.y;
+  if(dx===0&&dy===0)return;
+  // Vertical first (rise), then horizontal (run)
+  var mid={x:from.x,y:to.y};
+  var p1=gToSvg(from.x,from.y);
+  var p2=gToSvg(mid.x,mid.y);
+  var p3=gToSvg(to.x,to.y);
+  // Vertical segment (rise)
+  var v=document.createElementNS(ns,'line');
+  v.setAttribute('x1',p1.x);v.setAttribute('y1',p1.y);
+  v.setAttribute('x2',p2.x);v.setAttribute('y2',p2.y);
+  v.setAttribute('stroke','rgba(122,170,0,0.4)');v.setAttribute('class','rise-run-guide');
+  riseRunGroup.appendChild(v);
+  // Horizontal segment (run)
+  var h=document.createElementNS(ns,'line');
+  h.setAttribute('x1',p2.x);h.setAttribute('y1',p2.y);
+  h.setAttribute('x2',p3.x);h.setAttribute('y2',p3.y);
+  h.setAttribute('stroke','rgba(122,170,0,0.4)');h.setAttribute('class','rise-run-guide');
+  riseRunGroup.appendChild(h);
+  // Rise label (on the vertical segment)
+  if(dy!==0){
+    var riseLabel=document.createElementNS(ns,'text');
+    var riseMid=gToSvg(from.x,(from.y+to.y)/2);
+    riseLabel.setAttribute('x',riseMid.x-14);riseLabel.setAttribute('y',riseMid.y);
+    riseLabel.setAttribute('text-anchor','end');riseLabel.setAttribute('font-size','10');
+    riseLabel.setAttribute('fill','rgba(122,170,0,0.7)');riseLabel.setAttribute('font-weight','700');
+    riseLabel.textContent='rise: '+dy;
+    riseRunGroup.appendChild(riseLabel);
+  }
+  // Run label (on the horizontal segment)
+  if(dx!==0){
+    var runLabel=document.createElementNS(ns,'text');
+    var runMid=gToSvg((from.x+to.x)/2,to.y);
+    runLabel.setAttribute('x',runMid.x);runLabel.setAttribute('y',runMid.y+14);
+    runLabel.setAttribute('text-anchor','middle');runLabel.setAttribute('font-size','10');
+    runLabel.setAttribute('fill','rgba(122,170,0,0.7)');runLabel.setAttribute('font-weight','700');
+    runLabel.textContent='run: '+dx;
+    riseRunGroup.appendChild(runLabel);
+  }
+}
+
+function clearRiseRun(){if(riseRunGroup)riseRunGroup.innerHTML='';}
+
+// ═══════════════════════════════════════════
+//  STANDARD FORM CONVERSION
+// ═══════════════════════════════════════════
+function checkConversion(){
+  var line=lines[currentLine];
+  var slopeVal=parseFloat(document.getElementById('convertSlope').value);
+  var bVal=parseFloat(document.getElementById('convertB').value);
+  var fb=document.getElementById('convertFeedback');
+  var sIn=document.getElementById('convertSlope');
+  var bIn=document.getElementById('convertB');
+
+  if(isNaN(slopeVal)||isNaN(bVal)){
+    fb.textContent='Fill in both values';fb.className='convert-feedback wrong';return;
+  }
+
+  if(nearEqual(slopeVal,line.m)&&nearEqual(bVal,line.b)){
+    sIn.classList.add('correct');bIn.classList.add('correct');
+    fb.textContent='✓ Correct! Now graph the line.';fb.className='convert-feedback correct';
+    conversionDone=true;
+    document.getElementById('convertCheckBtn').disabled=true;
+    document.getElementById('eqInstruction').textContent='Click two points on the line';
+  }else{
+    sIn.classList.add('wrong');bIn.classList.add('wrong');
+    fb.textContent='✗ Check your conversion';fb.className='convert-feedback wrong';
+    setTimeout(function(){sIn.classList.remove('wrong');bIn.classList.remove('wrong');fb.textContent='';},2000);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  FRACTION INPUT
+// ═══════════════════════════════════════════
+function toggleFrac(which){
+  var pop=document.getElementById('fracPop'+(which==='slope'?'Slope':'B'));
+  pop.classList.toggle('show');
+}
+
+function applyFrac(which){
+  var numEl=document.getElementById('fracNum'+(which==='slope'?'Slope':'B'));
+  var denEl=document.getElementById('fracDen'+(which==='slope'?'Slope':'B'));
+  var target=document.getElementById(which==='slope'?'convertSlope':'convertB');
+  var num=parseInt(numEl.value),den=parseInt(denEl.value);
+  if(isNaN(num)||isNaN(den)||den===0)return;
+  target.value=Math.round((num/den)*10000)/10000;
+  toggleFrac(which);
+  numEl.value='';denEl.value='';
+}
+
+// ═══════════════════════════════════════════
+//  LINE PROGRESSION
+// ═══════════════════════════════════════════
+function startNextLine(){
+  point1=null;point2=null;conversionDone=false;
+  document.getElementById('ptsGroup').innerHTML='';
+  clearRiseRun();
+
+  var line=lines[currentLine];
+  document.getElementById('eqCounter').textContent='Line '+(currentLine+1)+' of '+lines.length;
+
+  // Display equation
+  if(EQ_FORM==='standard'&&line.standard){
+    document.getElementById('eqDisplay').innerHTML=line.standard;
+    if(HINTS.coeffLabels){
+      document.getElementById('eqDisplay').innerHTML+=
+        '<div style="font-size:11px;color:var(--text3);margin-top:6px;">Convert to y = mx + b to graph</div>';
+    }
+    document.getElementById('convertArea').style.display='block';
+    document.getElementById('convertSlope').value='';
+    document.getElementById('convertB').value='';
+    document.getElementById('convertSlope').classList.remove('correct','wrong');
+    document.getElementById('convertB').classList.remove('correct','wrong');
+    document.getElementById('convertCheckBtn').disabled=false;
+    document.getElementById('convertFeedback').textContent='';
+    document.getElementById('eqInstruction').textContent='First, convert to slope-intercept form';
+  }else{
+    var eqHTML=fmtEquation(line.m,line.b);
+    if(HINTS.coeffLabels){
+      // Add labels under slope and y-intercept
+      eqHTML+='<div style="display:flex;justify-content:center;gap:20px;margin-top:6px;">';
+      eqHTML+='<span class="coeff-label">slope = '+fmtNum(line.m)+'</span>';
+      eqHTML+='<span class="coeff-label">y-intercept = '+fmtNum(line.b)+'</span>';
+      eqHTML+='</div>';
+    }
+    document.getElementById('eqDisplay').innerHTML=eqHTML;
+    document.getElementById('convertArea').style.display='none';
+    document.getElementById('eqInstruction').textContent='Click two points on the line';
+  }
+
+  document.getElementById('plotFeedback').textContent='';
+  document.getElementById('plotFeedback').className='plot-feedback';
+
+  // Highlight current in line list
+  document.querySelectorAll('.line-item').forEach(function(el,i){
+    el.classList.remove('active');
+    if(i===currentLine)el.classList.add('active');
+  });
+}
+
+function markLineDone(idx){
+  var items=document.querySelectorAll('.line-item');
+  if(items[idx]){items[idx].classList.remove('active');items[idx].classList.add('done');}
+}
+
+function updateProgress(){
+  var pct=Math.round(solved/lines.length*100);
+  document.getElementById('progText').textContent=solved+' of '+lines.length+' solved';
+  document.getElementById('progPct').textContent=pct+'%';
+  document.getElementById('progFill').style.width=pct+'%';
+}
+
+function toggleHideLines(){
+  hideCompleted=document.getElementById('hideLines').checked;
+  document.querySelectorAll('.completed-line').forEach(function(l){
+    l.style.display=hideCompleted?'none':'';
+  });
+}
+
+// ═══════════════════════════════════════════
+//  REVEAL
+// ═══════════════════════════════════════════
+function doReveal(){
+  document.getElementById('eqDisplay').innerHTML='<span style="font-size:22px;">🎉 All lines graphed!</span>';
+  document.getElementById('eqInstruction').textContent='';
+  document.getElementById('convertArea').style.display='none';
+  document.getElementById('plotFeedback').textContent='';
+  hoverCircle.setAttribute('display','none');
+
+  // Unhide all lines
+  hideCompleted=false;
+  document.getElementById('hideLines').checked=false;
+  document.querySelectorAll('.completed-line').forEach(function(l){l.style.display='';});
+
+  // Staggered color reveal
+  var allLines=document.querySelectorAll('.completed-line');
+  allLines.forEach(function(l,i){
+    setTimeout(function(){
+      l.classList.remove('completed-line');
+      l.classList.add('reveal-line');
+      l.style.opacity='1';
+      l.setAttribute('stroke-width','3');
+    },i*250);
+  });
+}
+
+// ═══════════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════════
+function startTimer(mins,actId){
+  timerSec=mins*60;timerUp=false;
+  var tsKey='lines_ts_'+(actId||'demo');
+  // Persist start time across refreshes
+  var startTs;
+  try{var saved=localStorage.getItem(tsKey);startTs=saved?parseInt(saved):Date.now();if(!saved)localStorage.setItem(tsKey,startTs);}catch(e){startTs=Date.now();}
+  var totalSecs=mins*60;
+  var disp=document.getElementById('timerDisp');
+  disp.style.display='block';
+  function tick(){
+    var elapsed=Math.floor((Date.now()-startTs)/1000);
+    var rem=totalSecs-elapsed;
+    if(rem>=0){var m=Math.floor(rem/60),s=rem%60;disp.textContent='\u23F1 '+(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);disp.classList.remove('overtime');}
+    else{var over=Math.abs(rem);var m=Math.floor(over/60),s=over%60;disp.textContent='\u26A0 +'+(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);disp.classList.add('overtime');}
+  }
+  tick();timerInterval=setInterval(tick,1000);
+}
+
+// ═══════════════════════════════════════════
+//  BUILD LINE LIST
+// ═══════════════════════════════════════════
+function buildLineList(){
+  var list=document.getElementById('lineList');list.innerHTML='';
+  lines.forEach(function(line,i){
+    var item=document.createElement('div');
+    item.className='line-item'+(i===0?' active':'');
+    var eqText=EQ_FORM==='standard'&&line.standard?line.standard:fmtEquation(line.m,line.b);
+    item.innerHTML='<div class="line-num">'+(i+1)+'</div><div class="line-eq-text">'+eqText+'</div>';
+    list.appendChild(item);
+  });
+}
+
+// ═══════════════════════════════════════════
+//  INIT FROM DATABASE
+// ═══════════════════════════════════════════
+function initActivity(data){
+  actData=data;
+  document.getElementById('actTitle').textContent=data.title||'Graph the Lines';
+  document.title=(data.title||'Graph the Lines')+' — Reveal Graphing';
+
+  GRID_MIN=data.grid_min||0;
+  GRID_MAX=data.grid_max||10;
+  SCALE=data.scale||1;
+  LABEL_ALL=data.label_all_ticks||false;
+  EQ_FORM=data.equation_form||'slope-intercept';
+  HINTS={
+    requireYIntercept:data.hint_require_yint||false,
+    riseRunGuides:data.hint_rise_run||false,
+    coeffLabels:data.hint_coeff_labels||false,
+    fractionBtn:data.hint_fraction_btn!==false
+  };
+
+  // Build lines from data
+  lines=(data.lines||[]).map(function(l){
+    var obj={m:l.m,b:l.b,color:l.color||'var(--lime-dark)'};
+    // Generate standard form if needed
+    if(EQ_FORM==='standard'){
+      // y = mx + b → -mx + y = b → multiply to clear fractions
+      var mult=1;
+      // Find LCD for m
+      if(l.m%1!==0){
+        var fracs=[[1,3,3],[1,2,2],[2,3,3],[1,4,4],[3,4,4],[1,5,5],[2,5,5],[3,5,5],[4,5,5]];
+        for(var i=0;i<fracs.length;i++){
+          if(nearEqual(Math.abs(l.m),fracs[i][0]/fracs[i][1])){mult=fracs[i][2];break;}
+        }
+        if(mult===1)mult=10;
+      }
+      var A=Math.round(-l.m*mult);
+      var B=mult;
+      var C=Math.round(l.b*mult);
+      obj.standard=fmtStandard(A,B,C);
+      obj.stdA=A;obj.stdB=B;obj.stdC=C;
+    }
+    return obj;
+  });
+
+  // Fraction button visibility
+  if(!HINTS.fractionBtn){
+    document.querySelectorAll('.frac-btn').forEach(function(b){b.style.display='none';});
+  }
+
+  // Hint badges
+  var badges=document.getElementById('hintBadges');
+  if(HINTS.requireYIntercept)badges.innerHTML+='<span class="hint-badge">Start at y-intercept</span>';
+  if(HINTS.riseRunGuides)badges.innerHTML+='<span class="hint-badge">Rise/run guides</span>';
+  if(HINTS.coeffLabels)badges.innerHTML+='<span class="hint-badge">Coefficient labels</span>';
+
+  // Timer
+  if(data.timer_enabled&&data.timer_mins>0)startTimer(data.timer_mins,data.id);
+
+  buildGrid();
+  buildLineList();
+  updateProgress();
+  startNextLine();
+
+  document.getElementById('activityView').classList.add('show');
+}
+
+// ═══════════════════════════════════════════
+//  LOAD
+// ═══════════════════════════════════════════
+if(paramId){
+  document.body.classList.add('ready');
+  document.getElementById('lines-loading').style.display='flex';
+  (async function(){
+    try{
+      var r=await fetch(SB_URL+'/rest/v1/graphing_activities?id=eq.'+paramId+'&select=*',{
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+      });
+      if(!r.ok){document.getElementById('lines-loading').style.display='none';document.getElementById('lines-error').style.display='flex';return;}
+      var data=await r.json();
+      if(Array.isArray(data)&&data[0]&&data[0].type==='lines'){
+        document.getElementById('lines-loading').style.display='none';
+        initActivity(data[0]);
+      }else{
+        document.getElementById('lines-loading').style.display='none';
+        document.getElementById('lines-error').style.display='flex';
+      }
+    }catch(e){
+      console.log('Load failed',e);
+      document.getElementById('lines-loading').style.display='none';
+      document.getElementById('lines-error').style.display='flex';
+    }
+  })();
+}else{
+  document.body.classList.add('ready');
+  document.getElementById('lines-error').style.display='flex';
+}
+</script>
+</body>
+</html>
