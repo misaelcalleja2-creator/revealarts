@@ -244,6 +244,20 @@ footer {
   .page { padding: 28px 20px 60px; }
   footer { padding: 20px; }
 }
+
+/* ── Locked state (trial ended, or Starter over the 5-save cap) ── */
+body.locked .action-card,
+body.locked .act-copy,
+body.locked .act-pdf,
+body.locked .act-edit,
+body.locked a[href="creator.html"],
+body.locked a[href="graphing-creator.html"],
+body.locked a[href="spiral-creator.html"] {
+  opacity: 0.4 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+/* delete (.act-del), View Plans (.trial-bar-btn), and Sign out stay fully active */
 </style>
 </head>
 <body>
@@ -367,6 +381,7 @@ footer {
 <footer>© 2025 The Real Sum Shady LLC</footer>
 
 <script>
+let isLocked = false; // set true when a user's trial has ended (unpaid) or a Starter is over the 5-save cap
 const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 
@@ -452,6 +467,40 @@ async function loadActivities(token, userId, profile) {
     const graphsArr = rawGraphs.filter(g => g.type !== 'lines').map(g => ({...g, _type:'graphing'}));
     const linesArr  = rawGraphs.filter(g => g.type === 'lines').map(g => ({...g, _type:'lines'}));
     const allActs = artsArr.concat(graphsArr).concat(linesArr).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+    // ── Plan / trial lock ──────────────────────────────────────────
+    (function computeLock(){
+      const plan = profile && profile.plan;
+      const paidPro = plan === 'pro';
+      const paidStarter = plan === 'starter';
+      const paid = profile && (profile.is_paid || paidPro || paidStarter);
+      let trialExpired = false;
+      if (profile && !paid && profile.trial_started_at) {
+        const ts = new Date(profile.trial_started_at);
+        const days = Math.floor((Date.now() - ts) / (1000*60*60*24));
+        trialExpired = days >= 7;
+      }
+      const savedCount = allActs.length;
+
+      let reason = '';
+      if (paidPro) { isLocked = false; }                                  // Pro = unlimited
+      else if (paidStarter) { if (savedCount > 5) { isLocked = true; reason = 'starter-over'; } }
+      else if (trialExpired) { isLocked = true; reason = 'trial-ended'; }
+
+      if (isLocked) {
+        document.body.classList.add('locked');
+        const bar = document.getElementById('trial-bar');
+        if (bar) {
+          bar.style.display = '';
+          const txt = bar.querySelector('.trial-bar-text');
+          if (txt) {
+            txt.innerHTML = (reason === 'starter-over')
+              ? 'Starter includes <strong>5 saved activities.</strong> Delete some to get under the limit, or upgrade to Pro for unlimited saves.'
+              : 'Your <strong>free trial has ended.</strong> Upgrade to keep creating, sharing, and downloading.';
+          }
+        }
+      }
+    })();
 
     if (allActs.length === 0) return;
 
