@@ -278,10 +278,52 @@ nav {
 </div>
 
 <script>
-function choosePlan(plan) {
-  // Placeholder — swap in real Stripe checkout URLs when ready
-  // For now all options go to dashboard
-  window.location.href = 'dashboard.html';
+// Stripe price IDs for the paid plans (these are public — safe to sit in the page).
+const PRICE_IDS = {
+  starter: 'price_1TINAg2MGMrnqoN3hCoYiirL',
+  annual:  'price_1TIN9l2MGMrnqoN3n5Q3ge4P',
+};
+
+let checkoutStarting = false; // guard against double-clicks
+
+async function choosePlan(plan) {
+  // PRO = free 7-day trial, no card. Just take them into the app.
+  if (plan === 'pro') {
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
+  // STARTER and PRO ANNUAL go through Stripe checkout (card required).
+  const priceId = PRICE_IDS[plan];
+  if (!priceId) { window.location.href = 'dashboard.html'; return; }
+
+  // Must be logged in to subscribe.
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  if (checkoutStarting) return;
+  checkoutStarting = true;
+
+  try {
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId: priceId, accessToken: token }),
+    });
+    const data = await res.json();
+    if (data && data.url) {
+      window.location.href = data.url; // off to Stripe's hosted checkout
+    } else {
+      checkoutStarting = false;
+      alert('Sorry — something went wrong starting checkout. Please try again.');
+    }
+  } catch (e) {
+    checkoutStarting = false;
+    alert('Sorry — something went wrong starting checkout. Please try again.');
+  }
 }
 </script>
 </body>
