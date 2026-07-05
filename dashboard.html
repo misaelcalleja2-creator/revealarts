@@ -702,12 +702,7 @@ async function bulkDelete() {
       })
     ));
     if (results.every(r => r.ok)) {
-      ids.forEach(id => {
-        const card = document.querySelector('.act-card[data-act-id="' + id + '"]');
-        if (card) { card.style.opacity = '0'; card.style.transition = 'opacity 0.3s'; setTimeout(() => { card.remove(); checkEmpty(); }, 300); }
-      });
-      selectedIds.clear();
-      toggleSelectMode();
+      location.reload(); // reload so the saved count and lock state re-evaluate
     } else {
       alert('Some deletions failed. Please try again.');
     }
@@ -725,10 +720,7 @@ async function deleteActivity(id, btn) {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     if (r.ok) {
-      const card = btn.closest('.act-card');
-      card.style.opacity = '0';
-      card.style.transition = 'opacity 0.3s';
-      setTimeout(() => { card.remove(); checkEmpty(); }, 300);
+      location.reload(); // reload so the saved count and lock state re-evaluate
     }
   } catch(e) {
     alert('Delete failed. Please try again.');
@@ -804,10 +796,7 @@ async function deleteGraphingActivity(id, btn) {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     if (r.ok) {
-      const card = btn.closest('.act-card');
-      card.style.opacity = '0';
-      card.style.transition = 'opacity 0.3s';
-      setTimeout(() => { card.remove(); checkEmpty(); }, 300);
+      location.reload(); // reload so the saved count and lock state re-evaluate
     }
   } catch(e) { alert('Delete failed.'); }
 }
