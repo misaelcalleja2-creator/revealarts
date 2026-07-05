@@ -433,9 +433,20 @@ async function init() {
     profile = Array.isArray(profiles) ? profiles[0] : null;
 
     if (profile) {
-      if (profile.is_paid) {
-        document.getElementById('trial-days').textContent = 'active subscription';
-        document.getElementById('trial-bar').style.display = 'none';
+      if (profile.is_paid || profile.plan === 'starter' || profile.plan === 'pro') {
+        const planName = profile.plan === 'pro' ? 'Pro' : (profile.plan === 'starter' ? 'Starter' : 'your plan');
+        document.getElementById('trial-days').textContent = planName + ' plan';
+        const bar = document.getElementById('trial-bar');
+        bar.style.display = '';
+        const barTxt = bar.querySelector('.trial-bar-text');
+        if (barTxt) barTxt.innerHTML = "You're on <strong>" + planName + "</strong>.";
+        const barBtn = bar.querySelector('.trial-bar-btn');
+        if (barBtn) {
+          barBtn.textContent = 'Manage plan';
+          barBtn.removeAttribute('href');
+          barBtn.style.cursor = 'pointer';
+          barBtn.onclick = function(){ manageBilling(barBtn); };
+        }
       } else if (profile.trial_started_at) {
         const trialStart = new Date(profile.trial_started_at);
         const expiryDate = new Date(trialStart);
@@ -1316,6 +1327,27 @@ async function renameActivity(id, btn) {
       if (titleEl.firstChild) titleEl.firstChild.textContent = trimmed;
     } else { alert('Rename failed. Please try again.'); }
   } catch(e) { alert('Rename failed. Please try again.'); }
+}
+
+async function manageBilling(btn) {
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) { window.location.href = 'login.html'; return; }
+  const original = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = 'Opening\u2026'; btn.style.pointerEvents = 'none'; }
+  try {
+    const res = await fetch('/api/create-portal-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken: token })
+    });
+    const data = await res.json();
+    if (data && data.url) { window.location.href = data.url; return; }
+    // Nothing to manage (never subscribed) — send them to the plans page instead.
+    window.location.href = 'plans.html';
+  } catch (e) {
+    if (btn) { btn.textContent = original; btn.style.pointerEvents = ''; }
+    alert('Could not open billing right now. Please try again.');
+  }
 }
 
 function signOut() {
