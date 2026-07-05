@@ -258,6 +258,16 @@ body.locked a[href="spiral-creator.html"] {
   cursor: not-allowed !important;
 }
 /* delete (.act-del), View Plans (.trial-bar-btn), and Sign out stay fully active */
+
+/* ── Starter exactly at the 5-save cap: block only NEW creation (existing activities stay usable) ── */
+body.create-blocked .action-card,
+body.create-blocked a[href="creator.html"],
+body.create-blocked a[href="graphing-creator.html"],
+body.create-blocked a[href="spiral-creator.html"] {
+  opacity: 0.4 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
 </style>
 </head>
 <body>
@@ -484,7 +494,10 @@ async function loadActivities(token, userId, profile) {
 
       let reason = '';
       if (paidPro) { isLocked = false; }                                  // Pro = unlimited
-      else if (paidStarter) { if (savedCount > 5) { isLocked = true; reason = 'starter-over'; } }
+      else if (paidStarter) {
+        if (savedCount > 5) { isLocked = true; reason = 'starter-over'; }  // over cap = full lock (must trim)
+        else if (savedCount >= 5) { reason = 'starter-cap'; }             // exactly at cap = block only new creation
+      }
       else if (trialExpired) { isLocked = true; reason = 'trial-ended'; }
 
       if (isLocked) {
@@ -498,6 +511,14 @@ async function loadActivities(token, userId, profile) {
               ? 'Starter includes <strong>5 saved activities.</strong> Delete some to get under the limit, or upgrade to Pro for unlimited saves.'
               : 'Your <strong>free trial has ended.</strong> Upgrade to keep creating, sharing, and downloading.';
           }
+        }
+      } else if (reason === 'starter-cap') {
+        document.body.classList.add('create-blocked');
+        const bar = document.getElementById('trial-bar');
+        if (bar) {
+          bar.style.display = '';
+          const txt = bar.querySelector('.trial-bar-text');
+          if (txt) txt.innerHTML = "You've saved <strong>5 of 5</strong> on Starter — delete one, or upgrade to Pro for unlimited saves.";
         }
       }
     })();
@@ -608,9 +629,17 @@ async function loadActivities(token, userId, profile) {
       grid.appendChild(card);
     });
 
-    document.getElementById('save-limit').innerHTML =
-      '<span>' + allActs.length + '</span> of <span>' + limit + '</span> activities saved' +
-      (isPaid ? '' : ' · <a href="plans.html" style="color:var(--lime-dark);font-weight:600;">Upgrade for more</a>');
+    (function(){
+      const _plan = profile && profile.plan;
+      const el = document.getElementById('save-limit');
+      if (_plan === 'starter') {
+        el.innerHTML = '<span>' + allActs.length + '</span> of <span>5</span> activities saved' +
+          (allActs.length >= 5 ? ' · <a href="plans.html" style="color:var(--lime-dark);font-weight:600;">Upgrade to Pro for unlimited</a>' : '');
+      } else {
+        // Pro, active trial, etc. — unlimited, so just show the count.
+        el.innerHTML = '<span>' + allActs.length + '</span> activit' + (allActs.length === 1 ? 'y' : 'ies') + ' saved';
+      }
+    })();
 
     // Unlock spiral card if 2+ Reveal Art activities have problem data
     var spiralCard = document.getElementById('spiral-action-card');
