@@ -5,6 +5,7 @@
     "node": "24.x"
   },
   "dependencies": {
-    "nodemailer": "^6.9.13"
+    "nodemailer": "^6.9.13",
+    "stripe": "^22.3.0"
   }
 }
