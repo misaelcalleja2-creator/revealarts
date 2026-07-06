@@ -32,6 +32,32 @@ async function updateProfile(userId, fields) {
   }
 }
 
+// The prices we recognize, mapped to the plan each one grants.
+const PRICE_TO_PLAN = {
+  'price_1TINAg2MGMrnqoN3hCoYiirL': 'starter', // Starter $8/mo
+  'price_1TINAD2MGMrnqoN3PsM80Uaa': 'pro',     // Pro Monthly $10/mo
+  'price_1TIN9l2MGMrnqoN3n5Q3ge4P': 'pro',     // Pro Annual $100/yr
+};
+
+// Update a profile matched by its Stripe customer id (used for portal changes,
+// where we always know the customer but not necessarily the metadata).
+async function updateProfileByCustomer(customerId, fields) {
+  const res = await fetch(SB_URL + '/rest/v1/profiles?stripe_customer_id=eq.' + customerId, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SB_SERVICE_KEY,
+      'Authorization': 'Bearer ' + SB_SERVICE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify(fields),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error('Supabase update-by-customer failed: ' + res.status + ' ' + text);
+  }
+}
+
 // A GET (e.g. visiting the URL in a browser) just confirms the endpoint is live.
 export async function GET() {
   return new Response(
@@ -70,16 +96,29 @@ export async function POST(request) {
           stripe_customer_id: customerId, // so we can match them on future events
         });
       }
-    } else if (event.type === 'customer.subscription.deleted') {
-      // Subscription ended/cancelled → revoke their plan.
+    } else if (event.type === 'customer.subscription.updated') {
+      // Plan switched in the portal (e.g. Starter -> Pro) -> re-derive the plan
+      // from the subscription's CURRENT price and update the matching profile.
       const subscription = event.data.object;
-      const userId = subscription.metadata?.supabase_user_id;
+      const customerId = subscription.customer;
+      const status = subscription.status;
+      const priceId = subscription.items?.data?.[0]?.price?.id;
+      const plan = PRICE_TO_PLAN[priceId];
 
-      if (userId) {
-        await updateProfile(userId, {
-          plan: 'none',
-          is_paid: false,
-        });
+      if (customerId) {
+        if ((status === 'active' || status === 'trialing') && plan) {
+          await updateProfileByCustomer(customerId, { plan: plan, is_paid: true });
+        } else if (status === 'canceled' || status === 'unpaid' || status === 'incomplete_expired') {
+          await updateProfileByCustomer(customerId, { plan: 'none', is_paid: false });
+        }
+      }
+    } else if (event.type === 'customer.subscription.deleted') {
+      // Subscription ended/cancelled -> revoke their plan.
+      const subscription = event.data.object;
+      const customerId = subscription.customer;
+
+      if (customerId) {
+        await updateProfileByCustomer(customerId, { plan: 'none', is_paid: false });
       }
     }
     // Any other event type: we just acknowledge it below without doing anything.
