@@ -14,9 +14,9 @@ const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 // The webhook later reads the plan from this session's metadata, so we
 // decide it here rather than trusting the browser.
 const PRICE_TO_PLAN = {
-  'price_1TINAg2MGMrnqoN3hCoYiirL': 'starter', // Starter  $8/mo
-  'price_1TINAD2MGMrnqoN3PsM80Uaa': 'pro',     // Pro Monthly $10/mo
-  'price_1TIN9l2MGMrnqoN3n5Q3ge4P': 'pro',     // Pro Annual  $100/yr
+  'price_1Tr2om2MGMrnqoN377op32bw': 'starter', // Starter  $8/mo
+  'price_1Tr2pW2MGMrnqoN3rb8mr6rN': 'pro',     // Pro Monthly $10/mo
+  'price_1Tr2q02MGMrnqoN3VmTvNYYH': 'pro',     // Pro Annual  $100/yr
 };
 
 module.exports = async (req, res) => {

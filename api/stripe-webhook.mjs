@@ -34,9 +34,9 @@ async function updateProfile(userId, fields) {
 
 // The prices we recognize, mapped to the plan each one grants.
 const PRICE_TO_PLAN = {
-  'price_1TINAg2MGMrnqoN3hCoYiirL': 'starter', // Starter $8/mo
-  'price_1TINAD2MGMrnqoN3PsM80Uaa': 'pro',     // Pro Monthly $10/mo
-  'price_1TIN9l2MGMrnqoN3n5Q3ge4P': 'pro',     // Pro Annual $100/yr
+  'price_1Tr2om2MGMrnqoN377op32bw': 'starter', // Starter $8/mo
+  'price_1Tr2pW2MGMrnqoN3rb8mr6rN': 'pro',     // Pro Monthly $10/mo
+  'price_1Tr2q02MGMrnqoN3VmTvNYYH': 'pro',     // Pro Annual $100/yr
 };
 
 // Update a profile matched by its Stripe customer id (used for portal changes,
