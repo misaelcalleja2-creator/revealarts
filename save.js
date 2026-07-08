@@ -212,25 +212,45 @@ async function saveActivity(html, title) {
       return false;
     }
 
-    // New activity — check limit first
+    // New activity — enforce the per-plan save cap first.
     const pr = await fetch(SB_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=*', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     const profiles = await pr.json();
     const profile = Array.isArray(profiles) ? profiles[0] : null;
-    const isPaid = profile && profile.is_paid;
-    const limit = 20;
 
-    const cr = await fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
-    });
-    const existing = await cr.json();
-    const count = Array.isArray(existing) ? existing.length : 0;
+    // Work out the plan and the save limit it grants.
+    const plan = profile && profile.plan;
+    const paidStarter = plan === 'starter';
+    let trialExpired = false;
+    if (profile && !profile.is_paid && plan !== 'pro' && !paidStarter && profile.trial_started_at) {
+      const days = Math.floor((Date.now() - new Date(profile.trial_started_at)) / 86400000);
+      trialExpired = days >= 7;
+    }
+    let limit;
+    if (paidStarter) limit = 5;            // Starter = 5 saved activities
+    else if (trialExpired) limit = 0;      // trial ended, never paid = can't save
+    else limit = Infinity;                 // Pro, active trial, or brand-new user = unlimited
+
+    // Count TOTAL saved activities across all types (Reveal Art + Graphing + Lines),
+    // matching exactly how the dashboard counts them.
+    const [artsRes, graphRes] = await Promise.all([
+      fetch(SB_URL + '/rest/v1/activities?user_id=eq.' + user.id + '&select=id', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+      }),
+      fetch(SB_URL + '/rest/v1/graphing_activities?user_id=eq.' + user.id + '&select=id', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+      })
+    ]);
+    const artsList = await artsRes.json();
+    const graphList = await graphRes.json();
+    const count = (Array.isArray(artsList) ? artsList.length : 0) +
+                  (Array.isArray(graphList) ? graphList.length : 0);
 
     if (count >= limit) {
-      const limitMsg = isPaid
-        ? 'You have reached your 20 activity limit. Delete some activities from your dashboard to save new ones.'
-        : 'You have reached the 20 activity limit. Delete some to save new ones.';
+      const limitMsg = paidStarter
+        ? 'Starter includes 5 saved activities. Delete one from your dashboard, or upgrade to Pro for unlimited saves.'
+        : 'Your free trial has ended. Upgrade to keep saving activities.';
       showSaveToast(limitMsg, 'warn');
       return;
     }

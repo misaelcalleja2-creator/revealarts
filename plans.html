@@ -230,7 +230,7 @@ nav {
         <li><span class="ck">✓</span> Full image library</li>
         <li><span class="ck">✓</span> Google Classroom ready</li>
       </ul>
-      <button class="plan-btn plan-btn-outline" onclick="choosePlan('starter')">Get Started — $8/mo</button>
+      <button id="btn-starter" class="plan-btn plan-btn-outline" onclick="checkoutPrice('starter')">Get Started — $8/mo</button>
     </div>
 
     <!-- PRO (FEATURED) -->
@@ -249,7 +249,7 @@ nav {
         <li><span class="ck">✓</span> Priority support</li>
         <li><span class="ck">✓</span> Early access to new tools</li>
       </ul>
-      <button class="plan-btn plan-btn-filled" onclick="choosePlan('pro')">Start Free Pro Trial →</button>
+      <button id="btn-pro" class="plan-btn plan-btn-filled" onclick="startTrial()">Start Free Pro Trial →</button>
     </div>
 
     <!-- PRO ANNUAL -->
@@ -264,7 +264,7 @@ nav {
         <li><span class="ck">✓</span> Priority support</li>
         <li><span class="ck">✓</span> Early access to new tools</li>
       </ul>
-      <button class="plan-btn plan-btn-outline" onclick="choosePlan('annual')">Get Pro Annual</button>
+      <button id="btn-annual" class="plan-btn plan-btn-outline" onclick="checkoutPrice('annual')">Get Pro Annual</button>
     </div>
 
   </div>
@@ -278,11 +278,116 @@ nav {
 </div>
 
 <script>
-function choosePlan(plan) {
-  // Placeholder — swap in real Stripe checkout URLs when ready
-  // For now all options go to dashboard
-  window.location.href = 'dashboard.html';
+// Public config (same values as config.js — safe to expose).
+const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
+
+const PRICE_IDS = {
+  starter:    'price_1TINAg2MGMrnqoN3hCoYiirL',
+  promonthly: 'price_1TINAD2MGMrnqoN3PsM80Uaa',
+  annual:     'price_1TIN9l2MGMrnqoN3n5Q3ge4P',
+};
+
+let busy = false;
+
+// Free Pro trial — no card. New users start here.
+function startTrial() {
+  const token = localStorage.getItem('sb_access_token');
+  window.location.href = token ? 'dashboard.html' : 'signup.html';
 }
+
+// Fresh Stripe checkout (for users without an active subscription).
+async function checkoutPrice(priceKey) {
+  const priceId = PRICE_IDS[priceKey];
+  if (!priceId) { window.location.href = 'dashboard.html'; return; }
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) { window.location.href = 'signup.html'; return; }
+  if (busy) return; busy = true;
+  try {
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId: priceId, accessToken: token }),
+    });
+    const data = await res.json();
+    if (data && data.url) { window.location.href = data.url; return; }
+    busy = false; alert('Sorry — something went wrong starting checkout. Please try again.');
+  } catch (e) { busy = false; alert('Sorry — something went wrong starting checkout. Please try again.'); }
+}
+
+// Existing subscribers change plans through Stripe's portal (no double-billing).
+async function managePlan() {
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) { window.location.href = 'login.html'; return; }
+  if (busy) return; busy = true;
+  try {
+    const res = await fetch('/api/create-portal-session', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken: token }),
+    });
+    const data = await res.json();
+    if (data && data.url) { window.location.href = data.url; return; }
+    busy = false; window.location.href = 'dashboard.html';
+  } catch (e) { busy = false; alert('Could not open billing right now. Please try again.'); }
+}
+
+// On load, tailor the buttons to the logged-in user's current plan.
+(async function initPlans() {
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) return; // logged out — leave default buttons (they route to signup)
+  try {
+    const ur = await fetch(SB_URL + '/auth/v1/user', {
+      headers: { apikey: SB_KEY, Authorization: 'Bearer ' + token }
+    });
+    if (!ur.ok) return;
+    const user = await ur.json();
+    const pr = await fetch(SB_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=*', {
+      headers: { apikey: SB_KEY, Authorization: 'Bearer ' + token }
+    });
+    const rows = await pr.json();
+    const profile = Array.isArray(rows) ? rows[0] : null;
+    if (!profile) return;
+
+    const paidStarter = profile.plan === 'starter';
+    const paidPro = profile.plan === 'pro';
+    const hasSub = paidStarter || paidPro;
+    const everPaid = !!profile.stripe_customer_id;
+    let trialExpired = false;
+    if (!hasSub && profile.trial_started_at) {
+      const days = Math.floor((Date.now() - new Date(profile.trial_started_at)) / 86400000);
+      trialExpired = days >= 7;
+    }
+
+    const bStarter = document.getElementById('btn-starter');
+    const bPro     = document.getElementById('btn-pro');
+    const bAnnual  = document.getElementById('btn-annual');
+
+    function setCurrent(btn) {
+      btn.textContent = 'Current plan';
+      btn.disabled = true;
+      btn.onclick = null;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'default';
+    }
+    function setBtn(btn, label, fn) { btn.textContent = label; btn.onclick = fn; }
+
+    if (hasSub) {
+      // Active subscriber — mark their tier, route every change through the portal.
+      if (paidStarter) {
+        setCurrent(bStarter);
+        setBtn(bPro, 'Upgrade to Pro', managePlan);
+        setBtn(bAnnual, 'Upgrade to Pro Annual', managePlan);
+      } else if (paidPro) {
+        setCurrent(bPro);
+        setBtn(bStarter, 'Switch to Starter', managePlan);
+        setBtn(bAnnual, 'Manage billing', managePlan);
+      }
+    } else if (trialExpired || everPaid) {
+      // Trial used up or previously subscribed — no more free trial; pay to get Pro.
+      setBtn(bPro, 'Get Pro Monthly', function(){ checkoutPrice('promonthly'); });
+    }
+    // Otherwise (active/available trial, never paid): leave the default "Start Free Pro Trial".
+  } catch (e) { /* on any error, leave the default buttons */ }
+})();
 </script>
 </body>
 </html>

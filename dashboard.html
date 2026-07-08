@@ -244,6 +244,30 @@ footer {
   .page { padding: 28px 20px 60px; }
   footer { padding: 20px; }
 }
+
+/* ── Locked state (trial ended, or Starter over the 5-save cap) ── */
+body.locked .action-card,
+body.locked .act-copy,
+body.locked .act-pdf,
+body.locked .act-edit,
+body.locked a[href="creator.html"],
+body.locked a[href="graphing-creator.html"],
+body.locked a[href="spiral-creator.html"] {
+  opacity: 0.4 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+/* delete (.act-del), View Plans (.trial-bar-btn), and Sign out stay fully active */
+
+/* ── Starter exactly at the 5-save cap: block only NEW creation (existing activities stay usable) ── */
+body.create-blocked .action-card,
+body.create-blocked a[href="creator.html"],
+body.create-blocked a[href="graphing-creator.html"],
+body.create-blocked a[href="spiral-creator.html"] {
+  opacity: 0.4 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
 </style>
 </head>
 <body>
@@ -277,7 +301,7 @@ footer {
       🎨 Reveal Art <span class="tab-badge">Active</span>
     </a>
     <a href="#" class="product-tab" id="tab-graphing" onclick="switchTab('graphing');return false;">
-      📐 Reveal Graphing <span class="tab-badge">Active</span>
+      📐 Reveal Graphing (Beta) <span class="tab-badge">Active</span>
     </a>
     <span class="product-tab coming">
       🔐 Escape Rooms <span class="tab-badge">Coming soon</span>
@@ -367,6 +391,7 @@ footer {
 <footer>© 2025 The Real Sum Shady LLC</footer>
 
 <script>
+let isLocked = false; // set true when a user's trial has ended (unpaid) or a Starter is over the 5-save cap
 const SB_URL = 'https://zionhfdaksktpwcvjnde.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb25oZmRha3NrdHB3Y3ZqbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzYyMjcsImV4cCI6MjA5MDg1MjIyN30.6nLi71KlbXvRsC5Z0g51XGxiXgOBu9TKxbs6T2mYm9A';
 
@@ -408,9 +433,20 @@ async function init() {
     profile = Array.isArray(profiles) ? profiles[0] : null;
 
     if (profile) {
-      if (profile.is_paid) {
-        document.getElementById('trial-days').textContent = 'active subscription';
-        document.getElementById('trial-bar').style.display = 'none';
+      if (profile.is_paid || profile.plan === 'starter' || profile.plan === 'pro') {
+        const planName = profile.plan === 'pro' ? 'Pro' : (profile.plan === 'starter' ? 'Starter' : 'your plan');
+        document.getElementById('trial-days').textContent = planName + ' plan';
+        const bar = document.getElementById('trial-bar');
+        bar.style.display = '';
+        const barTxt = bar.querySelector('.trial-bar-text');
+        if (barTxt) barTxt.innerHTML = "You're on <strong>" + planName + "</strong>.";
+        const barBtn = bar.querySelector('.trial-bar-btn');
+        if (barBtn) {
+          barBtn.textContent = 'Manage plan';
+          barBtn.removeAttribute('href');
+          barBtn.style.cursor = 'pointer';
+          barBtn.onclick = function(){ manageBilling(barBtn); };
+        }
       } else if (profile.trial_started_at) {
         const trialStart = new Date(profile.trial_started_at);
         const expiryDate = new Date(trialStart);
@@ -452,6 +488,51 @@ async function loadActivities(token, userId, profile) {
     const graphsArr = rawGraphs.filter(g => g.type !== 'lines').map(g => ({...g, _type:'graphing'}));
     const linesArr  = rawGraphs.filter(g => g.type === 'lines').map(g => ({...g, _type:'lines'}));
     const allActs = artsArr.concat(graphsArr).concat(linesArr).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+    // ── Plan / trial lock ──────────────────────────────────────────
+    (function computeLock(){
+      const plan = profile && profile.plan;
+      const paidPro = plan === 'pro';
+      const paidStarter = plan === 'starter';
+      const paid = profile && (profile.is_paid || paidPro || paidStarter);
+      let trialExpired = false;
+      if (profile && !paid && profile.trial_started_at) {
+        const ts = new Date(profile.trial_started_at);
+        const days = Math.floor((Date.now() - ts) / (1000*60*60*24));
+        trialExpired = days >= 7;
+      }
+      const savedCount = allActs.length;
+
+      let reason = '';
+      if (paidPro) { isLocked = false; }                                  // Pro = unlimited
+      else if (paidStarter) {
+        if (savedCount > 5) { isLocked = true; reason = 'starter-over'; }  // over cap = full lock (must trim)
+        else if (savedCount >= 5) { reason = 'starter-cap'; }             // exactly at cap = block only new creation
+      }
+      else if (trialExpired) { isLocked = true; reason = 'trial-ended'; }
+
+      if (isLocked) {
+        document.body.classList.add('locked');
+        const bar = document.getElementById('trial-bar');
+        if (bar) {
+          bar.style.display = '';
+          const txt = bar.querySelector('.trial-bar-text');
+          if (txt) {
+            txt.innerHTML = (reason === 'starter-over')
+              ? 'Starter includes <strong>5 saved activities.</strong> Delete some to get under the limit, or upgrade to Pro for unlimited saves.'
+              : 'Your <strong>free trial has ended.</strong> Upgrade to keep creating, sharing, and downloading.';
+          }
+        }
+      } else if (reason === 'starter-cap') {
+        document.body.classList.add('create-blocked');
+        const bar = document.getElementById('trial-bar');
+        if (bar) {
+          bar.style.display = '';
+          const txt = bar.querySelector('.trial-bar-text');
+          if (txt) txt.innerHTML = "You've saved <strong>5 of 5</strong> on Starter — delete one, or upgrade to Pro for unlimited saves.";
+        }
+      }
+    })();
 
     if (allActs.length === 0) return;
 
@@ -559,9 +640,17 @@ async function loadActivities(token, userId, profile) {
       grid.appendChild(card);
     });
 
-    document.getElementById('save-limit').innerHTML =
-      '<span>' + allActs.length + '</span> of <span>' + limit + '</span> activities saved' +
-      (isPaid ? '' : ' · <a href="plans.html" style="color:var(--lime-dark);font-weight:600;">Upgrade for more</a>');
+    (function(){
+      const _plan = profile && profile.plan;
+      const el = document.getElementById('save-limit');
+      if (_plan === 'starter') {
+        el.innerHTML = '<span>' + allActs.length + '</span> of <span>5</span> activities saved' +
+          (allActs.length >= 5 ? ' · <a href="plans.html" style="color:var(--lime-dark);font-weight:600;">Upgrade to Pro for unlimited</a>' : '');
+      } else {
+        // Pro, active trial, etc. — unlimited, so just show the count.
+        el.innerHTML = '<span>' + allActs.length + '</span> activit' + (allActs.length === 1 ? 'y' : 'ies') + ' saved';
+      }
+    })();
 
     // Unlock spiral card if 2+ Reveal Art activities have problem data
     var spiralCard = document.getElementById('spiral-action-card');
@@ -653,12 +742,7 @@ async function bulkDelete() {
       })
     ));
     if (results.every(r => r.ok)) {
-      ids.forEach(id => {
-        const card = document.querySelector('.act-card[data-act-id="' + id + '"]');
-        if (card) { card.style.opacity = '0'; card.style.transition = 'opacity 0.3s'; setTimeout(() => { card.remove(); checkEmpty(); }, 300); }
-      });
-      selectedIds.clear();
-      toggleSelectMode();
+      location.reload(); // reload so the saved count and lock state re-evaluate
     } else {
       alert('Some deletions failed. Please try again.');
     }
@@ -676,10 +760,7 @@ async function deleteActivity(id, btn) {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     if (r.ok) {
-      const card = btn.closest('.act-card');
-      card.style.opacity = '0';
-      card.style.transition = 'opacity 0.3s';
-      setTimeout(() => { card.remove(); checkEmpty(); }, 300);
+      location.reload(); // reload so the saved count and lock state re-evaluate
     }
   } catch(e) {
     alert('Delete failed. Please try again.');
@@ -755,10 +836,7 @@ async function deleteGraphingActivity(id, btn) {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
     });
     if (r.ok) {
-      const card = btn.closest('.act-card');
-      card.style.opacity = '0';
-      card.style.transition = 'opacity 0.3s';
-      setTimeout(() => { card.remove(); checkEmpty(); }, 300);
+      location.reload(); // reload so the saved count and lock state re-evaluate
     }
   } catch(e) { alert('Delete failed.'); }
 }
@@ -1249,6 +1327,27 @@ async function renameActivity(id, btn) {
       if (titleEl.firstChild) titleEl.firstChild.textContent = trimmed;
     } else { alert('Rename failed. Please try again.'); }
   } catch(e) { alert('Rename failed. Please try again.'); }
+}
+
+async function manageBilling(btn) {
+  const token = localStorage.getItem('sb_access_token');
+  if (!token) { window.location.href = 'login.html'; return; }
+  const original = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = 'Opening\u2026'; btn.style.pointerEvents = 'none'; }
+  try {
+    const res = await fetch('/api/create-portal-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken: token })
+    });
+    const data = await res.json();
+    if (data && data.url) { window.location.href = data.url; return; }
+    // Nothing to manage (never subscribed) — send them to the plans page instead.
+    window.location.href = 'plans.html';
+  } catch (e) {
+    if (btn) { btn.textContent = original; btn.style.pointerEvents = ''; }
+    alert('Could not open billing right now. Please try again.');
+  }
 }
 
 function signOut() {
