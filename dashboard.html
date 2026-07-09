@@ -281,6 +281,7 @@ body.create-blocked a[href="spiral-creator.html"] {
   </a>
   <div class="nav-right">
     <span class="nav-user" id="nav-email"></span>
+    <button class="nav-signout" id="nav-manage" style="display:none;" onclick="manageBilling(this)">Manage plan</button>
     <button class="nav-signout" onclick="signOut()">Sign out</button>
   </div>
 </nav>
@@ -454,21 +455,12 @@ async function init() {
         document.getElementById('trial-days').textContent =
           "You're on " + planName + (detail ? ' · ' + detail : '');
 
+        // Healthy subscription = no banner. Status lives in the line above,
+        // and "Manage plan" sits quietly in the nav next to Sign out.
         const bar = document.getElementById('trial-bar');
-        bar.style.display = '';
-        const barTxt = bar.querySelector('.trial-bar-text');
-        if (barTxt) {
-          barTxt.innerHTML = "You're on <strong>" + planName + "</strong>" +
-            (freeUntil ? " · Free until <strong>" + freeUntil + "</strong>, then billing begins."
-                       : (nextPay ? " · Next payment <strong>" + nextPay + "</strong>." : "."));
-        }
-        const barBtn = bar.querySelector('.trial-bar-btn');
-        if (barBtn) {
-          barBtn.textContent = 'Manage plan';
-          barBtn.removeAttribute('href');
-          barBtn.style.cursor = 'pointer';
-          barBtn.onclick = function(){ manageBilling(barBtn); };
-        }
+        if (bar) bar.style.display = 'none';
+        const navManage = document.getElementById('nav-manage');
+        if (navManage) navManage.style.display = '';
       }
       // No subscription = nothing to announce here. The lock logic in
       // loadActivities handles anyone without an active plan.
