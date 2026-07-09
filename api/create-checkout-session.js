@@ -19,6 +19,10 @@ const PRICE_TO_PLAN = {
   'price_1Tr2q02MGMrnqoN3VmTvNYYH': 'pro',     // Pro Annual  $100/yr
 };
 
+// Only this plan gets the 7-day free trial (card required, $0 for 7 days,
+// then Stripe automatically starts billing $10/mo).
+const PRO_MONTHLY_PRICE_ID = 'price_1Tr2pW2MGMrnqoN3rb8mr6rN';
+
 module.exports = async (req, res) => {
   // Only POST is allowed. (Visiting the URL in a browser is a GET → 405,
   // which is the "is it alive?" smoke test.)
@@ -62,6 +66,17 @@ module.exports = async (req, res) => {
     const origin = req.headers.origin || ('https://' + req.headers.host);
 
     // 4. Create the Checkout Session.
+    // Only Pro Monthly carries a 7-day free trial. Starter and Pro Annual do not.
+    const subscriptionData = {
+      metadata: {
+        supabase_user_id: user.id,
+        plan: plan,
+      },
+    };
+    if (priceId === PRO_MONTHLY_PRICE_ID) {
+      subscriptionData.trial_period_days = 7;
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
@@ -76,12 +91,7 @@ module.exports = async (req, res) => {
         supabase_user_id: user.id,
         plan: plan,
       },
-      subscription_data: {
-        metadata: {
-          supabase_user_id: user.id,
-          plan: plan,
-        },
-      },
+      subscription_data: subscriptionData,
     });
 
     // 5. Hand the checkout URL back to the browser to redirect to.
