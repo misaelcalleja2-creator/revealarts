@@ -77,7 +77,16 @@ function getDiscountEnd(sub) {
   let d = sub.discount;
   if (!d && Array.isArray(sub.discounts) && sub.discounts.length) d = sub.discounts[0];
   if (!d || typeof d === 'string') return null; // unexpanded id — can't read
-  return d.end || null;
+  if (d.end) return d.end;
+  // Fallback: derive it from the coupon's duration if Stripe didn't set `end`.
+  const coupon = d.coupon;
+  if (coupon && coupon.duration === 'repeating' && coupon.duration_in_months && d.start) {
+    const startMs = d.start * 1000;
+    const end = new Date(startMs);
+    end.setMonth(end.getMonth() + coupon.duration_in_months);
+    return Math.floor(end.getTime() / 1000);
+  }
+  return null;
 }
 
 // The moment they stop being free: the later of trial end and coupon end.
@@ -161,13 +170,18 @@ export async function POST(request) {
       const priceId = subscription.items?.data?.[0]?.price?.id;
       const plan = PRICE_TO_PLAN[priceId];
 
+      // The event payload lists discounts as bare IDs, so re-fetch the
+      // subscription to get the coupon's real end date.
+      let full = subscription;
+      try { full = await fetchSubscription(subscription.id); } catch (e) { /* fall back */ }
+
       if (customerId) {
         if ((status === 'active' || status === 'trialing') && plan) {
           await updateProfileByCustomer(customerId, {
             plan: plan,
             is_paid: true,
-            next_payment_at: unixToIso(getPeriodEnd(subscription)),
-            free_until: getFreeUntil(subscription),
+            next_payment_at: unixToIso(getPeriodEnd(full)),
+            free_until: getFreeUntil(full),
           });
         } else if (status === 'canceled' || status === 'unpaid' || status === 'incomplete_expired') {
           await updateProfileByCustomer(customerId, {
