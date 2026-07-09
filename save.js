@@ -220,17 +220,14 @@ async function saveActivity(html, title) {
     const profile = Array.isArray(profiles) ? profiles[0] : null;
 
     // Work out the plan and the save limit it grants.
+    // Stripe is the source of truth: an active/trialing subscription sets plan.
     const plan = profile && profile.plan;
     const paidStarter = plan === 'starter';
-    let trialExpired = false;
-    if (profile && !profile.is_paid && plan !== 'pro' && !paidStarter && profile.trial_started_at) {
-      const days = Math.floor((Date.now() - new Date(profile.trial_started_at)) / 86400000);
-      trialExpired = days >= 7;
-    }
+    const paidPro = plan === 'pro';
     let limit;
-    if (paidStarter) limit = 5;            // Starter = 5 saved activities
-    else if (trialExpired) limit = 0;      // trial ended, never paid = can't save
-    else limit = Infinity;                 // Pro, active trial, or brand-new user = unlimited
+    if (paidPro) limit = Infinity;         // Pro (incl. trial + coupon) = unlimited
+    else if (paidStarter) limit = 5;       // Starter = 5 saved activities
+    else limit = 0;                        // no active plan = can't save
 
     // Count TOTAL saved activities across all types (Reveal Art + Graphing + Lines),
     // matching exactly how the dashboard counts them.
@@ -250,7 +247,7 @@ async function saveActivity(html, title) {
     if (count >= limit) {
       const limitMsg = paidStarter
         ? 'Starter includes 5 saved activities. Delete one from your dashboard, or upgrade to Pro for unlimited saves.'
-        : 'Your free trial has ended. Upgrade to keep saving activities.';
+        : 'Choose a plan to save activities to your dashboard.';
       showSaveToast(limitMsg, 'warn');
       return;
     }

@@ -58,6 +58,48 @@ async function updateProfileByCustomer(customerId, fields) {
   }
 }
 
+// ── Reading dates off a Stripe subscription ──────────────────────────────
+// Field locations shift between Stripe API versions, so read defensively.
+
+function unixToIso(ts) {
+  return ts ? new Date(ts * 1000).toISOString() : null;
+}
+
+// When the next billing period ends (i.e. when they'd next be charged).
+function getPeriodEnd(sub) {
+  if (sub.current_period_end) return sub.current_period_end;
+  const item = sub.items && sub.items.data && sub.items.data[0];
+  return (item && item.current_period_end) || null;
+}
+
+// When a repeating coupon stops applying (null if no coupon / forever).
+function getDiscountEnd(sub) {
+  let d = sub.discount;
+  if (!d && Array.isArray(sub.discounts) && sub.discounts.length) d = sub.discounts[0];
+  if (!d || typeof d === 'string') return null; // unexpanded id — can't read
+  return d.end || null;
+}
+
+// The moment they stop being free: the later of trial end and coupon end.
+// Returns an ISO string, or null if they're already paying.
+function getFreeUntil(sub) {
+  const trialEnd = sub.trial_end || null;
+  const discountEnd = getDiscountEnd(sub);
+  const latest = Math.max(trialEnd || 0, discountEnd || 0);
+  if (!latest) return null;
+  if (latest * 1000 <= Date.now()) return null; // already in the past
+  return unixToIso(latest);
+}
+
+// Fetch the full subscription so we can read its dates.
+async function fetchSubscription(subId) {
+  try {
+    return await stripe.subscriptions.retrieve(subId, { expand: ['discounts'] });
+  } catch (e) {
+    return await stripe.subscriptions.retrieve(subId);
+  }
+}
+
 // A GET (e.g. visiting the URL in a browser) just confirms the endpoint is live.
 export async function GET() {
   return new Response(
@@ -92,11 +134,23 @@ export async function POST(request) {
       // Note: this also fires for trial signups (Stripe charges $0 up front but
       // the subscription is live), so trialing users correctly get Pro access.
       if (userId && plan) {
-        await updateProfile(userId, {
+        const fields = {
           plan: plan,                     // 'starter' or 'pro'
           is_paid: true,                  // keep old column in sync (dashboard still reads it)
           stripe_customer_id: customerId, // so we can match them on future events
-        });
+        };
+        // Pull the real dates (trial end / coupon end / next billing date) so the
+        // dashboard can tell the teacher exactly when they'll be charged.
+        if (session.subscription) {
+          try {
+            const sub = await fetchSubscription(session.subscription);
+            fields.next_payment_at = unixToIso(getPeriodEnd(sub));
+            fields.free_until = getFreeUntil(sub);
+          } catch (e) {
+            console.error('Could not read subscription dates:', e.message);
+          }
+        }
+        await updateProfile(userId, fields);
       }
     } else if (event.type === 'customer.subscription.updated') {
       // Plan switched in the portal (e.g. Starter -> Pro) -> re-derive the plan
@@ -109,9 +163,16 @@ export async function POST(request) {
 
       if (customerId) {
         if ((status === 'active' || status === 'trialing') && plan) {
-          await updateProfileByCustomer(customerId, { plan: plan, is_paid: true });
+          await updateProfileByCustomer(customerId, {
+            plan: plan,
+            is_paid: true,
+            next_payment_at: unixToIso(getPeriodEnd(subscription)),
+            free_until: getFreeUntil(subscription),
+          });
         } else if (status === 'canceled' || status === 'unpaid' || status === 'incomplete_expired') {
-          await updateProfileByCustomer(customerId, { plan: 'none', is_paid: false });
+          await updateProfileByCustomer(customerId, {
+            plan: 'none', is_paid: false, next_payment_at: null, free_until: null,
+          });
         }
       }
     } else if (event.type === 'customer.subscription.deleted') {
@@ -120,7 +181,9 @@ export async function POST(request) {
       const customerId = subscription.customer;
 
       if (customerId) {
-        await updateProfileByCustomer(customerId, { plan: 'none', is_paid: false });
+        await updateProfileByCustomer(customerId, {
+          plan: 'none', is_paid: false, next_payment_at: null, free_until: null,
+        });
       }
     }
     // Any other event type: we just acknowledge it below without doing anything.
