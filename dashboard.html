@@ -288,7 +288,7 @@ body.create-blocked a[href="spiral-creator.html"] {
 <div class="page">
   <div class="dash-header">
     <div class="dash-title" id="dash-title">Welcome back.</div>
-    <div class="dash-sub">You're on your <span id="trial-days">7-day free trial</span></div>
+    <div class="dash-sub"><span id="trial-days"></span></div>
   </div>
 
   <div class="trial-bar" id="trial-bar">
@@ -452,7 +452,7 @@ async function init() {
         else if (nextPay)   detail = 'Next payment ' + nextPay;
 
         document.getElementById('trial-days').textContent =
-          planName + ' plan' + (detail ? ' · ' + detail : '');
+          "You're on " + planName + (detail ? ' · ' + detail : '');
 
         const bar = document.getElementById('trial-bar');
         bar.style.display = '';
