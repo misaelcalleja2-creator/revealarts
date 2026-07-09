@@ -214,7 +214,7 @@ nav {
 <div class="page-wrap">
   <div class="page-eyebrow">You're in — one step left</div>
   <h1 class="page-title">Choose your plan</h1>
-  <p class="page-sub">Not sure yet? Start with the free trial. No credit card needed.</p>
+  <p class="page-sub">Try Pro free for 7 days. Cancel anytime before you're charged.</p>
 
   <div class="plans-grid">
 
@@ -235,12 +235,12 @@ nav {
 
     <!-- PRO (FEATURED) -->
     <div class="plan-card featured">
-      <div class="featured-badge">Start here — it's free</div>
+      <div class="featured-badge">Start here — 7 days free</div>
       <div class="plan-name">Pro</div>
       <div class="plan-amount"><sup>$</sup>10</div>
       <div class="plan-per">per month · cancel anytime</div>
       <div class="trial-callout">
-        <strong>7-day free trial included.</strong> No credit card required. After 7 days, $10/mo — or switch to any plan.
+        <strong>7-day free trial included.</strong> Cancel anytime during the trial and you won't be charged. After 7 days, $10/mo.
       </div>
       <ul class="plan-features">
         <li><span class="ck">✓</span> Everything in Starter</li>
@@ -249,7 +249,7 @@ nav {
         <li><span class="ck">✓</span> Priority support</li>
         <li><span class="ck">✓</span> Early access to new tools</li>
       </ul>
-      <button id="btn-pro" class="plan-btn plan-btn-filled" onclick="startTrial()">Start Free Pro Trial →</button>
+      <button id="btn-pro" class="plan-btn plan-btn-filled" onclick="checkoutPrice('promonthly')">Start 7-Day Free Trial →</button>
     </div>
 
     <!-- PRO ANNUAL -->
@@ -270,7 +270,7 @@ nav {
   </div>
 
   <div class="plan-notes">
-    <p><span class="check">✓</span> Free Pro trial — no credit card required. Choose your plan after 7 days.</p>
+    <p><span class="check">✓</span> 7-day free trial on Pro — cancel anytime before you're charged.</p>
     <p><span class="check">✓</span> Saved activities require an active plan to stay accessible.</p>
   </div>
 
@@ -290,13 +290,8 @@ const PRICE_IDS = {
 
 let busy = false;
 
-// Free Pro trial — no card. New users start here.
-function startTrial() {
-  const token = localStorage.getItem('sb_access_token');
-  window.location.href = token ? 'dashboard.html' : 'signup.html';
-}
-
 // Fresh Stripe checkout (for users without an active subscription).
+// Pro Monthly includes a 7-day free trial (card required, $0 up front).
 async function checkoutPrice(priceKey) {
   const priceId = PRICE_IDS[priceKey];
   if (!priceId) { window.location.href = 'dashboard.html'; return; }
@@ -381,11 +376,12 @@ async function managePlan() {
         setBtn(bStarter, 'Switch to Starter', managePlan);
         setBtn(bAnnual, 'Manage billing', managePlan);
       }
-    } else if (trialExpired || everPaid) {
-      // Trial used up or previously subscribed — no more free trial; pay to get Pro.
+    } else if (everPaid) {
+      // Previously subscribed — they've had their trial; no trial language.
       setBtn(bPro, 'Get Pro Monthly', function(){ checkoutPrice('promonthly'); });
     }
-    // Otherwise (active/available trial, never paid): leave the default "Start Free Pro Trial".
+    // Otherwise (never subscribed): leave the default "Start 7-Day Free Trial",
+    // which goes to Stripe checkout with the trial attached.
   } catch (e) { /* on any error, leave the default buttons */ }
 })();
 </script>

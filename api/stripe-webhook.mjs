@@ -89,6 +89,8 @@ export async function POST(request) {
       const plan = session.metadata?.plan;
       const customerId = session.customer;
 
+      // Note: this also fires for trial signups (Stripe charges $0 up front but
+      // the subscription is live), so trialing users correctly get Pro access.
       if (userId && plan) {
         await updateProfile(userId, {
           plan: plan,                     // 'starter' or 'pro'
