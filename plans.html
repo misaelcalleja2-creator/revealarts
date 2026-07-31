@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Choose Your Plan — Reveal Arts</title>
+<title>Choose Your Plan — The Real Sum Shady</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -203,10 +203,8 @@ nav {
 
 <nav>
   <a href="index.html" class="nav-logo">
-    <div class="nav-logo-circle">THE<br>REAL<br>SUM<br>SHADY</div>
     <div>
-      <span class="nav-logo-text">Reveal Arts</span>
-      <span class="nav-logo-sub">by The Real Sum Shady</span>
+      <span class="nav-logo-text">The Real Sum Shady</span>
     </div>
   </a>
 </nav>
@@ -214,7 +212,7 @@ nav {
 <div class="page-wrap">
   <div class="page-eyebrow">You're in — one step left</div>
   <h1 class="page-title">Choose your plan</h1>
-  <p class="page-sub">Try Pro free for 7 days. Cancel anytime before you're charged.</p>
+  <p class="page-sub" id="page-sub">Try Pro free for 7 days. Cancel anytime before you're charged.</p>
 
   <div class="plans-grid">
 
@@ -224,30 +222,27 @@ nav {
       <div class="plan-amount"><sup>$</sup>8</div>
       <div class="plan-per">per month · cancel anytime</div>
       <ul class="plan-features">
-        <li><span class="ck">✓</span> Create unlimited activities</li>
-        <li><span class="ck">✓</span> Save up to 5 activities</li>
+        <li><span class="ck">✓</span> Save up to 5 activities at a time</li>
+        <li><span class="ck">✓</span> Reveal Art + Graphing activities</li>
         <li><span class="ck">✓</span> Spiraled Review</li>
-        <li><span class="ck">✓</span> Full image library</li>
-        <li><span class="ck">✓</span> Google Classroom ready</li>
       </ul>
       <button id="btn-starter" class="plan-btn plan-btn-outline" onclick="checkoutPrice('starter')">Get Started — $8/mo</button>
     </div>
 
     <!-- PRO (FEATURED) -->
     <div class="plan-card featured">
-      <div class="featured-badge">Start here — 7 days free</div>
+      <div class="featured-badge" id="pro-badge">Start here — 7 days free</div>
       <div class="plan-name">Pro</div>
       <div class="plan-amount"><sup>$</sup>10</div>
       <div class="plan-per">per month · cancel anytime</div>
-      <div class="trial-callout">
+      <div class="trial-callout" id="trial-callout">
         <strong>7-day free trial included.</strong> Cancel anytime during the trial and you won't be charged. After 7 days, $10/mo.
       </div>
       <ul class="plan-features">
         <li><span class="ck">✓</span> Everything in Starter</li>
         <li><span class="ck">✓</span> Unlimited saved activities</li>
-        <li><span class="ck">✓</span> Escape Rooms (coming soon)</li>
         <li><span class="ck">✓</span> Priority support</li>
-        <li><span class="ck">✓</span> Early access to new tools</li>
+        <li><span class="ck">✓</span> Escape Rooms (coming soon)</li>
       </ul>
       <button id="btn-pro" class="plan-btn plan-btn-filled" onclick="checkoutPrice('promonthly')">Start 7-Day Free Trial →</button>
     </div>
@@ -260,9 +255,7 @@ nav {
       <div class="plan-saving">✦ 2 months free</div>
       <ul class="plan-features">
         <li><span class="ck">✓</span> Everything in Pro</li>
-        <li><span class="ck">✓</span> 2 months free vs monthly</li>
-        <li><span class="ck">✓</span> Priority support</li>
-        <li><span class="ck">✓</span> Early access to new tools</li>
+        <li><span class="ck">✓</span> Best value</li>
       </ul>
       <button id="btn-annual" class="plan-btn plan-btn-outline" onclick="checkoutPrice('annual')">Get Pro Annual</button>
     </div>
@@ -270,7 +263,7 @@ nav {
   </div>
 
   <div class="plan-notes">
-    <p><span class="check">✓</span> 7-day free trial on Pro — cancel anytime before you're charged.</p>
+    <p id="trial-note"><span class="check">✓</span> 7-day free trial on Pro — cancel anytime before you're charged.</p>
     <p><span class="check">✓</span> Saved activities require an active plan to stay accessible.</p>
   </div>
 
@@ -364,6 +357,21 @@ async function managePlan() {
       btn.style.cursor = 'default';
     }
     function setBtn(btn, label, fn) { btn.textContent = label; btn.onclick = fn; }
+
+    // Anyone who has ever had a subscription is not trial-eligible.
+    // Strip every mention of the free trial from the page.
+    function hideTrialLanguage() {
+      const badge = document.getElementById('pro-badge');
+      if (badge) badge.textContent = 'Most popular';
+      const callout = document.getElementById('trial-callout');
+      if (callout) callout.style.display = 'none';
+      const sub = document.getElementById('page-sub');
+      if (sub) sub.textContent = 'Pick the plan that fits your classroom. Cancel anytime.';
+      const note = document.getElementById('trial-note');
+      if (note) note.style.display = 'none';
+    }
+
+    if (everPaid) hideTrialLanguage();
 
     if (hasSub) {
       // Active subscriber — mark their tier, route every change through the portal.
