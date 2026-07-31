@@ -65,22 +65,72 @@ module.exports = async (req, res) => {
     //    URL and the real therealsumshady.com.
     const origin = req.headers.origin || ('https://' + req.headers.host);
 
-    // 4. Create the Checkout Session.
-    // Only Pro Monthly carries a 7-day free trial. Starter and Pro Annual do not.
+    // 4. Find this person's existing Stripe customer, or make one.
+    //
+    //    Previously this passed `customer_email`, which makes Stripe create a
+    //    BRAND NEW customer on every checkout — duplicate records, split
+    //    billing history, and a broken billing portal. We look the customer up
+    //    ourselves and pass a real customer id instead.
+    //
+    //    We search by email rather than trusting the profile column, because
+    //    duplicates may already exist from before this fix.
+    const existing = await stripe.customers.list({
+      email: user.email,
+      limit: 100,
+    });
+    const candidates = (existing.data || []).filter(function (c) {
+      return !c.deleted;
+    });
+
+    // 5. Has this person EVER had a subscription — on any of their customer
+    //    records, in any state (active, canceled, past due, expired trial)?
+    //    If so, they are not trial-eligible. This is what stops someone from
+    //    cancelling on day 6 and re-trialling forever.
+    let hasSubscriptionHistory = false;
+    for (const c of candidates) {
+      const subs = await stripe.subscriptions.list({
+        customer: c.id,
+        status: 'all',
+        limit: 1,
+      });
+      if (subs.data && subs.data.length > 0) {
+        hasSubscriptionHistory = true;
+        break;
+      }
+    }
+
+    // Prefer a customer tagged with this Supabase user, otherwise the oldest.
+    // If they have NO customer yet, we deliberately do not create one here —
+    // we let Stripe create it when checkout actually completes. Creating it up
+    // front would leave an orphan customer record behind every abandoned
+    // checkout.
+    let customerId = null;
+    if (candidates.length > 0) {
+      const tagged = candidates.find(function (c) {
+        return c.metadata && c.metadata.supabase_user_id === user.id;
+      });
+      const oldest = candidates.slice().sort(function (a, b) {
+        return a.created - b.created;
+      })[0];
+      customerId = (tagged || oldest).id;
+    }
+
+    // 6. Create the Checkout Session.
+    //    Only Pro Monthly carries a 7-day free trial, and only for someone who
+    //    has never subscribed before.
     const subscriptionData = {
       metadata: {
         supabase_user_id: user.id,
         plan: plan,
       },
     };
-    if (priceId === PRO_MONTHLY_PRICE_ID) {
+    if (priceId === PRO_MONTHLY_PRICE_ID && !hasSubscriptionHistory) {
       subscriptionData.trial_period_days = 7;
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      customer_email: user.email,
       allow_promotion_codes: true, // lets founding members type the 2-free-months code
       success_url: origin + '/dashboard.html?checkout=success',
       cancel_url: origin + '/plans.html',
@@ -92,7 +142,18 @@ module.exports = async (req, res) => {
         plan: plan,
       },
       subscription_data: subscriptionData,
-    });
+    };
+
+    // Stripe accepts EITHER an existing customer id OR an email to create one
+    // from — sending both is an API error. Returning users get their real
+    // customer so we never duplicate; brand-new users get the email path.
+    if (customerId) {
+      sessionParams.customer = customerId;
+    } else {
+      sessionParams.customer_email = user.email;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     // 5. Hand the checkout URL back to the browser to redirect to.
     return res.status(200).json({ url: session.url });
