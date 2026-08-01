@@ -15,31 +15,30 @@ module.exports = async function handler(req, res) {
 
   const html = `<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"></head>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
+<style>
+  :root { color-scheme: light only; supported-color-schemes: light only; }
+</style>
+</head>
 <body style="margin:0;padding:0;background:#f7f6f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f7f6f2;">
   <tr>
     <td align="center" style="padding:40px 24px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;margin:0 auto;">
         <tr>
-          <td align="center" style="padding-bottom:24px;">
-            <table cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                <td align="center" style="width:56px;height:56px;background:#0a0a0f;border-radius:28px;padding:0;" width="56" height="56">
-                  <span style="color:#b8e030;font-size:7px;font-weight:800;line-height:1.4;display:block;text-align:center;padding:10px 6px 0 6px;">THE<br>REAL<br>SUM<br>SHADY</span>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <span style="font-size:18px;font-weight:800;color:#0a0a0f;letter-spacing:-0.3px;display:block;">Reveal Arts</span>
-            <span style="font-size:12px;color:#888888;display:block;margin-top:2px;">by The Real Sum Shady</span>
+          <td align="center" style="padding-bottom:28px;">
+            <span style="font-size:19px;font-weight:800;color:#0a0a0f;letter-spacing:-0.4px;display:block;">The Real Sum Shady</span>
           </td>
         </tr>
         <tr>
           <td>
             <div style="background:#ffffff;border-radius:16px;padding:32px;border:1px solid rgba(0,0,0,0.08);">
               <h2 style="font-size:22px;font-weight:800;color:#0a0a0f;margin:0 0 16px 0;">Hey ${name},</h2>
-              <p style="font-size:15px;color:#555555;line-height:1.7;margin:0 0 16px 0;">Welcome to Reveal Arts. You just joined a growing group of teachers who decided math practice didn't have to feel like a punishment.</p>
+              <p style="font-size:15px;color:#555555;line-height:1.7;margin:0 0 16px 0;">Welcome to The Real Sum Shady. You just joined a growing group of teachers who decided math practice didn't have to feel like a punishment.</p>
               <p style="font-size:15px;color:#555555;line-height:1.7;margin:0 0 28px 0;">Head to your dashboard and create your first activity — it takes about 3 minutes. Pick an image your students will love, add your problems, and share the link. That's it.</p>
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
                 <tr>
