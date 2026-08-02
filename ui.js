@@ -116,7 +116,8 @@ async function initEditMode() {
     editingActivityId = actId;
 
     // Show edit mode UI
-    document.getElementById('edit-mode-btns').style.display = 'flex';
+    var editBtns = document.getElementById('edit-mode-btns');
+    if (editBtns) editBtns.style.display = 'flex';
     if (document.getElementById('nav-back-btn')) document.getElementById('nav-back-btn').textContent = '← Dashboard';
 
     // Show per-step discard buttons
@@ -126,7 +127,8 @@ async function initEditMode() {
     });
 
     // Restore title
-    if (s.title) document.getElementById('act-title').value = s.title;
+    var titleEl = document.getElementById('act-title');
+    if (s.title && titleEl) titleEl.value = s.title;
 
     // Restore image — hide search/upload UI and show editor
     if (s.image) {
@@ -375,7 +377,8 @@ async function initEditMode() {
     if (s.timerEnabled) {
       timerEnabled = true;
       timerMins = s.timerMins || 5;
-      document.getElementById('timer-toggle').checked = true;
+      var timerToggle = document.getElementById('timer-toggle');
+      if (timerToggle) timerToggle.checked = true;
       toggleTimer(true);
       document.querySelectorAll('.timer-preset').forEach(b => {
         b.classList.toggle('active', parseInt(b.textContent) === timerMins);
@@ -385,7 +388,8 @@ async function initEditMode() {
     // Restore diff
     if (s.diffEnabled) {
       diffEnabled = true;
-      document.getElementById('diff-toggle').checked = true;
+      var dt = document.getElementById('diff-toggle');
+      if (dt) dt.checked = true;
       toggleDiff(true);
     }
     // In edit mode: disable diff toggle — each version is independent
