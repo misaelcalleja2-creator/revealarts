@@ -242,9 +242,11 @@ footer {
   width: 1px; height: 14px; background: var(--border); flex-shrink: 0;
 }
 .creator-contact {
+  display: inline-flex; align-items: center; gap: 6px;
   font-size: 14px; color: var(--text3); font-style: italic;
   text-decoration: none; transition: color 0.2s;
 }
+.creator-contact svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
 .creator-contact:hover { color: var(--ink); }
 
 @media (max-width: 640px) {
@@ -396,7 +398,7 @@ body.create-blocked a[href="spiral-creator.html"] {
     </a>
   </div>
   <div class="creator-divider"></div>
-  <a href="mailto:team@therealsumshady.com?subject=The%20Real%20Sum%20Shady%20%E2%80%94%20Feedback" class="creator-contact">Found a bug? Tell us.</a>
+  <a href="mailto:team@therealsumshady.com?subject=The%20Real%20Sum%20Shady%20%E2%80%94%20Feedback" class="creator-contact"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4.24-8 4.76-8-4.76V6l8 4.76L20 6v2.24z"/></svg>Found a bug? Tell us.</a>
 </div>
 
 <footer>© 2025 The Real Sum Shady LLC</footer>
