@@ -112,7 +112,7 @@ function showTrialBanner(daysLeft, isPaid, expiryDate) {
   // Left side pill - countdown timer
   if (!pill) return;
   if (isPaid) {
-    pill.innerHTML = '<span class="trial-pill"><strong>✅ Active</strong></span>';
+    pill.innerHTML = '';
     return;
   }
 
