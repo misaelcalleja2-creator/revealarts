@@ -222,7 +222,7 @@ nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:grid;grid-templa
 /* Page layout modes */
 .page { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 113px); }
 .form-panel { padding: 28px; border-right: 1px solid var(--border); overflow-y: auto; max-height: calc(100vh - 113px); background: var(--bg); }
-.form-panel.full-width { grid-column: 1 / -1; border-right: none; max-width: 700px; margin: 0 auto; width: 100%; }
+.form-panel.full-width { grid-column: 1 / -1; border-right: none; max-width: 700px; margin: 0 auto; width: 100%; max-height: none; overflow-y: visible; }
 
 .auth-nav{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
 .trial-pill{font-size:11px;color:rgba(255,255,255,0.5);background:rgba(184,224,48,0.08);border:1px solid rgba(184,224,48,0.2);border-radius:100px;padding:4px 10px;white-space:nowrap;}

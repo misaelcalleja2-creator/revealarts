@@ -38,6 +38,7 @@ function goToStep(n) {
 
   // scroll form panel to top
   formPanel.scrollTop = 0;
+  window.scrollTo(0, 0);
 }
 
 function wizNext(fromStep) {
