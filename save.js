@@ -1,6 +1,19 @@
 let originalEditImage = null;
 function genTimerKey(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
 
+// Previews share the creator's localStorage. Old preview keys keep a stale timer
+// start time and stale solved-tile state alive, so wipe them before each preview.
+function clearPreviewState(){
+  try{
+    const doomed=[];
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k && (k.indexOf('ra3_preview')===0 || k==='ra3_0' || k==='ra3_0_ts')) doomed.push(k);
+    }
+    doomed.forEach(k=>{ try{localStorage.removeItem(k);}catch(e){} });
+  }catch(e){}
+}
+
 async function generate(){
   const vm=document.getElementById('vm');vm.style.display='none';
   if(!selImgUrl){vm.textContent='Please go back and choose an image first.';vm.style.display='block';return;}
@@ -13,7 +26,9 @@ async function generate(){
   document.getElementById('lo').classList.add('active');
   const hintList=hints.slice(0,hintCount).filter(h=>h.trim());
   const preview20=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):selProbs;
-  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit,'preview');
+  const preview20WithDisplay=preview20.map(p=>({eq:p.eq,ans:p.ans,ansDisplay:p.ansDisplay||String(p.ans),isAlgebra:!!p.isAlgebra}));
+  clearPreviewState();
+  generatedHTML=buildHTML(title,preview20WithDisplay,croppedDataUrl,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit,'preview_'+genTimerKey());
   document.getElementById('pi').srcdoc=generatedHTML;
   document.getElementById('pe').style.display='none';
   document.getElementById('pc').style.display='flex';
@@ -80,7 +95,8 @@ function buildDLButtons(title,imgData,hintList){
         document.getElementById('lo').classList.add('active');
         const praw=selProbs.length>numProbs?[...selProbs].sort(()=>Math.random()-0.5).slice(0,numProbs):[...selProbs].sort(()=>Math.random()-0.5);
         const p=praw.map(q=>({eq:q.eq,ans:q.ans,ansDisplay:q.ansDisplay||String(q.ans),isAlgebra:!!q.isAlgebra}));
-        document.getElementById('pi').srcdoc=buildHTML(`${title} — Version ${v}`,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit);
+        clearPreviewState();
+        document.getElementById('pi').srcdoc=buildHTML(`${title} — Version ${v}`,p,imgData,hintList,timerEnabled?timerMins:0,edAR,calcEnabled,numProbs,aiTutorEnabled,aiHelpLimit,'preview_'+genTimerKey());
         switcher.querySelectorAll('button').forEach(b=>b.style.background='');
         pb.style.background='rgba(122,170,0,0.15)';
         document.getElementById('lo').classList.remove('active');
