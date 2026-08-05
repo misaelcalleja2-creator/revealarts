@@ -89,9 +89,11 @@ function genMulMultiDigit(lv){
 // How high the quotient runs for each divisor. Problem count == quotient cap,
 // since each problem is (d x q) / d. Smaller divisors get more problems
 // because their dividends stay manageable.
+// Problem count per tab == quotient cap, since each problem is (d x q) / d.
+// ÷1 and ÷2 go to 50 (answers stay easy even when large).
+// Every other divisor stops at 15 so answers stay in the 1-15 range.
 function _divCap(d){
-  if(d<=2)return 50;   // ÷1 -> 1..50, ÷2 -> 2..100
-  return 20;           // ÷3..÷12 -> up to 20 problems each
+  return d<=2 ? 50 : 15;
 }
 function genDivFamilies(tables){
   const probs=[],seen=new Set();
