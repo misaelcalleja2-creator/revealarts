@@ -86,10 +86,18 @@ function genMulMultiDigit(lv){
 }
 
 // ── DIVISION GENERATORS ──────────────────────────────────────────────────────
+// How high the quotient runs for each divisor. Problem count == quotient cap,
+// since each problem is (d x q) / d. Smaller divisors get more problems
+// because their dividends stay manageable.
+function _divCap(d){
+  if(d<=2)return 50;   // ÷1 -> 1..50, ÷2 -> 2..100
+  return 20;           // ÷3..÷12 -> up to 20 problems each
+}
 function genDivFamilies(tables){
   const probs=[],seen=new Set();
   tables.forEach(d=>{
-    for(let q=1;q<=12;q++){
+    const cap=_divCap(d);
+    for(let q=1;q<=cap;q++){
       const dd=d*q,eq=dd+' \u00f7 '+d;
       if(!seen.has(eq)){seen.add(eq);probs.push({eq,ans:q});}
     }
@@ -229,7 +237,7 @@ function genSqRoots(){
 }
 function genCuRoots(){
   var probs=[];
-  for(var n=1;n<=10;n++){probs.push({eq:'\u00b3\u221a'+n*n*n,ans:n});}
+  for(var n=1;n<=15;n++){probs.push({eq:'\u00b3\u221a'+n*n*n,ans:n});}
   return probs.sort(function(){return Math.random()-0.5;});
 }
 
@@ -586,7 +594,7 @@ function toggleMulMixOrient(on){
 function buildDivTableGrid(){
   var grid=document.getElementById('div-table-grid');
   if(!grid)return;grid.innerHTML='';
-  for(var n=2;n<=12;n++){
+  for(var n=1;n<=12;n++){
     (function(n){
       var btn=document.createElement('button');
       btn.className='tab'+(divTables.includes(n)?' active':'');
