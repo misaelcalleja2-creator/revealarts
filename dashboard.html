@@ -582,6 +582,9 @@ async function loadActivities(token, userId, profile) {
               <button class="act-pdf" onclick="downloadGraphingWorksheet('${act.id}', this)" title="Worksheet">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               </button>
+              <button class="act-pdf" onclick="downloadGraphingAnswerKey('${act.id}', this)" title="Answer key">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+              </button>
               <button class="act-del" onclick="deleteGraphingActivity('${act.id}', this)" title="Delete">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               </button>
@@ -1220,6 +1223,137 @@ async function downloadGraphingWorksheet(id, btn) {
     if (!win) alert('Please allow popups to download the worksheet.');
   } catch(e) {
     alert('Worksheet generation failed. Please try again.');
+  }
+}
+
+async function downloadGraphingAnswerKey(id, btn) {
+  const token = localStorage.getItem('sb_access_token');
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/graphing_activities?id=eq.' + id + '&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const data = await r.json();
+    if (!Array.isArray(data) || !data[0]) { alert('Activity not found.'); return; }
+    const act = data[0];
+    const pts = act.points || [];
+    const edges = act.edges || [];
+    const gMin = act.grid_min, gMax = act.grid_max, range = gMax - gMin;
+    const isQ4 = act.quadrants === 4;
+    const sc = act.scale || 1;
+
+    // Coordinate list — identical numbering to the student worksheet
+    let probRows = '';
+    for (let i = 0; i < pts.length; i += 3) {
+      probRows += '<tr>';
+      for (let c = 0; c < 3; c++) {
+        const p = pts[i + c];
+        if (p) {
+          var svx = Math.round(p.x * sc * 1000) / 1000;
+          var svy = Math.round(p.y * sc * 1000) / 1000;
+          const nx = svx < 0 ? '\u2212' + Math.abs(svx) : svx;
+          const ny = svy < 0 ? '\u2212' + Math.abs(svy) : svy;
+          probRows += '<td class="prob">' + (i + c + 1) + '. ' + p.label + ': (' + nx + ', ' + ny + ')</td>';
+        } else {
+          probRows += '<td></td>';
+        }
+      }
+      probRows += '</tr>';
+    }
+
+    // Same grid geometry as the worksheet so the key overlays exactly
+    const svgW = 640, svgH = 640, pad = 36;
+    const cell = (svgW - pad * 2) / range;
+    function sx(x) { return pad + (x - gMin) * cell; }
+    function sy(y) { return pad + (range - (y - gMin)) * cell; }
+
+    let svgLines = '';
+    for (let i = gMin; i <= gMax; i++) {
+      svgLines += '<line x1="' + sx(i) + '" y1="' + pad + '" x2="' + sx(i) + '" y2="' + (pad + range * cell) + '" stroke="#ddd" stroke-width="0.5"/>';
+      svgLines += '<line x1="' + pad + '" y1="' + sy(i) + '" x2="' + (pad + range * cell) + '" y2="' + sy(i) + '" stroke="#ddd" stroke-width="0.5"/>';
+    }
+    for (let gx = gMin; gx <= gMax; gx++) {
+      for (let gy = gMin; gy <= gMax; gy++) {
+        svgLines += '<circle cx="' + sx(gx) + '" cy="' + sy(gy) + '" r="1.5" fill="#ccc"/>';
+      }
+    }
+    if (isQ4) {
+      svgLines += '<line x1="' + pad + '" y1="' + sy(0) + '" x2="' + (pad + range * cell) + '" y2="' + sy(0) + '" stroke="#000" stroke-width="1.5"/>';
+      svgLines += '<line x1="' + sx(0) + '" y1="' + pad + '" x2="' + sx(0) + '" y2="' + (pad + range * cell) + '" stroke="#000" stroke-width="1.5"/>';
+    } else {
+      svgLines += '<line x1="' + sx(gMin) + '" y1="' + sy(gMin) + '" x2="' + sx(gMax) + '" y2="' + sy(gMin) + '" stroke="#000" stroke-width="1.5"/>';
+      svgLines += '<line x1="' + sx(gMin) + '" y1="' + sy(gMin) + '" x2="' + sx(gMin) + '" y2="' + sy(gMax) + '" stroke="#000" stroke-width="1.5"/>';
+    }
+
+    let svgLabels = '';
+    const xAxisY = isQ4 ? sy(0) : sy(gMin);
+    var labAll = act.label_all_ticks !== false;
+    for (let i = gMin; i <= gMax; i++) {
+      if (!labAll && (i - gMin) % 2 !== 0) continue;
+      svgLabels += '<text x="' + sx(i) + '" y="' + (xAxisY + 16) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + Math.round(i * sc * 1000) / 1000 + '</text>';
+    }
+    const yAxisX = isQ4 ? sx(0) : sx(gMin);
+    for (let i = gMin; i <= gMax; i++) {
+      if (i === gMin && !isQ4) continue;
+      if (i === 0 && isQ4) continue;
+      if (!labAll && (i - gMin) % 2 !== 0) continue;
+      svgLabels += '<text x="' + (yAxisX - 10) + '" y="' + (sy(i) + 3) + '" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#666">' + Math.round(i * sc * 1000) / 1000 + '</text>';
+    }
+    svgLabels += '<text x="' + (pad + range * cell + 14) + '" y="' + (xAxisY + 5) + '" font-size="12" font-family="sans-serif" font-weight="700" font-style="italic" fill="#888">x</text>';
+    svgLabels += '<text x="' + yAxisX + '" y="' + (pad - 10) + '" text-anchor="middle" font-size="12" font-family="sans-serif" font-weight="700" font-style="italic" fill="#888">y</text>';
+
+    // ANSWER LAYER — outline first so the dots sit on top.
+    // Edges are stored as label pairs, e.g. [['A','B'],['B','C']].
+    let svgAnswer = '';
+    edges.forEach(function(e) {
+      const a = pts.find(function(p) { return p.label === e[0]; });
+      const b = pts.find(function(p) { return p.label === e[1]; });
+      if (a && b) {
+        svgAnswer += '<line x1="' + sx(a.x) + '" y1="' + sy(a.y) + '" x2="' + sx(b.x) + '" y2="' + sy(b.y) + '" stroke="#7aaa00" stroke-width="2" stroke-linecap="round"/>';
+      }
+    });
+    pts.forEach(function(p) {
+      svgAnswer += '<circle cx="' + sx(p.x) + '" cy="' + sy(p.y) + '" r="4.5" fill="#111"/>';
+      svgAnswer += '<text x="' + (sx(p.x) + 8) + '" y="' + (sy(p.y) - 7) + '" font-size="13" font-family="sans-serif" font-weight="800" fill="#111">' + p.label + '</text>';
+    });
+
+    const key = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + act.title + ' \u2014 Answer Key</title>' +
+      '<style>' +
+      "@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');" +
+      '* { box-sizing: border-box; margin: 0; padding: 0; }' +
+      'body { font-family: Nunito, sans-serif; background: #fff; color: #111; padding: 24px 32px; }' +
+      '.header { display:flex; align-items:center; gap:12px; margin-bottom:10px; border-bottom:2px solid #111; padding-bottom:10px; }' +
+      '.avatar-img { width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0; }' +
+      '.header-title { font-size:16px; font-weight:800; flex:1; }' +
+      '.key-badge { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; border:1.5px solid #111; border-radius:4px; padding:4px 10px; white-space:nowrap; }' +
+      '.directions { font-size:12px; color:#555; background:#f8f8f8; padding:7px 12px; margin-bottom:12px; border-radius:5px; margin-top:8px; }' +
+      'table.probs { width:100%; border-collapse:collapse; margin-bottom:12px; }' +
+      'table.probs td.prob { padding:3px 6px; font-size:12px; font-weight:700; width:33%; }' +
+      '.grid-wrap { display:flex; justify-content:center; }' +
+      '.grid-wrap svg { width:100%; max-width:640px; height:auto; }' +
+      '.footer { margin-top:16px; text-align:center; font-size:10px; color:#aaa; border-top:1px solid #ddd; padding-top:8px; }' +
+      '@media print { body { padding:16px 24px; } @page { margin:0.5in; } }' +
+      '</style></head><body>' +
+      '<div class="header">' +
+      '<img class="avatar-img" src="https://therealsumshady.com/avatar.png" alt="The Real Sum Shady">' +
+      '<div class="header-title">' + act.title + '</div>' +
+      '<div class="key-badge">Answer Key</div>' +
+      '</div>' +
+      '<div class="directions">Point numbers match the student worksheet and the on-screen activity.</div>' +
+      '<table class="probs"><tbody>' + probRows + '</tbody></table>' +
+      '<div class="grid-wrap"><svg width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '">' +
+      '<rect width="' + svgW + '" height="' + svgH + '" fill="#fff" stroke="#ccc" stroke-width="1" rx="4"/>' +
+      svgLines + svgLabels + svgAnswer +
+      '</svg></div>' +
+      '<div class="footer">\u00a9 The Real Sum Shady \u2014 therealsumshady.com</div>' +
+      '<script>window.onload = function() { window.print(); }<\/script>' +
+      '</body></html>';
+
+    const blob = new Blob([key], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (!win) alert('Please allow popups to download the answer key.');
+  } catch(e) {
+    alert('Answer key generation failed. Please try again.');
   }
 }
 
